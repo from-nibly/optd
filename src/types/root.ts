@@ -1,58 +1,58 @@
 import st from 'simple-runtypes';
-export interface SubjectInfo {
-  uid: string;
-  name: string;
-}
 
-export interface StoredHistoryEntry {
-  by: SubjectInfo;
-  at: Date;
-  from: string;
-  message?: string;
-}
+export const SubjectSchema = st.record({
+  uid: st.string(),
+  name: st.string(),
+});
+
+export type Subject = ReturnType<typeof SubjectSchema>;
+
+export const HistoryEntrySchema = st.record({
+  by: st.record(SubjectSchema),
+  at: st.string(),
+  from: st.string(),
+  message: st.optional(st.string()),
+});
+
+export type HistoryEntry = ReturnType<typeof HistoryEntrySchema>;
+
+export const PutResourceMetaSchema = st.record({
+  name: st.string(),
+  labels: st.optional(st.dictionary(st.string(), st.string())),
+  rev: st.optional(st.string()),
+});
+
+export type PutResourceMeta = ReturnType<typeof PutResourceMetaSchema>;
 
 export const ResourceMetaSchema = st.record({
-  name: st.string(),
   namespace: st.string(),
+  name: st.string(),
   labels: st.dictionary(st.string(), st.string()),
-  annotations: st.dictionary(st.string(), st.string()),
+  rev: st.string(),
 });
 
 export type ResourceMeta = ReturnType<typeof ResourceMetaSchema>;
+export const StoredResourceMetaSchema = st.record({
+  ...ResourceMetaSchema,
+  uid: st.string(),
+});
 
-export interface StoredResourceMeta extends ResourceMeta {
-  uid: string;
-  owner: SubjectInfo;
-}
+export type StoredResourceMeta = ReturnType<typeof StoredResourceMetaSchema>;
 
-export interface Resource<Spec, Status> {
-  metadata: ResourceMeta;
-  spec: Spec;
-  status: Status;
-}
+export const PutResourceSchema = st.record({
+  metadata: PutResourceMetaSchema,
+  spec: st.any(),
+  status: st.any(),
+});
 
-export interface StoredResource<Spec, Status> extends Resource<Spec, Status> {
-  metadata: StoredResourceMeta;
-  history: StoredHistoryEntry[];
-}
+export type PutResource = ReturnType<typeof PutResourceSchema>;
 
-// definitions
+export const StoredResourceSchema = st.record({
+  _id: st.string(),
+  _rev: st.string(),
+  metadata: StoredResourceMetaSchema,
+  spec: st.any(),
+  status: st.any(),
+});
 
-export type SimpleType = 'string' | 'number' | 'boolean';
-export type ListType = string[] | number[] | boolean[];
-
-export interface FieldSpec {
-  name: string;
-  type: any;
-  default: any;
-}
-
-export interface DefinitionSpec {
-  [key: string]: DefinitionSpec | FieldSpec;
-}
-
-export interface Definition {
-  name: string;
-  namespace: string;
-  spec: DefinitionSpec;
-}
+export type StoredResource = ReturnType<typeof StoredResourceSchema>;

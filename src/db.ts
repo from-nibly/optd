@@ -2,7 +2,7 @@ import PouchDB from 'pouchdb';
 
 import express, { Request, Response } from 'express';
 import { createDefinitionRouter } from './routes/definitions';
-import { constructResourceDatabase } from './routes/resources/document';
+import { constructResourceDatabase } from './routes/namespaces/resources/document';
 import bodyParser from 'body-parser';
 
 const dbapp = require('express-pouchdb')({
@@ -34,7 +34,7 @@ metaDB
       const friendlyName = doc.id.split('/')[1];
       const { name, db, router } = constructResourceDatabase(friendlyName);
       databases[name] = db;
-      app.use(`/resources`, router);
+      app.use(`/namespaces`, router);
     }
   });
 
