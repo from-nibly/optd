@@ -45,6 +45,9 @@ export const constructResourceRouter = <Spec, Status>(
     });
     return res.json(records);
   });
+  //TODO: revision history with ownership
+  //TODO: document id should be /rev/:namespace/:name/:rev
+  //TODO: documents need a transformer that converts to from database format to api format
 
   router.put(`/:namespace/${name}/:id`, async (req: Request, res: Response) => {
     const body = req.body as Resource<Spec, Status>;

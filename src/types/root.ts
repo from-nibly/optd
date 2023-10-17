@@ -1,3 +1,4 @@
+import st from 'simple-runtypes';
 export interface SubjectInfo {
   uid: string;
   name: string;
@@ -10,12 +11,14 @@ export interface StoredHistoryEntry {
   message?: string;
 }
 
-export interface ResourceMeta {
-  name: string;
-  namespace: string;
-  labels: Record<string, string>;
-  annotations: Record<string, string>;
-}
+export const ResourceMetaSchema = st.record({
+  name: st.string(),
+  namespace: st.string(),
+  labels: st.dictionary(st.string(), st.string()),
+  annotations: st.dictionary(st.string(), st.string()),
+});
+
+export type ResourceMeta = ReturnType<typeof ResourceMetaSchema>;
 
 export interface StoredResourceMeta extends ResourceMeta {
   uid: string;
