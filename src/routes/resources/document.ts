@@ -29,10 +29,18 @@ export const constructResourceRouter = <Spec, Status>(
   const router = Router();
 
   router.get(`/:namespace/${name}`, async (req: Request, res: Response) => {
-    const namespace = req.params.namespace;
+    const { namespace } = req.params;
     const records = await db.allDocs({
       startkey: `${namespace}/`,
       endkey: `${namespace}/{}`,
+    });
+    return res.json(records);
+  });
+
+  router.get(`/:namespace/${name}/:id`, async (req: Request, res: Response) => {
+    const { namespace, id } = req.params;
+    const records = await db.get(`${namespace}/${id}`).catch((e) => {
+      res.json(e);
     });
     return res.json(records);
   });
