@@ -9,6 +9,7 @@ const cli = new Cli({
   binaryName: 'optdctl',
   binaryVersion: '0.0.1',
 });
+console.log('found stuff', process.argv);
 
 cli.register(GetCommand);
 cli.register(PutResourceCommand);

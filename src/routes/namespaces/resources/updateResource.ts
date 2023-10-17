@@ -26,11 +26,13 @@ export const updateResource = async (
   // then always clean up any history that doesn't chain to the latest history document
   let historyRev: string | undefined;
   try {
-    const { id: historyID, rev: historyRev } = await db.put(history);
+    const res = await db.put(history);
+    historyRev = res.rev;
+    const histID = res.id;
 
     const newRecord = {
       ...record,
-      history: generateHistory(user, message, historyID),
+      history: generateHistory(user, message, histID),
     };
     console.log('putting new record', record);
     const resourceResult = await db.put(newRecord);
@@ -38,8 +40,11 @@ export const updateResource = async (
   } catch (e) {
     if (isPouchDBError(e) && e.status == 409) {
       if (historyRev && e.docId !== history._id) {
+        console.log('removing history file');
         db.remove({ _id: history._id, _rev: historyRev });
         throw e;
+      } else {
+        console.log('huh', historyRev, e.docId, history._id);
       }
     }
     throw e;

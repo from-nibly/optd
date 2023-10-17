@@ -9,7 +9,10 @@ export const convertFromAPI = (
   return {
     _id: resourceID(namespace, record.metadata.name),
     _rev: record.metadata.rev,
-    metadata: restMeta,
+    metadata: {
+      ...restMeta,
+      namespace,
+    },
     spec: record.spec,
     status: record.status,
   };
