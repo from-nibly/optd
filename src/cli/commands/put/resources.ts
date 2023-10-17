@@ -1,5 +1,7 @@
 import { Command, Option } from 'clipanion';
 import { parse, stringify } from 'yaml';
+import { client } from '../../client';
+import { string } from 'simple-runtypes';
 
 export class PutResourceCommand extends Command {
   static paths = [['put'], ['p']];
@@ -30,13 +32,14 @@ export class PutResourceCommand extends Command {
 
     const editor = process.env['EDITOR'] ?? 'vi';
 
+    //TODO: there's no way this is gonna work universally
     const bufferFileName = '/tmp/optdctl-buffer.yaml';
     const bufferFile = Bun.file(bufferFileName);
 
     await Bun.write(
       bufferFileName,
       stringify({
-        metadata: { namespace: 'foo', name: '<changeme>', kind },
+        metadata: { namespace: 'foo', name: name ?? '<changeme>', kind },
         spec: {},
       }),
     );
@@ -47,12 +50,28 @@ export class PutResourceCommand extends Command {
       stderr: 'inherit',
     });
 
+    //TODO: catch errors?
     await proc.exited;
 
     const output = await bufferFile.text();
 
-    const outputObj = parse(output);
+    this.context.stdout.write(output + '\n');
 
-    this.context.stdout.write(JSON.stringify(outputObj, null, 2));
+    //TODO: validation of some kind?
+    const outputObj = parse(output);
+    this.context.stdout.write('got here i guess');
+
+    name = outputObj.metadata.name;
+    const namespace = outputObj.metadata.namespace;
+
+    delete outputObj.metadata.namespace;
+    delete outputObj.metadata.kind;
+
+    const resp = await client
+      .url(`/namespaces/${namespace}/${kind}`)
+      .json(outputObj)
+      .put();
+
+    this.context.stdout.write(stringify(await resp.json()) + '\n');
   }
 }

@@ -69,6 +69,7 @@ export const constructResourceRouter = (
   router.put(
     `/:namespace/${resourceKind}`,
     asyncHandler(async (req: Request, res: Response) => {
+      console.log('testing', req.body);
       const putDocument = await PutResourceSchema(req.body);
       const namespace = req.params.namespace;
       if (putDocument.metadata.rev) {
