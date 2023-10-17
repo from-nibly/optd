@@ -29,9 +29,10 @@ export const constructResourceRouter = <Spec, Status>(
   const router = Router();
 
   router.get(`/:namespace/${name}`, async (req: Request, res: Response) => {
+    const namespace = req.params.namespace;
     const records = await db.allDocs({
-      startkey: `${req.params.namespace}/${name}/`,
-      endkey: `${req.params.namespace}/${name}/{}`,
+      startkey: `${namespace}/`,
+      endkey: `${namespace}/{}`,
     });
     return res.json(records);
   });
