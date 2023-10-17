@@ -1,97 +1,18 @@
 import { Handler, NextFunction, Request, Response, Router } from 'express';
 import PouchDB from 'pouchdb';
-import {
-  PutResource,
-  PutResourceSchema,
-  Resource,
-  StoredResource,
-} from '../../../types/root';
-import { PouchDBError, isPouchDBError } from '../../../types/pouchDB';
 import st from 'simple-runtypes';
+import { resourceID } from '../../../types/ids';
+import { isPouchDBError } from '../../../types/pouchDB';
+import { PutResource, PutResourceSchema, Resource } from '../../../types/root';
+import { convertFromAPI, convertFromDatabase } from './serialize';
+import { updateResource } from './updateResource';
+import { createResource } from './createResource';
 
 interface ResourceDatabase<T extends {}> {
   name: string;
   db: PouchDB.Database<T>;
   router: Router;
 }
-
-const convertFromAPI = (namespace: string, record: Resource | PutResource) => {
-  const { rev, ...restMeta } = record.metadata;
-  console.log('removing rev', restMeta);
-  return {
-    _id: `${namespace}/${record.metadata.name}`,
-    _rev: record.metadata.rev,
-    metadata: restMeta,
-    spec: record.spec,
-    status: record.status,
-  };
-};
-
-const convertFromDatabase = (record: any): Resource => {
-  return {
-    metadata: Object.assign({}, record.metadata, {
-      namespace: record._id.split('/')[0],
-      name: record._id.split('/')[1],
-      rev: record._rev,
-    }),
-    history: record.history,
-    spec: record.spec,
-    status: record.status,
-  };
-};
-
-const CreateResource = async (
-  db: PouchDB.Database,
-  namespace: string,
-  resource: PutResource,
-): Promise<Resource> => {
-  const record = convertFromAPI(namespace, resource);
-  const result = await db.put(record);
-  const stored = await db.get(result.id);
-  return convertFromDatabase(stored);
-};
-
-const updateResource = async (
-  db: PouchDB.Database,
-  namespace: string,
-  resource: PutResource,
-): Promise<Resource> => {
-  const record = convertFromAPI(namespace, resource);
-  const existing: StoredResource = await db.get(record._id);
-  const { _rev, ...restExisting } = existing;
-  const history = {
-    ...restExisting,
-    _id: `hist/${existing._id}/${existing._rev}`,
-  };
-  //TODO: make this effectively a transaction...somehow
-  // first create the history record, then update the document to point to the latest history document.
-  // then always clean up any history that doesn't chain to the latest history document
-  let historyRev: string | undefined;
-  try {
-    const historyResult = await db.put(history);
-    historyRev = historyResult.rev;
-    const newRecord = {
-      ...record,
-      history: {
-        by: 'testing',
-        at: new Date(),
-        message: 'string',
-        parent: historyResult.id,
-      },
-    };
-    console.log('putting new record', record);
-    const resourceResult = await db.put(newRecord);
-    return convertFromDatabase(await db.get(resourceResult.id));
-  } catch (e) {
-    if (isPouchDBError(e) && e.status == 409) {
-      if (historyRev && e.docId !== history._id) {
-        db.remove({ _id: history._id, _rev: historyRev });
-        throw e;
-      }
-    }
-    throw e;
-  }
-};
 
 export const constructResourceDatabase = (
   name: string,
@@ -124,8 +45,8 @@ export const constructResourceRouter = (
     asyncHandler(async (req: Request, res: Response) => {
       const { namespace } = req.params;
       const records = await db.allDocs({
-        startkey: `${namespace}/`,
-        endkey: `${namespace}/{}`,
+        startkey: `ns/${namespace}/`,
+        endkey: `ns/${namespace}/{}`,
         include_docs: true,
       });
       return res.json(records.rows.map((r) => convertFromDatabase(r.doc)));
@@ -133,10 +54,10 @@ export const constructResourceRouter = (
   );
 
   router.get(
-    `/:namespace/${resourceTypeName}/:id`,
+    `/:namespace/${resourceTypeName}/:name`,
     asyncHandler(async (req: Request, res: Response) => {
-      const { namespace, id } = req.params;
-      const record = await db.get(`${namespace}/${id}`).catch((e) => {
+      const { namespace, name } = req.params;
+      const record = await db.get(resourceID(namespace, name)).catch((e) => {
         res.json(e);
       });
       return res.json(convertFromDatabase(record));
@@ -150,8 +71,27 @@ export const constructResourceRouter = (
     asyncHandler(async (req: Request, res: Response) => {
       const putDocument = await PutResourceSchema(req.body);
       const namespace = req.params.namespace;
-      const updatedDocument = await updateResource(db, namespace, req.body);
-      return res.json(updatedDocument);
+      if (putDocument.metadata.rev) {
+        const updatedDocument = await updateResource(
+          db,
+          namespace,
+          putDocument,
+          //TODO: take message as query param?
+          'test user',
+          'test message',
+        );
+        return res.json(updatedDocument);
+      }
+
+      const createdDocument = await createResource(
+        db,
+        namespace,
+        putDocument,
+        //TODO: take message as query param?
+        'test user',
+        'test message',
+      );
+      return res.json(createdDocument);
     }),
   );
 
@@ -165,7 +105,7 @@ export const constructResourceRouter = (
   );
 
   router.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    next;
+    console.log('handling error', err);
     if (err instanceof st.RuntypeError) {
       res.status(400).json(err);
     } else if (isPouchDBError(err)) {
