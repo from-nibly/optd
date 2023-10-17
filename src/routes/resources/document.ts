@@ -1,6 +1,7 @@
 import { Request, Response, Router } from 'express';
 import PouchDB from 'pouchdb';
 import { Resource } from '../../types/root';
+import { PouchDBError, isPouchDBError } from '../../types/pouchDB';
 
 interface ResourceDatabase<T extends {}> {
   name: string;
@@ -50,16 +51,15 @@ export const constructResourceRouter = <Spec, Status>(
     const id = req.params.id;
     const namespace = req.params.namespace;
     console.log('todo validate input', body);
-    db.put({
-      ...body,
-      _id: `${namespace}/${id}`,
-    })
-      .then((result) => {
-        db.get(result.id).then((resource) => {
-          res.json(resource);
-        });
-      })
-      .catch((e) => {
+    try {
+      const response = await db.put({
+        ...body,
+        _id: `${namespace}/${id}`,
+      });
+      const resource = await db.get(response.id);
+      res.json(resource);
+    } catch (e) {
+      if (isPouchDBError(e)) {
         if (e.status == 409) {
           return res.status(409).json({
             error: 'conflict',
@@ -67,8 +67,11 @@ export const constructResourceRouter = <Spec, Status>(
             status: 409,
           });
         }
-        return res.status(e.status).json(e);
-      });
+        res.status(e.status ?? 500).json(e);
+      } else {
+        res.status(500).json(e);
+      }
+    }
   });
   return router;
 };
