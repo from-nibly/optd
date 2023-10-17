@@ -1,5 +1,6 @@
 import { Command, Option, runExit } from 'clipanion';
 import wretch from 'wretch';
+import { parse, stringify } from 'yaml';
 
 const client = wretch('http://localhost:3000');
 
@@ -20,12 +21,14 @@ export class GetCommand extends Command {
     if (name === undefined) {
       //execute get all
       const resp = await client.url(`/namespaces/foo/${kind}`).get().json();
-      this.context.stdout.write(
-        `Hello, world! ${kind} ${JSON.stringify(resp, null, 2)}\n`,
-      );
+      this.context.stdout.write(stringify(resp) + '\n');
     } else {
       //execute get one
-      this.context.stdout.write(`Hello, world! ${kind} ${name}\n`);
+      const resp = await client
+        .url(`/namespaces/foo/${kind}/${name}`)
+        .get()
+        .json();
+      this.context.stdout.write(stringify(resp) + '\n');
     }
   }
 }
