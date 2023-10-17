@@ -106,5 +106,15 @@ export const constructResourceRouter = (
       }
     },
   );
+
+  router.delete(
+    `/:namespace/${resourceTypeName}/:id`,
+    async (req: Request, res: Response) => {
+      console.log('testing');
+      const record = await db.get(`${req.params.namespace}/${req.params.id}`);
+      db.remove({ _id: record._id, _rev: record._rev });
+      res.status(200);
+    },
+  );
   return router;
 };
