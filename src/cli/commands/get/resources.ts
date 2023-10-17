@@ -7,9 +7,6 @@ export class GetCommand extends Command {
   static usage = Command.Usage({
     category: 'Resources',
     description: 'Get a list of resources or a single resource',
-    details: `
-      This command will get a resource from the API.
-    `,
     examples: [
       ['Get a resource', 'optdctl get versions/myservice'],
       ['Get a resource by kind', 'optdctl get versions myservice'],

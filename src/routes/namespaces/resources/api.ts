@@ -35,13 +35,13 @@ const asyncHandler =
   };
 
 export const constructResourceRouter = (
-  resourceTypeName: string,
+  resourceKind: string,
   db: PouchDB.Database<any>,
 ): Router => {
   const router = Router();
 
   router.get(
-    `/:namespace/${resourceTypeName}/`,
+    `/:namespace/${resourceKind}/`,
     asyncHandler(async (req: Request, res: Response) => {
       const { namespace } = req.params;
       const records = await db.allDocs({
@@ -54,7 +54,7 @@ export const constructResourceRouter = (
   );
 
   router.get(
-    `/:namespace/${resourceTypeName}/:name`,
+    `/:namespace/${resourceKind}/:name`,
     asyncHandler(async (req: Request, res: Response) => {
       const { namespace, name } = req.params;
       const record = await db.get(resourceID(namespace, name)).catch((e) => {
@@ -67,7 +67,7 @@ export const constructResourceRouter = (
   //TODO: documents need a transformer that converts to from database format to api format
 
   router.put(
-    `/:namespace/${resourceTypeName}`,
+    `/:namespace/${resourceKind}`,
     asyncHandler(async (req: Request, res: Response) => {
       const putDocument = await PutResourceSchema(req.body);
       const namespace = req.params.namespace;
@@ -95,8 +95,15 @@ export const constructResourceRouter = (
     }),
   );
 
+  router.patch(
+    `/:namespace/${resourceKind}`,
+    asyncHandler(async (req: Request, res: Response) => {
+      //TODO: add patch functionality
+    }),
+  );
+
   router.delete(
-    `/:namespace/${resourceTypeName}/:id`,
+    `/:namespace/${resourceKind}/:id`,
     asyncHandler(async (req: Request, res: Response) => {
       const record = await db.get(`${req.params.namespace}/${req.params.id}`);
       db.remove({ _id: record._id, _rev: record._rev });
