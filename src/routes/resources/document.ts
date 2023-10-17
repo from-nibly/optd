@@ -50,16 +50,25 @@ export const constructResourceRouter = <Spec, Status>(
     const id = req.params.id;
     const namespace = req.params.namespace;
     console.log('todo validate input', body);
-    const result = await db
-      .put({
-        ...body,
-        _id: `${namespace}/${id}`,
+    db.put({
+      ...body,
+      _id: `${namespace}/${id}`,
+    })
+      .then((result) => {
+        db.get(result.id).then((resource) => {
+          res.json(resource);
+        });
       })
       .catch((e) => {
-        res.json(e);
+        if (e.status == 409) {
+          return res.status(409).json({
+            error: 'conflict',
+            reason: 'Document with different revision already exists',
+            status: 409,
+          });
+        }
+        return res.status(e.status).json(e);
       });
-    return res.json(result);
   });
-  console.log('creating router', router.stack);
   return router;
 };

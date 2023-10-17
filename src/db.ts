@@ -3,6 +3,7 @@ import PouchDB from 'pouchdb';
 import express, { Request, Response } from 'express';
 import { createDefinitionRouter } from './routes/definitions';
 import { constructResourceDatabase } from './routes/resources/document';
+import bodyParser from 'body-parser';
 
 const dbapp = require('express-pouchdb')({
   mode: 'minimumForPouchDB',
@@ -12,6 +13,8 @@ const dbapp = require('express-pouchdb')({
 });
 
 const app = express();
+
+app.use(bodyParser.json());
 
 const databases: Record<string, PouchDB.Database> = {};
 
@@ -28,14 +31,11 @@ metaDB
   })
   .then(async (docs) => {
     for (const doc of docs.rows) {
-      console.log('found data type', doc.id);
       const friendlyName = doc.id.split('/')[1];
       const { name, db, router } = constructResourceDatabase(friendlyName);
       databases[name] = db;
-      console.log('adding route', router);
       app.use(`/resources`, router);
     }
-    console.log(app._router.stack);
   });
 
 // when not specifying PouchDB as an argument to the main function, you
