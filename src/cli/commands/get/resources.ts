@@ -2,7 +2,7 @@ import { Command, Option } from 'clipanion';
 import { client } from '../../client';
 import { stringify } from 'yaml';
 
-export class GetCommand extends Command {
+export class GetResourceCommand extends Command {
   static paths = [['get'], ['g']];
   static usage = Command.Usage({
     category: 'Resources',

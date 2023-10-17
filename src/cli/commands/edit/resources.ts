@@ -1,34 +1,46 @@
 import { Command, Option } from 'clipanion';
 import { parse, stringify } from 'yaml';
 import { client } from '../../client';
+import { Resource } from '../../../types/root';
 
-export class PutResourceCommand extends Command {
-  static paths = [['put'], ['p']];
+export class EditResourceCommand extends Command {
+  static paths = [['edit'], ['e']];
   static usage = Command.Usage({
     category: 'Resources',
-    description: 'Create or update a resource',
+    description: 'edit an existing resource',
     examples: [
-      ['Create a resource by using your editor', 'optdctl put versions'],
-      [
-        'Create a resource using inline json',
-        `optdctl put versions --data '{...}'`,
-      ],
+      ['Edit a resource by using your editor', 'optdctl edit <kind>/<name>'],
+      ['Edit a resource by using your editor', 'optdctl edit <kind> <name>'],
     ],
   });
 
-  data = Option.String('-d,--data', { required: false });
   kind = Option.String({ required: true });
   name = Option.String({ required: false });
 
   async execute(): Promise<number | void> {
     let kind = this.kind;
     let name = this.name;
-    let rest = [];
 
     if (name === undefined && kind.indexOf('/') !== -1) {
-      [kind, name, ...rest] = kind.split('/');
+      [kind, name] = kind.split('/');
     }
-    const outputObj = await this.obtainData(name, kind);
+
+    if (name === undefined) {
+      throw new Error('name is required');
+    }
+
+    const existing = await client
+      .url(`/namespaces/foo/${kind}/${name}`)
+      .get()
+      .json();
+
+    //TODO: validation?
+    const outputObj = await this.obtainData(existing as any);
+
+    if (stringify(outputObj) === stringify(existing)) {
+      this.context.stdout.write('No changes detected\n');
+      return 0;
+    }
 
     outputObj.metadata ??= {};
     outputObj.metadata.name ??= name;
@@ -37,33 +49,25 @@ export class PutResourceCommand extends Command {
     delete outputObj.metadata.namespace;
     delete outputObj.metadata.kind;
 
+    const { history, ...rest } = outputObj as Resource;
+
     const resp = await client
       .url(`/namespaces/${namespace}/${kind}`)
-      .json(outputObj)
+      .json(rest)
       .put();
 
     this.context.stdout.write(stringify(await resp.json()) + '\n');
   }
 
   //TODO: what type is this? PutResource?
-  async obtainData(name: string | undefined, kind: string): Promise<any> {
-    if (this.data) {
-      return JSON.parse(this.data);
-    }
-
+  async obtainData(existing: Resource): Promise<any> {
     const editor = process.env['EDITOR'] ?? 'vi';
 
     //TODO: there's no way this is gonna work universally
     const bufferFileName = '/tmp/optdctl-buffer.yaml';
     const bufferFile = Bun.file(bufferFileName);
 
-    await Bun.write(
-      bufferFileName,
-      stringify({
-        metadata: { namespace: 'foo', name: name ?? '<changeme>', kind },
-        spec: {},
-      }),
-    );
+    await Bun.write(bufferFileName, stringify(existing));
 
     const proc = Bun.spawn([editor, bufferFileName], {
       stdout: 'inherit',
