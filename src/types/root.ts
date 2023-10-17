@@ -7,14 +7,14 @@ export const SubjectSchema = st.record({
 
 export type Subject = ReturnType<typeof SubjectSchema>;
 
-export const HistoryEntrySchema = st.record({
+export const HistoryDataSchema = st.record({
   by: st.record(SubjectSchema),
   at: st.string(),
-  from: st.string(),
   message: st.optional(st.string()),
+  parent: st.optional(st.string()),
 });
 
-export type HistoryEntry = ReturnType<typeof HistoryEntrySchema>;
+export type HistoryData = ReturnType<typeof HistoryDataSchema>;
 
 export const PutResourceMetaSchema = st.record({
   name: st.string(),
@@ -32,12 +32,6 @@ export const ResourceMetaSchema = st.record({
 });
 
 export type ResourceMeta = ReturnType<typeof ResourceMetaSchema>;
-export const StoredResourceMetaSchema = st.record({
-  ...ResourceMetaSchema,
-  uid: st.string(),
-});
-
-export type StoredResourceMeta = ReturnType<typeof StoredResourceMetaSchema>;
 
 export const PutResourceSchema = st.record({
   metadata: PutResourceMetaSchema,
@@ -50,9 +44,19 @@ export type PutResource = ReturnType<typeof PutResourceSchema>;
 export const StoredResourceSchema = st.record({
   _id: st.string(),
   _rev: st.string(),
-  metadata: StoredResourceMetaSchema,
+  metadata: ResourceMetaSchema,
+  spec: st.any(),
+  status: st.any(),
+  history: HistoryDataSchema,
+});
+
+export type StoredResource = ReturnType<typeof StoredResourceSchema>;
+
+export const ResourceSchema = st.record({
+  metadata: ResourceMetaSchema,
+  history: HistoryDataSchema,
   spec: st.any(),
   status: st.any(),
 });
 
-export type StoredResource = ReturnType<typeof StoredResourceSchema>;
+export type Resource = ReturnType<typeof ResourceSchema>;

@@ -2,7 +2,7 @@ import PouchDB from 'pouchdb';
 
 import express, { Request, Response } from 'express';
 import { createDefinitionRouter } from './routes/definitions';
-import { constructResourceDatabase } from './routes/namespaces/resources/document';
+import { constructResourceDatabase } from './routes/namespaces/resources/api';
 import bodyParser from 'body-parser';
 
 const dbapp = require('express-pouchdb')({

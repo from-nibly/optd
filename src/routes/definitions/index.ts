@@ -1,5 +1,5 @@
 import Express, { Request, Response, Router } from 'express';
-import { constructResourceDatabase } from '../namespaces/resources/document';
+import { constructResourceDatabase } from '../namespaces/resources/api';
 
 export const createDefinitionRouter = (
   meta: PouchDB.Database<{}>,

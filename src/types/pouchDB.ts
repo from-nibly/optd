@@ -9,6 +9,7 @@ export interface PouchDBError {
   error?: string | boolean | undefined;
   id?: string | undefined;
   rev?: string | undefined;
+  docId?: string | undefined;
 }
 
 export const isPouchDBError = (e: any): e is PouchDBError => {
