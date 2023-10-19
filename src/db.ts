@@ -1,7 +1,7 @@
 import PouchDB from 'pouchdb';
 
 import express, { Request, Response } from 'express';
-import { createDefinitionRouter } from './routes/definitions/api';
+import { createDefinitionRouter } from './routes/kinds/api';
 import { constructResourceDatabase } from './routes/namespaces/resources/api';
 import bodyParser from 'body-parser';
 

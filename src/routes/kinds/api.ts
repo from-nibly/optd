@@ -1,13 +1,12 @@
 import Express, { NextFunction, Request, Response, Router } from 'express';
-import { constructResourceDatabase } from '../namespaces/resources/api';
 import st from 'simple-runtypes';
 import { isPouchDBError } from '../../types/pouchDB';
-import { asyncHandler } from '../../util';
-import { convertFromDatabase } from './serialize';
 import { PutResourceSchema } from '../../types/root';
-import { updateKind } from './updateKind';
-import { createResource } from '../namespaces/resources/createResource';
+import { asyncHandler } from '../../util';
+import { constructResourceDatabase } from '../namespaces/resources/api';
 import { createKind } from './createKind';
+import { convertFromDatabase } from './serialize';
+import { updateKind } from './updateKind';
 
 export const createDefinitionRouter = (
   meta: PouchDB.Database<{}>,

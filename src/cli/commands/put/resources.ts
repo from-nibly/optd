@@ -24,7 +24,7 @@ export class PutResourceCommand extends PutCommand {
     if (name === undefined && kind.indexOf('/') !== -1) {
       [kind, name, ...rest] = kind.split('/');
     }
-    const outputObj = await this.obtainData(name, kind);
+    const outputObj = await this.obtainData(name, kind, 'foo');
 
     outputObj.metadata ??= {};
     outputObj.metadata.name ??= name;

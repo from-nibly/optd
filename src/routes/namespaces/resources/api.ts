@@ -9,6 +9,11 @@ import { createResource } from './createResource';
 import { convertFromDatabase } from './serialize';
 import { updateResource } from './updateResource';
 
+//TODO: refactor api to dynamically select database instance and not require resource kinds as a path param
+//TODO: allow kind and name properties in request body
+//TODO: make sure api adheres to strict conventions
+//TODO: add history endpoints
+
 interface ResourceDatabase<T extends {}> {
   name: string;
   db: PouchDB.Database<T>;
@@ -28,8 +33,6 @@ export const constructResourceDatabase = (
     router,
   };
 };
-
-//TODO: add history endpoints
 
 export const constructResourceRouter = (
   resourceKind: string,

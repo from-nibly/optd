@@ -16,3 +16,5 @@ export const partsFromHistoryID = (id: string) => {
 
 export const historyKindID = (name: string, rev: string) =>
   `hist/${name}/${rev}/kind`;
+
+export const kindID = (name: string) => `kind/${name}`;

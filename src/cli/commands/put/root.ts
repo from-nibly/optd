@@ -5,11 +5,15 @@ export abstract class PutCommand extends Command {
   file = Option.String('-f,--file', { required: false });
 
   //TODO: what type is this? PutResource?
-  async obtainData(name: string | undefined, kind: string): Promise<any> {
+  async obtainData(
+    name: string | undefined,
+    kind: string,
+    namespace?: string,
+  ): Promise<any> {
     if (this.file) {
       return this.obtainDataFromFile(name, kind, this.file);
     }
-    return this.obtainDataFromEditor(name, kind);
+    return this.obtainDataFromEditor(name, kind, namespace);
   }
 
   async obtainDataFromFile(
@@ -28,6 +32,7 @@ export abstract class PutCommand extends Command {
   async obtainDataFromEditor(
     name: string | undefined,
     kind: string,
+    namespace?: string,
   ): Promise<any> {
     const editor = process.env['EDITOR'] ?? 'vi';
 
@@ -38,7 +43,11 @@ export abstract class PutCommand extends Command {
     await Bun.write(
       bufferFileName,
       stringify({
-        metadata: { namespace: 'foo', name: name ?? '<changeme>', kind },
+        metadata: {
+          ...(namespace ? { namespace } : {}),
+          name: name ?? '<changeme>',
+          kind,
+        },
         spec: {},
       }),
     );
@@ -50,7 +59,7 @@ export abstract class PutCommand extends Command {
     });
 
     //TODO: catch errors?
-    await proc.exited;
+    const code = await proc.exited;
 
     const output = await bufferFile.text();
     //TODO: validation of some kind?

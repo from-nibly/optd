@@ -3,7 +3,12 @@ import { client } from '../../client';
 import { stringify } from 'yaml';
 
 export class GetKindCommand extends Command {
-  static paths = [['get', 'kind']];
+  static paths = [
+    ['get', 'kind'],
+    ['g', 'kind'],
+    ['get', 'kinds'],
+    ['g', 'kinds'],
+  ];
   static usage = Command.Usage({
     category: 'Configuration',
     description: 'List or get Kinds',

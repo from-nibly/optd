@@ -1,9 +1,10 @@
+import { kindID } from '../../types/ids';
 import { PutResource, Resource } from '../../types/root';
 
 export const convertFromAPI = (record: Resource | PutResource) => {
   const { rev, name, ...restMeta } = record.metadata;
   return {
-    _id: record.metadata.name,
+    _id: kindID(record.metadata.name),
     _rev: record.metadata.rev,
     metadata: {
       ...restMeta,
