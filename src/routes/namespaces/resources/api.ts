@@ -65,8 +65,6 @@ export const constructResourceRouter = (
       return res.json(convertFromDatabase(record));
     }),
   );
-  //TODO: revision history with ownership
-  //TODO: documents need a transformer that converts to from database format to api format
 
   router.put(
     `/:namespace/${resourceKind}`,
