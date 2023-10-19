@@ -2,6 +2,7 @@ import { Builtins, Cli } from 'clipanion';
 import { GetResourceCommand } from './commands/get/resources';
 import { PutResourceCommand } from './commands/put/resources';
 import { EditResourceCommand } from './commands/edit/resources';
+import { GetKindCommand } from './commands/get/kinds';
 
 const [node, app, ...args] = process.argv;
 
@@ -14,6 +15,9 @@ const cli = new Cli({
 cli.register(GetResourceCommand);
 cli.register(PutResourceCommand);
 cli.register(EditResourceCommand);
+cli.register(GetKindCommand);
+cli.register(PutResourceCommand);
+
 cli.register(Builtins.HelpCommand);
 cli.register(Builtins.VersionCommand);
 

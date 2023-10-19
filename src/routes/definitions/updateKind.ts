@@ -1,30 +1,26 @@
-import { historyID } from '../../../types/ids';
-import { isPouchDBError } from '../../../types/pouchDB';
-import { PutResource, Resource, StoredResource } from '../../../types/root';
-import {
-  convertFromAPI,
-  convertFromDatabase,
-  generateHistory,
-} from './serialize';
+import { historyID, historyKindID } from '../../types/ids';
+import { isPouchDBError } from '../../types/pouchDB';
+import { PutResource, StoredResource } from '../../types/root';
+import { generateHistory } from '../namespaces/resources/serialize';
+import { convertFromAPI, convertFromDatabase } from './serialize';
 
-export const updateResource = async (
+export const updateKind = async (
   db: PouchDB.Database,
-  namespace: string,
-  resource: PutResource,
+  kind: PutResource,
   user: string,
   message: string,
-): Promise<Resource> => {
-  const document = convertFromAPI(namespace, resource);
+) => {
+  const document = convertFromAPI(kind);
   const existing: StoredResource = await db.get(document._id);
   const { _rev, ...restExisting } = existing;
 
   const history = {
     ...restExisting,
-    _id: historyID(namespace, resource.metadata.name, _rev),
+    _id: historyKindID(kind.metadata.name, _rev),
   };
-  // first create the history record, then update the document to point to the latest history document.
-  // then always clean up any history that doesn't chain to the latest history document
+
   let historyRev: string | undefined;
+
   try {
     const res = await db.put(history);
     historyRev = res.rev;
@@ -39,6 +35,7 @@ export const updateResource = async (
   } catch (e) {
     if (isPouchDBError(e) && e.status == 409) {
       if (historyRev && e.docId !== history._id) {
+        console.log('removing history file');
         db.remove({ _id: history._id, _rev: historyRev });
         console.log('conflict', e);
         throw e;

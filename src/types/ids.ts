@@ -13,3 +13,6 @@ export const partsFromHistoryID = (id: string) => {
   const [_, namespace, name, rev] = id.split('/');
   return { namespace, name, rev };
 };
+
+export const historyKindID = (name: string, rev: string) =>
+  `hist/${name}/${rev}/kind`;

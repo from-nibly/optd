@@ -1,12 +1,13 @@
-import { Handler, NextFunction, Request, Response, Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 import PouchDB from 'pouchdb';
 import st from 'simple-runtypes';
 import { resourceID } from '../../../types/ids';
 import { isPouchDBError } from '../../../types/pouchDB';
-import { PutResource, PutResourceSchema, Resource } from '../../../types/root';
-import { convertFromAPI, convertFromDatabase } from './serialize';
-import { updateResource } from './updateResource';
+import { PutResourceSchema } from '../../../types/root';
+import { asyncHandler } from '../../../util';
 import { createResource } from './createResource';
+import { convertFromDatabase } from './serialize';
+import { updateResource } from './updateResource';
 
 interface ResourceDatabase<T extends {}> {
   name: string;
@@ -29,10 +30,6 @@ export const constructResourceDatabase = (
 };
 
 //TODO: add history endpoints
-const asyncHandler =
-  (fn: Handler) => (req: Request, res: Response, next: NextFunction) => {
-    return Promise.resolve(fn(req, res, next)).catch(next);
-  };
 
 export const constructResourceRouter = (
   resourceKind: string,
@@ -49,7 +46,9 @@ export const constructResourceRouter = (
         endkey: `ns/${namespace}/{}`,
         include_docs: true,
       });
-      return res.json(records.rows.map((r) => convertFromDatabase(r.doc)));
+      return res.json({
+        items: records.rows.map((r) => convertFromDatabase(r.doc)),
+      });
     }),
   );
 

@@ -1,7 +1,7 @@
 import PouchDB from 'pouchdb';
 
 import express, { Request, Response } from 'express';
-import { createDefinitionRouter } from './routes/definitions';
+import { createDefinitionRouter } from './routes/definitions/api';
 import { constructResourceDatabase } from './routes/namespaces/resources/api';
 import bodyParser from 'body-parser';
 
@@ -22,12 +22,12 @@ const metaDB = new PouchDB('meta');
 
 const definitionRouter = createDefinitionRouter(metaDB, databases, app);
 
-app.use('/', definitionRouter);
+app.use('/meta', definitionRouter);
 
 metaDB
   .allDocs({
-    startkey: 'type/',
-    endkey: 'type/{}',
+    startkey: 'kind/',
+    endkey: 'kind/{}',
   })
   .then(async (docs) => {
     for (const doc of docs.rows) {
