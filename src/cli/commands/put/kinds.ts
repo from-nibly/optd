@@ -18,7 +18,14 @@ export class PutKindCommand extends PutCommand {
     `,
     examples: [
       ['Create or update a kind', 'optdctl put kind <kind>'],
-      ['Create or update a kind', 'optdctl put kinds <kind>'],
+      [
+        'Create or update a kind from a file',
+        'optdctl put kind <kind> -f <file>',
+      ],
+      [
+        'Create or update a kind from stdin',
+        'cat <file> | optdctl put kind <kind> -f -',
+      ],
     ],
   });
 

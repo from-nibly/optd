@@ -15,7 +15,10 @@ export class GetKindCommand extends Command {
     details: `
       This command will List or get Kinds.
     `,
-    examples: [['List all kinds', 'optdctl get kind <kind?>']],
+    examples: [
+      ['List all kinds', 'optdctl get kind'],
+      ['Get a single kind', 'optdctl get kind <kind-name>'],
+    ],
   });
 
   name = Option.String({ required: false });

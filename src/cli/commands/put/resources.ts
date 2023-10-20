@@ -9,7 +9,19 @@ export class PutResourceCommand extends PutCommand {
     category: 'Resources',
     description: 'Create or update a resource',
     examples: [
-      ['Create a resource by using your editor', 'optdctl put versions'],
+      ['Create a resource by using your editor', 'optdctl put <kind>'],
+      [
+        'Create or update a resource by using your editor',
+        'optdctl put <kind>/<name>',
+      ],
+      [
+        'Create or update a resource from a file',
+        'optdctl put <kind> -f <file>',
+      ],
+      [
+        'Create or update a resource from stdin',
+        'cat <file> | optdctl put <kind> -f -',
+      ],
     ],
   });
 
