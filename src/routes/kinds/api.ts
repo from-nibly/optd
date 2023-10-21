@@ -1,7 +1,8 @@
 import Express, { NextFunction, Request, Response, Router } from 'express';
 import st from 'simple-runtypes';
+import { HookRunner } from '../../hooks/runner';
+import { PutKindSchema } from '../../types/kinds';
 import { isPouchDBError } from '../../types/pouchDB';
-import { PutResourceSchema } from '../../types/root';
 import { asyncHandler } from '../../util';
 import { constructResourceDatabase } from '../namespaces/resources/api';
 import { createKind } from './createKind';
@@ -12,6 +13,7 @@ export const createDefinitionRouter = (
   meta: PouchDB.Database<{}>,
   databases: Record<string, PouchDB.Database>,
   app: Express.Express,
+  hookRunner: HookRunner,
 ) => {
   const router = Router();
 
@@ -19,7 +21,7 @@ export const createDefinitionRouter = (
     '/kind/:kind',
     asyncHandler(async (req: Request, res: Response) => {
       const kind = req.params.kind;
-      const putResource = PutResourceSchema(req.body);
+      const putResource = PutKindSchema(req.body);
 
       if (putResource.metadata.rev) {
         const updatedDocument = await updateKind(
@@ -27,6 +29,10 @@ export const createDefinitionRouter = (
           putResource,
           'test user',
           'test message',
+        );
+        hookRunner.configureHooks(
+          putResource.metadata.name,
+          putResource.spec.hooks,
         );
         return res.json(updatedDocument);
       }
@@ -38,7 +44,7 @@ export const createDefinitionRouter = (
         'test message',
       );
 
-      const { db, name, router } = constructResourceDatabase(kind);
+      const { db, name, router } = constructResourceDatabase(kind, hookRunner);
       app.use(`/namespaces`, router);
 
       databases[name] = db;

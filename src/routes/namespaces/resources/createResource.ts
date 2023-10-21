@@ -1,3 +1,4 @@
+import { HookRunner } from '../../../hooks/runner';
 import { PutResource, Resource } from '../../../types/root';
 import {
   convertFromAPI,
@@ -7,6 +8,7 @@ import {
 
 export const createResource = async (
   db: PouchDB.Database,
+  hookRunner: HookRunner,
   namespace: string,
   resource: PutResource,
   user: string,
@@ -14,6 +16,7 @@ export const createResource = async (
 ): Promise<Resource> => {
   const record = convertFromAPI(namespace, resource);
   console.log('creating resource', record);
+  await hookRunner.executeEvent('onCreate', resource);
   const newRecord = {
     ...record,
     history: generateHistory(user, message, null),

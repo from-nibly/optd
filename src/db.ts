@@ -4,6 +4,8 @@ import express, { Request, Response } from 'express';
 import { createDefinitionRouter } from './routes/kinds/api';
 import { constructResourceDatabase } from './routes/namespaces/resources/api';
 import bodyParser from 'body-parser';
+import { HookRunner } from './hooks/runner';
+import { Kind } from './types/kinds';
 
 const dbapp = require('express-pouchdb')({
   mode: 'minimumForPouchDB',
@@ -18,9 +20,16 @@ app.use(bodyParser.json());
 
 const databases: Record<string, PouchDB.Database> = {};
 
-const metaDB = new PouchDB('meta');
+const metaDB = new PouchDB<Kind>('meta');
 
-const definitionRouter = createDefinitionRouter(metaDB, databases, app);
+const hookRunner = new HookRunner();
+
+const definitionRouter = createDefinitionRouter(
+  metaDB,
+  databases,
+  app,
+  hookRunner,
+);
 
 app.use('/meta', definitionRouter);
 
@@ -28,11 +37,16 @@ metaDB
   .allDocs({
     startkey: 'kind/',
     endkey: 'kind/{}',
+    include_docs: true,
   })
   .then(async (docs) => {
     for (const doc of docs.rows) {
       const friendlyName = doc.id.split('/')[1];
-      const { name, db, router } = constructResourceDatabase(friendlyName);
+      const { name, db, router } = constructResourceDatabase(
+        friendlyName,
+        hookRunner,
+      );
+      hookRunner.configureHooks(friendlyName, doc.doc!.spec?.hooks);
       databases[name] = db;
       app.use(`/namespaces`, router);
     }

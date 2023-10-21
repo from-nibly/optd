@@ -8,6 +8,8 @@ import { asyncHandler } from '../../../util';
 import { createResource } from './createResource';
 import { convertFromDatabase } from './serialize';
 import { updateResource } from './updateResource';
+import { HookRunner } from '../../../hooks/runner';
+import { HookSpec } from '../../../types/kinds';
 
 //TODO: refactor api to dynamically select database instance and not require resource kinds as a path param
 //TODO: allow kind and name properties in request body
@@ -22,10 +24,11 @@ interface ResourceDatabase<T extends {}> {
 
 export const constructResourceDatabase = (
   name: string,
+  hookRunner: HookRunner,
 ): ResourceDatabase<any> => {
   const db = new PouchDB<any>('resources_' + name);
 
-  const router = constructResourceRouter(name, db);
+  const router = constructResourceRouter(name, db, hookRunner);
 
   return {
     name,
@@ -37,6 +40,7 @@ export const constructResourceDatabase = (
 export const constructResourceRouter = (
   resourceKind: string,
   db: PouchDB.Database<any>,
+  hookRunner: HookRunner,
 ): Router => {
   const router = Router();
 
@@ -86,6 +90,7 @@ export const constructResourceRouter = (
 
       const createdDocument = await createResource(
         db,
+        hookRunner,
         namespace,
         putDocument,
         //TODO: take message as query param?

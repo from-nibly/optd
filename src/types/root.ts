@@ -1,11 +1,15 @@
 import st from 'simple-runtypes';
 
+/* --------------------------------- Subject -------------------------------- */
+
 export const SubjectSchema = st.record({
   uid: st.string(),
   name: st.string(),
 });
 
 export type Subject = ReturnType<typeof SubjectSchema>;
+
+/* ------------------------------- HistoryData ------------------------------ */
 
 export const HistoryDataSchema = st.record({
   by: st.record(SubjectSchema),
@@ -16,6 +20,8 @@ export const HistoryDataSchema = st.record({
 
 export type HistoryData = ReturnType<typeof HistoryDataSchema>;
 
+/* ----------------------------- PutResourceMeta ---------------------------- */
+
 export const PutResourceMetaSchema = st.record({
   name: st.string(),
   labels: st.optional(st.dictionary(st.string(), st.string())),
@@ -23,6 +29,8 @@ export const PutResourceMetaSchema = st.record({
 });
 
 export type PutResourceMeta = ReturnType<typeof PutResourceMetaSchema>;
+
+/* ------------------------------ ResourceMeta ------------------------------ */
 
 export const ResourceMetaSchema = st.record({
   namespace: st.string(),
@@ -33,6 +41,8 @@ export const ResourceMetaSchema = st.record({
 
 export type ResourceMeta = ReturnType<typeof ResourceMetaSchema>;
 
+/* ------------------------------- PutResource ------------------------------ */
+
 export const PutResourceSchema = st.record({
   metadata: PutResourceMetaSchema,
   spec: st.any(),
@@ -40,6 +50,8 @@ export const PutResourceSchema = st.record({
 });
 
 export type PutResource = ReturnType<typeof PutResourceSchema>;
+
+/* ----------------------------- StoredResource ----------------------------- */
 
 export const StoredResourceSchema = st.record({
   _id: st.string(),
@@ -51,6 +63,8 @@ export const StoredResourceSchema = st.record({
 });
 
 export type StoredResource = ReturnType<typeof StoredResourceSchema>;
+
+/* -------------------------------- Resource; ------------------------------- */
 
 export const ResourceSchema = st.record({
   metadata: ResourceMetaSchema,
