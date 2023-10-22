@@ -39,18 +39,16 @@ export abstract class PutCommand extends Command {
     //TODO: there's no way this is gonna work universally
     const bufferFileName = '/tmp/optdctl-buffer.yaml';
     const bufferFile = Bun.file(bufferFileName);
+    const templateObject = {
+      metadata: {
+        ...(namespace ? { namespace } : {}),
+        name: name ?? '<changeme>',
+        kind,
+      },
+      spec: {},
+    };
 
-    await Bun.write(
-      bufferFileName,
-      stringify({
-        metadata: {
-          ...(namespace ? { namespace } : {}),
-          name: name ?? '<changeme>',
-          kind,
-        },
-        spec: {},
-      }),
-    );
+    await Bun.write(bufferFileName, stringify(templateObject));
 
     const proc = Bun.spawn([editor, bufferFileName], {
       stdout: 'inherit',
@@ -62,7 +60,14 @@ export abstract class PutCommand extends Command {
     const code = await proc.exited;
 
     const output = await bufferFile.text();
+
+    if (stringify(templateObject) == output) {
+      throw new Error('No changes made');
+    }
+
+    const outputObject = parse(output);
+
     //TODO: validation of some kind?
-    return parse(output);
+    return outputObject;
   }
 }
