@@ -45,6 +45,7 @@ export class PutResourceCommand extends PutCommand {
     delete outputObj.metadata.namespace;
     delete outputObj.metadata.kind;
 
+    console.log('updating resource', outputObj);
     const resp = await client
       .url(`/namespaces/${namespace}/${kind}`)
       .json(outputObj)

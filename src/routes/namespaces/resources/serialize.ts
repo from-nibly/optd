@@ -1,10 +1,17 @@
 import { partsFromResourceID, resourceID } from '../../../types/ids';
-import { PutResource, Resource } from '../../../types/root';
+import {
+  CreateResource,
+  HistoryData,
+  Resource,
+  StoredResource,
+} from '../../../types/root';
 
+//TODO: there are multiple forms of Stored Documents. to create, to update, and stored.
 export const convertFromAPI = (
   namespace: string,
-  record: Resource | PutResource,
-) => {
+  //TODO: this seems fishy
+  record: CreateResource & { metadata: { rev?: string } },
+): StoredResource => {
   const { rev, name, ...restMeta } = record.metadata;
   return {
     _id: resourceID(namespace, record.metadata.name),
@@ -15,6 +22,7 @@ export const convertFromAPI = (
     },
     spec: record.spec,
     status: record.status,
+    history: record.history,
   };
 };
 
@@ -36,9 +44,9 @@ export const generateHistory = (
   user: string,
   message: string,
   parentID: string | null,
-) => ({
+): HistoryData => ({
   by: user,
-  at: new Date(),
+  at: new Date().toISOString(),
   message,
   parent: parentID,
 });
