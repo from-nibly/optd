@@ -45,12 +45,22 @@ export class PutResourceCommand extends PutCommand {
     delete outputObj.metadata.namespace;
     delete outputObj.metadata.kind;
 
-    console.log('updating resource', outputObj);
-    const resp = await client
+    await client
       .url(`/namespaces/${namespace}/${kind}`)
       .json(outputObj)
-      .put();
-
-    this.context.stdout.write(stringify(await resp.json()) + '\n');
+      .put()
+      .badRequest((res) => {
+        const resp = res.json;
+        this.context.stdout.write(resp.hook + ' hook failed\n');
+        if (resp.stdout) {
+          this.context.stdout.write('stdout:\n' + resp.stdout);
+        }
+        if (resp.stderr) {
+          this.context.stdout.write('stderr\n' + resp.stderr);
+        }
+      })
+      .res(async (response) => {
+        this.context.stdout.write(stringify(await response.json()) + '\n');
+      });
   }
 }

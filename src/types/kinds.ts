@@ -8,6 +8,7 @@ import {
 /* -------------------------------- HookSpec -------------------------------- */
 export const HookSpecSchema = st.record({
   onCreate: st.optional(st.string()),
+  validate: st.optional(st.string()),
 });
 
 export type HookSpec = ReturnType<typeof HookSpecSchema>;

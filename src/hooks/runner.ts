@@ -1,8 +1,6 @@
-import { stdin } from 'bun';
-import { HookSpec } from '../types/kinds';
-import { CreateResource, Resource } from '../types/root';
-import stream from 'stream';
 import fs from 'node:fs/promises';
+import { HookSpec } from '../types/kinds';
+import { Resource } from '../types/root';
 
 interface HookDatabase {
   [key: string]: HookSpec;
@@ -27,13 +25,16 @@ export class HookRunner {
     }
   }
 
-  async executeEvent(event: keyof HookSpec, record: Resource): Promise<number> {
+  async executeEvent(
+    event: keyof HookSpec,
+    kind: string,
+    record: any,
+  ): Promise<{ stdout: string; stderr: string; code: number }> {
     console.log('executing event', event, record);
-    const kind = record.metadata.kind;
     const script = this.hooks[kind]?.[event];
     if (!script) {
       console.log('no script found for event', event, kind);
-      return -1;
+      return { code: 0, stdout: '', stderr: '' };
     }
 
     const dir = `/tmp/optdctl/hooks/${kind}`;
@@ -43,7 +44,7 @@ export class HookRunner {
     await Bun.write(filename, script);
     await fs.chmod(filename, 0o700);
 
-    const proc = Bun.spawn([filename], { stdin: 'pipe' });
+    const proc = Bun.spawn([filename], { stdin: 'pipe', stderr: 'pipe' });
 
     proc.stdin.write(JSON.stringify(record));
     //TODO: what do these return?
@@ -51,11 +52,25 @@ export class HookRunner {
     await proc.stdin.end();
 
     await proc.exited;
-    console.log(
-      'event fired',
-      proc.exitCode,
-      await Bun.readableStreamToText(proc.stdout),
-    );
-    return proc.exitCode ?? -1;
+    console.log('Event Completed with exit code', proc.exitCode);
+    //TODO: logging framework?
+    let stdout = '';
+    let stderr = '';
+
+    if (proc.stdout) {
+      console.log('checking stdout', proc.stdout);
+      stdout = await Bun.readableStreamToText(proc.stdout);
+    }
+    if (proc.stderr) {
+      console.log('checking stderr', proc.stderr);
+      stderr = await Bun.readableStreamToText(proc.stderr);
+    }
+    console.log(stdout);
+    console.log(stderr);
+    return {
+      code: proc.exitCode ?? -1,
+      stdout,
+      stderr,
+    };
   }
 }

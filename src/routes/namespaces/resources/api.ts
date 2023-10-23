@@ -73,7 +73,19 @@ export const constructResourceRouter = (
     `/:namespace/${resourceKind}`,
     asyncHandler(async (req: Request, res: Response) => {
       console.log('testing', req.body);
-      const putResource = await PutResourceSchema(req.body);
+      const putResource = PutResourceSchema(req.body);
+
+      const hookResult = await hookRunner.executeEvent(
+        `validate`,
+        resourceKind,
+        putResource,
+      );
+      console.log('got result', hookResult);
+
+      if (hookResult.code !== 0) {
+        return res.status(400).json({ ...hookResult, hook: 'validate' });
+      }
+
       const namespace = req.params.namespace;
       if (putResource.metadata.rev) {
         const updatedDocument = await updateResource(
@@ -104,6 +116,7 @@ export const constructResourceRouter = (
   router.patch(
     `/:namespace/${resourceKind}`,
     asyncHandler(async (req: Request, res: Response) => {
+      throw new Error('not implemented');
       //TODO: add patch functionality
     }),
   );

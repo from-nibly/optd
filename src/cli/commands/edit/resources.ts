@@ -2,8 +2,9 @@ import { Command, Option } from 'clipanion';
 import { parse, stringify } from 'yaml';
 import { client } from '../../client';
 import { Resource } from '../../../types/root';
+import { EditCommand } from './root';
 
-export class EditResourceCommand extends Command {
+export class EditResourceCommand extends EditCommand {
   static paths = [['edit'], ['e']];
   static usage = Command.Usage({
     category: 'Resources',
@@ -57,29 +58,5 @@ export class EditResourceCommand extends Command {
       .put();
 
     this.context.stdout.write(stringify(await resp.json()) + '\n');
-  }
-
-  //TODO: what type is this? PutResource?
-  async obtainData(existing: Resource): Promise<any> {
-    const editor = process.env['EDITOR'] ?? 'vi';
-
-    //TODO: there's no way this is gonna work universally
-    const bufferFileName = '/tmp/optdctl-buffer.yaml';
-    const bufferFile = Bun.file(bufferFileName);
-
-    await Bun.write(bufferFileName, stringify(existing));
-
-    const proc = Bun.spawn([editor, bufferFileName], {
-      stdout: 'inherit',
-      stdin: 'inherit',
-      stderr: 'inherit',
-    });
-
-    //TODO: catch errors?
-    await proc.exited;
-
-    const output = await bufferFile.text();
-    //TODO: validation of some kind?
-    return parse(output);
   }
 }

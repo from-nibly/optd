@@ -1,10 +1,5 @@
 import { HookRunner } from '../../../hooks/runner';
-import {
-  CreateResource,
-  PutResource,
-  Resource,
-  ResourceMeta,
-} from '../../../types/root';
+import { CreateResource, PutResource, Resource } from '../../../types/root';
 import {
   convertFromAPI,
   convertFromDatabase,
@@ -32,15 +27,14 @@ export const createResource = async (
   };
 
   const document = convertFromAPI(namespace, toCreateResource);
-  console.log('creating resource', document);
 
   const newRecord = {
     ...document,
   };
-  console.log('executing event', newRecord);
+
   const result = await db.put(newRecord);
   const stored = await db.get(result.id);
   const newResource = convertFromDatabase(stored);
-  await hookRunner.executeEvent('onCreate', newResource);
+  await hookRunner.executeEvent('onCreate', kind, newResource);
   return newResource;
 };
