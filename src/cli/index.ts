@@ -5,6 +5,7 @@ import { EditResourceCommand } from './commands/edit/resources';
 import { GetKindCommand } from './commands/get/kinds';
 import { PutKindCommand } from './commands/put/kinds';
 import { EditKindCommand } from './commands/edit/kinds';
+import { DeleteResourceCommand } from './commands/delete/resources';
 
 const [node, app, ...args] = process.argv;
 
@@ -20,6 +21,7 @@ cli.register(EditResourceCommand);
 cli.register(GetKindCommand);
 cli.register(PutKindCommand);
 cli.register(EditKindCommand);
+cli.register(DeleteResourceCommand);
 
 cli.register(Builtins.HelpCommand);
 cli.register(Builtins.VersionCommand);

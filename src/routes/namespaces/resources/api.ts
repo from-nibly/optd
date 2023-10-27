@@ -117,9 +117,11 @@ export const constructResourceRouter = (
   router.delete(
     `/:namespace/${resourceKind}/:id`,
     asyncHandler(async (req: Request, res: Response) => {
-      const record = await db.get(`${req.params.namespace}/${req.params.id}`);
-      db.remove({ _id: record._id, _rev: record._rev });
-      res.status(200);
+      const record = await db.get(
+        `ns/${req.params.namespace}/${req.params.id}`,
+      );
+      await db.remove({ _id: record._id, _rev: record._rev });
+      res.status(200).end();
     }),
   );
 
