@@ -1,9 +1,20 @@
 import fs from 'node:fs/promises';
 import { HookSpec } from '../types/kinds';
-import { Resource } from '../types/root';
+import { YAMLError } from 'yaml';
 
 interface HookDatabase {
   [key: string]: HookSpec;
+}
+
+export class HookError extends Error {
+  constructor(
+    public hookName: string,
+    public code: number,
+    public stderr: string,
+    public stdout: string,
+  ) {
+    super(`Hook ${hookName} failed`);
+  }
 }
 
 export class HookRunner {
@@ -25,9 +36,10 @@ export class HookRunner {
     }
   }
 
-  async executeEvent(
+  async executeHook(
     event: keyof HookSpec,
     kind: string,
+    //TODO: what kind of type checking do I want here?
     record: any,
   ): Promise<{ stdout: string; stderr: string; code: number }> {
     console.log('executing event', event, record);
@@ -58,19 +70,22 @@ export class HookRunner {
     let stderr = '';
 
     if (proc.stdout) {
-      console.log('checking stdout', proc.stdout);
       stdout = await Bun.readableStreamToText(proc.stdout);
     }
     if (proc.stderr) {
-      console.log('checking stderr', proc.stderr);
       stderr = await Bun.readableStreamToText(proc.stderr);
     }
     console.log(stdout);
     console.log(stderr);
-    return {
+
+    const result = {
       code: proc.exitCode ?? -1,
       stdout,
       stderr,
     };
+    if (result.code !== 0) {
+      throw new HookError(event, result.code, result.stderr, result.stdout);
+    }
+    return result;
   }
 }

@@ -10,8 +10,9 @@ import {
 export const convertFromAPI = (
   namespace: string,
   //TODO: this seems fishy
-  record: CreateResource & { metadata: { rev?: string } },
+  record: any,
 ): StoredResource => {
+  console.log('testing', record);
   const { rev, name, ...restMeta } = record.metadata;
   return {
     _id: resourceID(namespace, record.metadata.name),

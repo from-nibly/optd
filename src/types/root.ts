@@ -64,7 +64,7 @@ export type PutResource = ReturnType<typeof PutResourceSchema>;
 
 export const StoredResourceSchema = st.record({
   _id: st.string(),
-  _rev: st.optional(st.string()),
+  _rev: st.string(),
   metadata: st.omit(ResourceMetaSchema, 'rev', 'name'),
   spec: st.any(),
   status: st.any(),

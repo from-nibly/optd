@@ -56,7 +56,7 @@ export class PutResourceCommand extends PutCommand {
           this.context.stdout.write('stdout:\n' + resp.stdout);
         }
         if (resp.stderr) {
-          this.context.stdout.write('stderr\n' + resp.stderr);
+          this.context.stdout.write('stderr:\n' + resp.stderr);
         }
       })
       .res(async (response) => {

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import PouchDB from 'pouchdb';
 import st from 'simple-runtypes';
-import { HookRunner } from '../../../hooks/runner';
+import { HookError, HookRunner } from '../../../hooks/runner';
 import { resourceID } from '../../../types/ids';
 import { isPouchDBError } from '../../../types/pouchDB';
 import { PutResourceSchema, Resource } from '../../../types/root';
@@ -75,26 +75,19 @@ export const constructResourceRouter = (
       console.log('testing', req.body);
       const putResource = PutResourceSchema(req.body);
 
-      const hookResult = await hookRunner.executeEvent(
-        `validate`,
-        resourceKind,
-        putResource,
-      );
-      console.log('got result', hookResult);
-
-      if (hookResult.code !== 0) {
-        return res.status(400).json({ ...hookResult, hook: 'validate' });
-      }
+      await hookRunner.executeHook(`validate`, resourceKind, putResource);
 
       const namespace = req.params.namespace;
       if (putResource.metadata.rev) {
         const updatedDocument = await updateResource(
           db,
+          hookRunner,
           namespace,
           putResource,
           //TODO: take message as query param?
           'test user',
           'test message',
+          resourceKind,
         );
         return res.json(updatedDocument);
       }
@@ -132,7 +125,19 @@ export const constructResourceRouter = (
 
   router.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.log('handling error', err);
-    if (err instanceof st.RuntypeError) {
+    if (err instanceof HookError) {
+      const resp = {
+        hook: err.hookName,
+        stdout: err.stdout,
+        stderr: err.stderr,
+        code: err.code,
+      };
+      if (err.hookName == 'validate') {
+        res.status(400).json(resp);
+      } else {
+        res.status(500).json(resp);
+      }
+    } else if (err instanceof st.RuntypeError) {
       res.status(400).json(err);
     } else if (isPouchDBError(err)) {
       if (err.status == 409) {

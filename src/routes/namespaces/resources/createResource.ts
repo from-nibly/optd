@@ -35,6 +35,6 @@ export const createResource = async (
   const result = await db.put(newRecord);
   const stored = await db.get(result.id);
   const newResource = convertFromDatabase(stored);
-  await hookRunner.executeEvent('onCreate', kind, newResource);
+  await hookRunner.executeHook('postCreate', kind, newResource);
   return newResource;
 };

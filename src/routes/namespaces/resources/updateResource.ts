@@ -1,3 +1,4 @@
+import { HookRunner } from '../../../hooks/runner';
 import { historyID } from '../../../types/ids';
 import { isPouchDBError } from '../../../types/pouchDB';
 import { PutResource, Resource, StoredResource } from '../../../types/root';
@@ -9,10 +10,12 @@ import {
 
 export const updateResource = async (
   db: PouchDB.Database,
+  hookRunner: HookRunner,
   namespace: string,
   resource: PutResource,
   user: string,
   message: string,
+  kind: string,
 ): Promise<Resource> => {
   const document = convertFromAPI(namespace, resource);
   const existing: StoredResource = await db.get(document._id);
@@ -28,6 +31,8 @@ export const updateResource = async (
   try {
     const res = await db.put(history);
     historyRev = res.rev;
+
+    await hookRunner.executeHook('preUpdate', kind, document);
     const histID = res.id;
 
     const newDocument = {
@@ -35,14 +40,15 @@ export const updateResource = async (
       history: generateHistory(user, message, histID),
     };
     const resourceResult = await db.put(newDocument);
+    await hookRunner.executeHook('postUpdate', kind, document);
     return convertFromDatabase(await db.get(resourceResult.id));
   } catch (e) {
-    if (isPouchDBError(e) && e.status == 409) {
-      if (historyRev && e.docId !== history._id) {
-        db.remove({ _id: history._id, _rev: historyRev });
-        console.log('conflict', e);
-        throw e;
-      }
+    //TODO: validate this
+    console.log('caught error', historyRev, e);
+    if (historyRev) {
+      db.remove({ _id: history._id, _rev: historyRev });
+      console.log('conflict', e);
+      throw e;
     }
     console.log('unkonwn error', e);
     throw e;
