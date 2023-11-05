@@ -1,6 +1,5 @@
 import { HookRunner } from '../../../hooks/runner';
 import { historyID } from '../../../types/ids';
-import { isPouchDBError } from '../../../types/pouchDB';
 import { PutResource, Resource, StoredResource } from '../../../types/root';
 import {
   convertFromAPI,

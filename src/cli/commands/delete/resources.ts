@@ -1,9 +1,8 @@
 import { Command, Option } from 'clipanion';
-import { EditCommand } from './root';
 import { client } from '../../client';
-import inquirer from 'inquirer';
+import { DeleteCommand } from './root';
 
-export class DeleteResourceCommand extends EditCommand {
+export class DeleteResourceCommand extends DeleteCommand {
   static paths = [['delete'], ['d']];
   static usage = Command.Usage({
     category: 'Resources',
@@ -30,20 +29,9 @@ export class DeleteResourceCommand extends EditCommand {
       throw new Error('name is required');
     }
 
-    const confirm: boolean =
-      this.confirm ||
-      (
-        await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'confirm',
-            message: `Are you sure you want to delete ${kind}/${name}?`,
-          },
-        ])
-      ).confirm;
+    const confirm = this.confirmDelete(`${kind}/${name}`);
 
-    if (confirm === false) {
-      this.context.stdout.write('Aborted\n');
+    if (!confirm) {
       return 0;
     }
 

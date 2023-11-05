@@ -4,7 +4,7 @@ import st from 'simple-runtypes';
 import { HookError, HookRunner } from '../../../hooks/runner';
 import { resourceID } from '../../../types/ids';
 import { isPouchDBError } from '../../../types/pouchDB';
-import { PutResourceSchema, Resource } from '../../../types/root';
+import { PutResourceSchema } from '../../../types/root';
 import { asyncHandler } from '../../../util';
 import { createResource } from './createResource';
 import { convertFromDatabase } from './serialize';

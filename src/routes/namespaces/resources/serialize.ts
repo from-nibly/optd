@@ -1,10 +1,5 @@
 import { partsFromResourceID, resourceID } from '../../../types/ids';
-import {
-  CreateResource,
-  HistoryData,
-  Resource,
-  StoredResource,
-} from '../../../types/root';
+import { HistoryData, Resource, StoredResource } from '../../../types/root';
 
 //TODO: there are multiple forms of Stored Documents. to create, to update, and stored.
 export const convertFromAPI = (

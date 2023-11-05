@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 
 const databases: Record<string, PouchDB.Database> = {};
 
-const metaDB = new PouchDB<Kind>('meta');
+const metaDB = new PouchDB<Kind>('./api/db/meta');
 
 const hookRunner = new HookRunner();
 
