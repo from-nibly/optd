@@ -22,7 +22,7 @@ export class EditKindCommand extends EditCommand {
   async execute(): Promise<number | void> {
     let kind = this.kind;
 
-    const existing = await client.url(`/meta/kind/${kind}`).get().json();
+    const existing = await client.url(`/meta/kinds/${kind}`).get().json();
 
     //TODO: type checking?
     const outputObj = await this.obtainData(existing as any);
@@ -38,6 +38,6 @@ export class EditKindCommand extends EditCommand {
 
     const { history, ...rest } = outputObj as Resource;
 
-    await client.url(`/meta/kind/${kind}`).json(rest).put();
+    await client.url(`/meta/kinds/${kind}`).json(rest).put();
   }
 }

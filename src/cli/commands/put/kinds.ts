@@ -46,7 +46,7 @@ export class PutKindCommand extends PutCommand {
     }
 
     const resp = await client
-      .url(`/meta/kind/${outputKind.metadata.name}`)
+      .url(`/meta/kinds/${outputKind.metadata.name}`)
       .json(outputKind)
       .put();
 

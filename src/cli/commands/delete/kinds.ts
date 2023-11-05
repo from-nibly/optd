@@ -26,6 +26,6 @@ export class DeleteKindCommand extends DeleteCommand {
       return 0;
     }
 
-    await client.url(`/meta/kind/${kind}`).delete();
+    await client.url(`/meta/kinds/${kind}`).delete();
   }
 }
