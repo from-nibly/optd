@@ -26,7 +26,10 @@ export class Kind {
   history: History;
 
   constructor(partial: Kind) {
-    Object.assign(this, partial);
+    this.metadata = new GlobalMeta(partial.metadata);
+    this.spec = new KindSpec(partial.spec);
+    this.status = partial.status;
+    this.history = new History(partial.history);
   }
 }
 

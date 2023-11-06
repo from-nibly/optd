@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from 'src/database/databases.service';
 import {
   CreateKindRecord,
   KindRecord,
   UpdateKindRecord,
-} from './kind.types.record';
+} from './kinds.types.record';
 import { History } from 'src/types/types';
 import { isPouchDBError } from 'src/utils.types';
 
@@ -15,12 +15,12 @@ export class KindService {
   constructor(private readonly dbService: DatabaseService) {}
 
   async listKinds(): Promise<KindRecord[]> {
-    const resp = await this.dbService.metaDB.allDocs<KindRecord>({
+    const resp = await this.dbService.metaDB.allDocs({
       startkey: 'kind/',
       endkey: 'kind/{}',
       include_docs: true,
     });
-    return resp.rows.map((r) => r.doc!);
+    return resp.rows.map((r) => new KindRecord(r.doc!));
   }
 
   async getKind(name: string): Promise<KindRecord> {
@@ -90,6 +90,7 @@ export class KindService {
         message,
         parent: null,
       }),
+      status: {},
     };
     const result = await this.dbService.metaDB.put(newRecord);
     return this.dbService.metaDB.get(result.id);

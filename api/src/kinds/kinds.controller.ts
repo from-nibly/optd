@@ -11,9 +11,9 @@ import {
   KindAPIResponse,
   PutKindAPIBody,
   UpdateKindAPIBody,
-} from './kind.types.api';
-import { KindService } from './kind.service';
-import { CreateKindRecord, UpdateKindRecord } from './kind.types.record';
+} from './kinds.types.api';
+import { KindService } from './kinds.service';
+import { CreateKindRecord, UpdateKindRecord } from './kinds.types.record';
 
 @Controller('/meta/kinds')
 @UseInterceptors(ClassSerializerInterceptor)

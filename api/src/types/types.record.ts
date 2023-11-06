@@ -1,4 +1,4 @@
-import { GlobalMeta } from './types';
+import { GlobalMeta, NamespacedMeta } from './types';
 
 export class GlobalMetaRecord extends GlobalMeta {
   constructor(partial: GlobalMetaRecord) {

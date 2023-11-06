@@ -1,6 +1,6 @@
 import { GlobalMetaRecord } from 'src/types/types.record';
-import { CreateKind, Kind, UpdateKind } from './kind.types';
-import { PutKindAPIBody, UpdateKindAPIBody } from './kind.types.api';
+import { CreateKind, Kind, UpdateKind } from './kinds.types';
+import { PutKindAPIBody, UpdateKindAPIBody } from './kinds.types.api';
 
 class Record {
   _rev: string;
@@ -20,6 +20,11 @@ export class KindRecord extends Kind implements Record {
 
   static createID(name: string): string {
     return `kind/${name}`;
+  }
+
+  static splitID(id: string): { name: string } {
+    const [_, name] = id.split('/');
+    return { name };
   }
 }
 

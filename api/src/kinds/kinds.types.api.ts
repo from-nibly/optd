@@ -4,8 +4,8 @@ import {
   PutGlobalMetaApiBody,
   UpdateGlobalMetaApiBody,
 } from 'src/types/types.api';
-import { KindSpec, UpdateKind } from './kind.types';
-import { KindRecord } from './kind.types.record';
+import { KindSpec, UpdateKind } from './kinds.types';
+import { KindRecord } from './kinds.types.record';
 
 export class KindAPIResponse {
   metadata: GlobalMetaApiResponse<'kind'>;
@@ -19,12 +19,11 @@ export class KindAPIResponse {
   }
 
   static fromRecord(record: KindRecord): KindAPIResponse {
-    const [_, name] = record._id.split('/');
     return new KindAPIResponse({
       metadata: GlobalMetaApiResponse.fromRecord(
-        record.metadata ?? {},
+        record.metadata,
         'kind',
-        name,
+        KindRecord.splitID(record._id).name,
         record._rev,
       ),
       spec: record.spec,

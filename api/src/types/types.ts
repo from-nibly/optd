@@ -20,7 +20,7 @@ export class NamespacedMeta extends GlobalMeta {
 
   constructor(partial: NamespacedMeta) {
     super(partial);
-    Object.assign(this, partial);
+    this.namespace = partial.namespace;
   }
 }
 
