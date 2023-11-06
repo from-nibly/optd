@@ -1,62 +1,53 @@
-import { GlobalMetaApiResponse } from 'src/types/api.types';
-import { GlobalMetaRecord, HistoryRecord } from 'src/types/record.types';
+import { GlobalMeta, History, UpdateGlobalMeta } from 'src/types/types';
 
-export class KindAPIResponse {
-  metadata: GlobalMetaApiResponse<'kind'>;
-  spec: any;
-  status: any;
-  history: HistoryRecord;
-
-  constructor(partial: Partial<KindAPIResponse>) {
-    Object.assign(this, partial);
-    this.metadata = new GlobalMetaApiResponse(partial.metadata ?? {});
-  }
-
-  static fromRecord(record: KindRecord): KindAPIResponse {
-    const [_, name] = record._id.split('/');
-    return new KindAPIResponse({
-      metadata: GlobalMetaApiResponse.fromRecord(
-        record.metadata ?? {},
-        'kind',
-        name,
-        record._rev,
-      ),
-      spec: record.spec,
-      status: record.status,
-      history: new HistoryRecord(record.history),
-    });
-  }
-}
-
-export class KindHookSpecRecord {
+export class KindHookSpec {
   postCreate?: string;
   validate?: string;
   postUpdate?: string;
   preUpdate?: string;
 
-  constructor(partial: Partial<KindHookSpecRecord>) {
+  constructor(partial: KindHookSpec) {
     Object.assign(this, partial);
   }
 }
 
-export class KindSpecRecord {
-  hooks: KindHookSpecRecord;
+export class KindSpec {
+  hooks: KindHookSpec;
 
-  constructor(partial: Partial<KindSpecRecord>) {
+  constructor(partial: KindSpec) {
     Object.assign(this, partial);
   }
 }
 
-export class KindRecord {
-  metadata: GlobalMetaRecord;
-  spec: KindHookSpecRecord;
+export class Kind {
+  metadata: GlobalMeta;
+  spec: KindSpec;
   status: any;
-  history: HistoryRecord;
-  _rev: string;
-  _id: string;
+  history: History;
 
-  constructor(partial: Partial<KindRecord>) {
+  constructor(partial: Kind) {
     Object.assign(this, partial);
-    this.metadata = new GlobalMetaRecord(partial.metadata ?? {});
+  }
+}
+
+export class CreateKind {
+  metadata: GlobalMeta;
+  spec: KindSpec;
+
+  constructor(partial: CreateKind) {
+    this.metadata = new GlobalMeta(partial.metadata);
+    this.spec = new KindSpec(partial.spec);
+  }
+}
+
+export class UpdateKind {
+  metadata: UpdateGlobalMeta;
+  spec: KindSpec;
+  status: any;
+
+  constructor(partial: UpdateKind) {
+    this.metadata = new UpdateGlobalMeta(partial.metadata);
+    this.spec = new KindSpec(partial.spec);
+    this.status = partial.status;
   }
 }

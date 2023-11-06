@@ -1,4 +1,4 @@
-import { historyID, historyKindID } from '../../types/ids';
+import { historyKindID } from '../../types/ids';
 import { isPouchDBError } from '../../types/pouchDB';
 import { PutResource, StoredResource } from '../../types/root';
 import { generateHistory } from '../namespaces/resources/serialize';

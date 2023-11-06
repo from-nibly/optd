@@ -1,12 +1,19 @@
 import {
+  Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
+  Put,
   UseInterceptors,
 } from '@nestjs/common';
-import { KindAPIResponse } from './kind.types';
+import {
+  KindAPIResponse,
+  PutKindAPIBody,
+  UpdateKindAPIBody,
+} from './kind.types.api';
 import { KindService } from './kind.service';
+import { CreateKindRecord, UpdateKindRecord } from './kind.types.record';
 
 @Controller('/meta/kinds')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -24,5 +31,34 @@ export class KindController {
   async getKind(@Param('name') name: string): Promise<KindAPIResponse> {
     const record = await this.kindService.getKind(name);
     return KindAPIResponse.fromRecord(record);
+  }
+
+  @Put('/:name')
+  async createKind(
+    @Param('name') kindName: string,
+    @Body() body: PutKindAPIBody | UpdateKindAPIBody,
+  ): Promise<KindAPIResponse> {
+    //TODO: run validate hooks
+    //TODO: be lose with what you accept
+
+    if (UpdateKindAPIBody.isUpdateKindAPIBody(body)) {
+      const record = UpdateKindRecord.fromAPIBody(body, kindName);
+
+      const updated = await this.kindService.updateKind(
+        record,
+        kindName,
+        'test user',
+        'test message',
+      );
+      return KindAPIResponse.fromRecord(updated);
+    }
+
+    const record = CreateKindRecord.fromAPIBody(body, kindName);
+    const created = await this.kindService.createKind(
+      record,
+      'test user',
+      'test message',
+    );
+    return KindAPIResponse.fromRecord(created);
   }
 }
