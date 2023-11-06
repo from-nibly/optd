@@ -19,7 +19,7 @@ export class ResourceRecord extends Resource {
   }
 
   static splitID(id: string): { name: string; namespace: string } {
-    const [_, name, namespace] = id.split('/');
+    const [_, namespace, name] = id.split('/');
     return { name, namespace };
   }
 }

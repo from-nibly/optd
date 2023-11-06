@@ -24,4 +24,15 @@ export class ResourceService {
 
     return resp.rows.map((r) => new ResourceRecord(r.doc!));
   }
+
+  async getResource(
+    namespace: string,
+    resourceKind: string,
+    name: string,
+  ): Promise<ResourceRecord> {
+    const resp = await this.getDatabase(resourceKind).get(
+      ResourceRecord.createID(namespace, name),
+    );
+    return new ResourceRecord(resp);
+  }
 }

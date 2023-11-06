@@ -2,12 +2,12 @@ import { Controller, Get, Logger, Param } from '@nestjs/common';
 import { ResourceService } from './resources.service';
 import { ResourceAPIResponse } from './resources.types.api';
 
-@Controller('/namespaces')
+@Controller('/namespaces/:namespace/:resourceKind/')
 export class ResourceController {
   private readonly logger = new Logger(ResourceController.name);
   constructor(private readonly resourceService: ResourceService) {}
 
-  @Get('/:namespace/:resourceKind/')
+  @Get('/')
   async listResources(
     @Param('namespace') namespace: string,
     @Param('resourceKind') resourceKind: string,
@@ -20,5 +20,20 @@ export class ResourceController {
     return resources.map((r) =>
       ResourceAPIResponse.fromRecord(r, resourceKind),
     );
+  }
+
+  @Get('/:name')
+  async getResource(
+    @Param('namespace') namespace: string,
+    @Param('resourceKind') resourceKind: string,
+    @Param('name') name: string,
+  ): Promise<ResourceAPIResponse> {
+    this.logger.debug(`getting resource ${namespace}/${resourceKind}/${name}`);
+    const resource = await this.resourceService.getResource(
+      namespace,
+      resourceKind,
+      name,
+    );
+    return ResourceAPIResponse.fromRecord(resource, resourceKind);
   }
 }
