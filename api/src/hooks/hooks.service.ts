@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs/promises';
-import { KindHookSpec } from 'src/kinds/kinds.types';
 import { HookableResource } from 'src/resources/resources.types';
 import { HookDatabase, HookError } from './hooks.types';
 import { spawn } from 'child_process';
+import { KindHookSpec } from 'src/meta/kinds/kinds.types';
 
 interface HookResult {
   stdout: string;

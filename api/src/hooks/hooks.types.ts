@@ -1,4 +1,4 @@
-import { KindHookSpec } from 'src/kinds/kinds.types';
+import { KindHookSpec } from 'src/meta/kinds/kinds.types';
 
 export interface HookDatabase {
   [key: string]: KindHookSpec & { rev: string };

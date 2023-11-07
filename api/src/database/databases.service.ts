@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as PouchDB from 'pouchdb';
-import { KindRecord } from 'src/kinds/kinds.types.record';
+import { KindRecord } from 'src/meta/kinds/kinds.types.record';
 import { ResourceRecord } from 'src/resources/resources.types.record';
 import { Optional } from 'src/utils.types';
 
