@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import { HookSpec } from '../types/kinds';
-import { YAMLError } from 'yaml';
 
 interface HookDatabase {
   [key: string]: HookSpec;

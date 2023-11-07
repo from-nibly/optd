@@ -1,10 +1,13 @@
 import { GlobalMeta, History, UpdateGlobalMeta } from 'src/types/types';
 
 export class KindHookSpec {
-  postCreate?: string;
   validate?: string;
-  postUpdate?: string;
+  preCreate?: string;
+  postCreate?: string;
   preUpdate?: string;
+  postUpdate?: string;
+  preDelete?: string;
+  postDelete?: string;
 
   constructor(partial: KindHookSpec) {
     Object.assign(this, partial);

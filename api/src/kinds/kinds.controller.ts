@@ -14,11 +14,15 @@ import {
 } from './kinds.types.api';
 import { KindService } from './kinds.service';
 import { CreateKindRecord, UpdateKindRecord } from './kinds.types.record';
+import { HooksService } from 'src/hooks/hooks.service';
 
 @Controller('/meta/kinds')
 @UseInterceptors(ClassSerializerInterceptor)
 export class KindController {
-  constructor(private readonly kindService: KindService) {}
+  constructor(
+    private readonly kindService: KindService,
+    private readonly hookService: HooksService,
+  ) {}
 
   @Get('/')
   async listKinds(): Promise<KindAPIResponse[]> {
@@ -38,8 +42,9 @@ export class KindController {
     @Param('name') kindName: string,
     @Body() body: PutKindAPIBody | UpdateKindAPIBody,
   ): Promise<KindAPIResponse> {
-    //TODO: run validate hooks
-    //TODO: be lose with what you accept
+    //TODO: be loose with what you accept
+
+    let response: KindAPIResponse | undefined = undefined;
 
     if (UpdateKindAPIBody.isUpdateKindAPIBody(body)) {
       const record = UpdateKindRecord.fromAPIBody(body, kindName);
@@ -49,15 +54,20 @@ export class KindController {
         'test user',
         'test message',
       );
-      return KindAPIResponse.fromRecord(updated);
+
+      response = KindAPIResponse.fromRecord(updated);
+    } else {
+      const record = CreateKindRecord.fromAPIBody(body, kindName);
+      const created = await this.kindService.createKind(
+        record,
+        'test user',
+        'test message',
+      );
+      response = KindAPIResponse.fromRecord(created);
     }
 
-    const record = CreateKindRecord.fromAPIBody(body, kindName);
-    const created = await this.kindService.createKind(
-      record,
-      'test user',
-      'test message',
-    );
-    return KindAPIResponse.fromRecord(created);
+    this.hookService.configureHooks(kindName, body.spec.hooks);
+
+    return response;
   }
 }

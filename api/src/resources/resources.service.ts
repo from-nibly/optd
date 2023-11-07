@@ -7,12 +7,17 @@ import {
 } from './resources.types.record';
 import { History } from 'src/types/types';
 import { isPouchDBError } from 'src/utils.types';
+import { HooksService } from 'src/hooks/hooks.service';
+import { HookError } from 'src/hooks/hooks.types';
 
 @Injectable()
 export class ResourceService {
   private readonly logger = new Logger(ResourceService.name);
 
-  constructor(private readonly dbService: DatabaseService) {}
+  constructor(
+    private readonly dbService: DatabaseService,
+    private readonly hookService: HooksService,
+  ) {}
 
   private getDatabase(resourceKind: string) {
     return this.dbService.getDatabase(resourceKind);
@@ -42,6 +47,13 @@ export class ResourceService {
     return new ResourceRecord(resp);
   }
 
+  async revertHistory(kind: string, id: string, rev: string) {
+    this.getDatabase(kind).remove({
+      _id: id,
+      _rev: rev,
+    });
+  }
+
   async updateResource(
     record: UpdateResourceRecord,
     resourceKind: string,
@@ -65,7 +77,7 @@ export class ResourceService {
       historyRev = res.rev;
       const histID = res.id;
 
-      const newDocument = {
+      const newRecord = {
         ...record,
         history: new History({
           by: username,
@@ -75,19 +87,32 @@ export class ResourceService {
         }),
       };
 
-      const documentResult =
-        await this.getDatabase(resourceKind).put(newDocument);
-      return await this.getDatabase(resourceKind).get(documentResult.id);
+      await this.hookService.executeHook(
+        'preUpdate',
+        resourceKind,
+        newRecord,
+        (err) => this.revertHistory(resourceKind, histID, historyRev!),
+      );
+
+      const recordResult = await this.getDatabase(resourceKind).put(newRecord);
+      const updatedRecord = await this.getDatabase(resourceKind).get(
+        recordResult.id,
+      );
+
+      //TODO: no rollback on postUpdate right?
+      await this.hookService.executeHook(
+        'postUpdate',
+        resourceKind,
+        updatedRecord,
+      );
+
+      return updatedRecord;
     } catch (e) {
       if (isPouchDBError(e)) {
         if (historyRev && e.docId !== history._id) {
-          this.logger.debug(
+          this.logger.error(
             'reverting history document after creation failure',
           );
-          this.getDatabase(resourceKind).remove({
-            _id: history._id,
-            _rev: historyRev,
-          });
 
           throw e;
         }
@@ -113,7 +138,18 @@ export class ResourceService {
       }),
     };
 
+    await this.hookService.executeHook('preCreate', resourceKind, newRecord);
+
     const result = await this.getDatabase(resourceKind).put(newRecord);
-    return this.dbService.metaDB.get(result.id);
+
+    const resultRecord = await this.getDatabase(resourceKind).get(result.id);
+
+    await this.hookService.executeHook(
+      'postCreate',
+      resourceKind,
+      resultRecord,
+    );
+
+    return resultRecord;
   }
 }

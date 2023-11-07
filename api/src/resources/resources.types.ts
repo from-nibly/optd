@@ -1,5 +1,19 @@
 import { GlobalMeta, History, UpdateGlobalMeta } from 'src/types/types';
 
+export class HookableResource {
+  metadata: GlobalMeta;
+  spec: any;
+  status: any;
+  history?: History;
+
+  constructor(partial: Resource) {
+    this.metadata = new GlobalMeta(partial.metadata);
+    this.spec = partial.spec;
+    this.status = partial.status;
+    this.history = partial.history ? new History(partial.history) : undefined;
+  }
+}
+
 export class Resource {
   metadata: GlobalMeta;
   spec: any;

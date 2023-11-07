@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Logger, Param, Put } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Put,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ResourceService } from './resources.service';
 import {
   PutResourceAPIBody,
@@ -9,12 +18,16 @@ import {
   CreateResourceRecord,
   UpdateResourceRecord,
 } from './resources.types.record';
-import { CreateKindRecord } from 'src/kinds/kinds.types.record';
+import { HooksService } from 'src/hooks/hooks.service';
 
 @Controller('/namespaces/:namespace/:resourceKind/')
+@UseInterceptors(ClassSerializerInterceptor)
 export class ResourceController {
   private readonly logger = new Logger(ResourceController.name);
-  constructor(private readonly resourceService: ResourceService) {}
+  constructor(
+    private readonly resourceService: ResourceService,
+    private readonly hookService: HooksService,
+  ) {}
 
   @Get('/')
   async listResources(
@@ -53,6 +66,8 @@ export class ResourceController {
     @Param('name') name: string,
     @Body() body: PutResourceAPIBody | UpdateResourceAPIBody,
   ): Promise<ResourceAPIResponse> {
+    await this.hookService.executeHook('validate', resourceKind, body);
+
     if (UpdateResourceAPIBody.isUpdateResourceAPIBody(body)) {
       const record = UpdateResourceRecord.fromAPIBody(body, namespace, name);
 

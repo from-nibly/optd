@@ -1,11 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from './database/databases.service';
+import { HooksService } from './hooks/hooks.service';
+import * as PouchDB from 'pouchdb';
 
 @Injectable()
 export class AppService {
   private readonly logger = new Logger(AppService.name);
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly hooksService: HooksService,
+  ) {}
 
   async onModuleInit(): Promise<void> {
     const kinds = await this.databaseService.metaDB.allDocs({
@@ -18,7 +23,8 @@ export class AppService {
       const name = doc.id.split('/')[1];
       this.logger.debug(`initializing database ${name}`);
       this.databaseService.initDatabase(name);
-      //Initialize hooks?
+
+      this.hooksService.configureHooks(name, doc.doc!.spec.hooks);
     }
   }
 }
