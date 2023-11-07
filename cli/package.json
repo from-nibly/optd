@@ -20,7 +20,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch ./src/db.ts",
-    "cli": "bun run ./src/cli/index.ts"
+    "cli": "bun run ./src/index.ts"
   },
   "name": "optd",
   "module": "index.ts",

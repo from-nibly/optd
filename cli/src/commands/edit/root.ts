@@ -1,10 +1,9 @@
 import { Command } from 'clipanion';
 import { parse, stringify } from 'yaml';
-import { Resource } from '../../../types/root';
 
 export abstract class EditCommand extends Command {
   //TODO: what type is this? PutResource?
-  async obtainData(existing: Resource): Promise<any> {
+  async obtainData(existing: any): Promise<any> {
     const editor = process.env['EDITOR'] ?? 'vi';
 
     //TODO: there's no way this is gonna work universally

@@ -2,7 +2,6 @@ import { Command, Option } from 'clipanion';
 import { EditCommand } from './root';
 import { client } from '../../client';
 import { stringify } from 'yaml';
-import { Resource } from '../../../types/root';
 
 export class EditKindCommand extends EditCommand {
   static paths = [
@@ -36,7 +35,7 @@ export class EditKindCommand extends EditCommand {
 
     delete outputObj.metadata.kind;
 
-    const { history, ...rest } = outputObj as Resource;
+    const { history, ...rest } = outputObj;
 
     await client.url(`/meta/kinds/${kind}`).json(rest).put();
   }

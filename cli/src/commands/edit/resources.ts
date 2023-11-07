@@ -1,7 +1,6 @@
 import { Command, Option } from 'clipanion';
 import { parse, stringify } from 'yaml';
 import { client } from '../../client';
-import { Resource } from '../../../types/root';
 import { EditCommand } from './root';
 
 export class EditResourceCommand extends EditCommand {
@@ -50,7 +49,7 @@ export class EditResourceCommand extends EditCommand {
     delete outputObj.metadata.namespace;
     delete outputObj.metadata.kind;
 
-    const { history, ...rest } = outputObj as Resource;
+    const { history, ...rest } = outputObj;
 
     await client
       .url(`/namespaces/${namespace}/${kind}/${name}`)
