@@ -1,6 +1,10 @@
-import { NamespacedMetaApiResponse } from 'src/types/types.api';
+import {
+  NamespacedMetaApiResponse,
+  UpdateGlobalMetaApiBody,
+} from 'src/types/types.api';
 import { ResourceRecord } from './resources.types.record';
-import { History } from 'src/types/types';
+import { History, UpdateGlobalMeta } from 'src/types/types';
+import { UpdateResource } from './resources.types';
 
 export class ResourceAPIResponse {
   metadata: NamespacedMetaApiResponse;
@@ -28,5 +32,23 @@ export class ResourceAPIResponse {
       status: record.status,
       history: new History(record.history),
     });
+  }
+}
+
+export class PutResourceAPIBody extends UpdateResource {
+  metadata: NamespacedMetaApiResponse;
+}
+
+export class UpdateResourceAPIBody extends UpdateResource {
+  metadata: UpdateGlobalMetaApiBody;
+
+  constructor(partial: UpdateResourceAPIBody) {
+    super(partial);
+  }
+
+  static isUpdateResourceAPIBody(
+    body: PutResourceAPIBody | UpdateResourceAPIBody,
+  ): body is UpdateResourceAPIBody {
+    return body.metadata.rev !== undefined;
   }
 }

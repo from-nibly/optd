@@ -53,7 +53,7 @@ export class EditResourceCommand extends EditCommand {
     const { history, ...rest } = outputObj as Resource;
 
     await client
-      .url(`/namespaces/${namespace}/${kind}`)
+      .url(`/namespaces/${namespace}/${kind}/${name}`)
       .json(rest)
       .put()
       .badRequest((res) => {

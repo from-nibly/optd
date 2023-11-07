@@ -46,7 +46,7 @@ export class PutResourceCommand extends PutCommand {
     delete outputObj.metadata.kind;
 
     await client
-      .url(`/namespaces/${namespace}/${kind}`)
+      .url(`/namespaces/${namespace}/${kind}/${name}`)
       .json(outputObj)
       .put()
       .badRequest((res) => {

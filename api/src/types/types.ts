@@ -34,7 +34,7 @@ export class History {
     Object.assign(this, partial);
   }
 
-  static createID(name: string, rev: string): string {
-    return `hist/${name}/${rev}/kind`;
+  static createID(name: string, rev: string, kind: string): string {
+    return `hist/${name}/${rev}/${kind}`;
   }
 }

@@ -29,7 +29,6 @@ export class KindService {
 
   async updateKind(
     kind: UpdateKindRecord,
-    name: string,
     user: string,
     message: string,
   ): Promise<KindRecord> {
@@ -37,9 +36,11 @@ export class KindService {
     const existing = await this.dbService.metaDB.get(kind._id);
     const { _rev, ...restExisting } = existing;
 
+    const name = KindRecord.splitID(kind._id).name;
+
     const history = {
       ...restExisting,
-      _id: History.createID(name, _rev),
+      _id: History.createID(name, _rev, 'kind'),
     };
 
     let historyRev: string | undefined;

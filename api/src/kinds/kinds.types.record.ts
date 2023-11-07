@@ -1,11 +1,6 @@
-import { GlobalMetaRecord } from 'src/types/types.record';
+import { GlobalMetaRecord, Record } from 'src/types/types.record';
 import { CreateKind, Kind, UpdateKind } from './kinds.types';
 import { PutKindAPIBody, UpdateKindAPIBody } from './kinds.types.api';
-
-class Record {
-  _rev: string;
-  _id: string;
-}
 
 export class KindRecord extends Kind implements Record {
   _rev: string;

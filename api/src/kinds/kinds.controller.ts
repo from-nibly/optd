@@ -20,7 +20,7 @@ import { CreateKindRecord, UpdateKindRecord } from './kinds.types.record';
 export class KindController {
   constructor(private readonly kindService: KindService) {}
 
-  @Get()
+  @Get('/')
   async listKinds(): Promise<KindAPIResponse[]> {
     const kinds = await this.kindService.listKinds();
 
@@ -46,7 +46,6 @@ export class KindController {
 
       const updated = await this.kindService.updateKind(
         record,
-        kindName,
         'test user',
         'test message',
       );
