@@ -6,14 +6,14 @@ import { Optional } from 'src/utils.types';
 
 @Injectable()
 export class DatabaseService {
-  public readonly metaDB: PouchDB.Database<Optional<KindRecord, '_rev'>>;
+  public readonly kindDB: PouchDB.Database<Optional<KindRecord, '_rev'>>;
   private readonly dynamicDatabases: Record<
     string,
     PouchDB.Database<Optional<ResourceRecord, '_rev'>>
   > = {};
 
   constructor() {
-    this.metaDB = new PouchDB<KindRecord>('./db/meta');
+    this.kindDB = new PouchDB<KindRecord>('./db/meta_kinds');
   }
 
   initDatabase(name: string) {

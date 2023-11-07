@@ -13,7 +13,7 @@ export class AppService {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    const kinds = await this.databaseService.metaDB.allDocs({
+    const kinds = await this.databaseService.kindDB.allDocs({
       startkey: 'kind/',
       endkey: 'kind/{}',
       include_docs: true,

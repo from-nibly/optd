@@ -15,7 +15,7 @@ export class KindService {
   constructor(private readonly dbService: DatabaseService) {}
 
   async listKinds(): Promise<KindRecord[]> {
-    const resp = await this.dbService.metaDB.allDocs({
+    const resp = await this.dbService.kindDB.allDocs({
       startkey: 'kind/',
       endkey: 'kind/{}',
       include_docs: true,
@@ -24,7 +24,7 @@ export class KindService {
   }
 
   async getKind(name: string): Promise<KindRecord> {
-    return await this.dbService.metaDB.get(KindRecord.createID(name));
+    return await this.dbService.kindDB.get(KindRecord.createID(name));
   }
 
   async updateKind(
@@ -33,7 +33,7 @@ export class KindService {
     message: string,
   ): Promise<KindRecord> {
     //history etc
-    const existing = await this.dbService.metaDB.get(kind._id);
+    const existing = await this.dbService.kindDB.get(kind._id);
     const { _rev, ...restExisting } = existing;
 
     const name = KindRecord.splitID(kind._id).name;
@@ -46,7 +46,7 @@ export class KindService {
     let historyRev: string | undefined;
 
     try {
-      const res = await this.dbService.metaDB.put(history);
+      const res = await this.dbService.kindDB.put(history);
       historyRev = res.rev;
       const histID = res.id;
 
@@ -60,15 +60,15 @@ export class KindService {
         }),
       };
 
-      const documentResult = await this.dbService.metaDB.put(newDocument);
-      return await this.dbService.metaDB.get(documentResult.id);
+      const documentResult = await this.dbService.kindDB.put(newDocument);
+      return await this.dbService.kindDB.get(documentResult.id);
     } catch (e) {
       if (isPouchDBError(e)) {
         if (historyRev && e.docId !== history._id) {
           this.logger.debug(
             'reverting history document after creation failure',
           );
-          this.dbService.metaDB.remove({ _id: history._id, _rev: historyRev });
+          this.dbService.kindDB.remove({ _id: history._id, _rev: historyRev });
           throw e;
         }
       }
@@ -93,7 +93,7 @@ export class KindService {
       }),
       status: {},
     };
-    const result = await this.dbService.metaDB.put(newRecord);
-    return this.dbService.metaDB.get(result.id);
+    const result = await this.dbService.kindDB.put(newRecord);
+    return this.dbService.kindDB.get(result.id);
   }
 }
