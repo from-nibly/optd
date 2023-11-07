@@ -1,14 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/database/databases.service';
+import { HooksService } from 'src/hooks/hooks.service';
+import { History } from 'src/types/types';
+import { isPouchDBError } from 'src/utils.types';
 import {
   CreateResourceRecord,
   ResourceRecord,
   UpdateResourceRecord,
 } from './resources.types.record';
-import { History } from 'src/types/types';
-import { isPouchDBError } from 'src/utils.types';
-import { HooksService } from 'src/hooks/hooks.service';
-import { HookError } from 'src/hooks/hooks.types';
 
 @Injectable()
 export class ResourceService {

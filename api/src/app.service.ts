@@ -24,7 +24,13 @@ export class AppService {
       this.logger.debug(`initializing database ${name}`);
       this.databaseService.initDatabase(name);
 
-      this.hooksService.configureHooks(name, doc.doc!.spec.hooks);
+      const kindRecord = doc.doc!;
+
+      this.hooksService.configureHooks(
+        name,
+        kindRecord._rev,
+        kindRecord.spec.hooks,
+      );
     }
   }
 }

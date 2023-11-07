@@ -1,7 +1,7 @@
 import { KindHookSpec } from 'src/kinds/kinds.types';
 
 export interface HookDatabase {
-  [key: string]: KindHookSpec;
+  [key: string]: KindHookSpec & { rev: string };
 }
 
 export class HookError extends Error {

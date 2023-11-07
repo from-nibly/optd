@@ -16,12 +16,10 @@ export class HooksService {
   private readonly logger = new Logger(HooksService.name);
   hooks: HookDatabase = {};
 
-  configureHooks(kind: string, hooks: KindHookSpec) {
+  configureHooks(kind: string, revision: string, hooks: KindHookSpec) {
     this.logger.debug('configuring hooks', kind);
-    this.hooks[kind] ??= {};
-
     //clear old hooks
-    this.hooks[kind] = {};
+    this.hooks[kind] = { rev: revision };
 
     if (hooks) {
       let hook: keyof KindHookSpec;
@@ -56,8 +54,11 @@ export class HooksService {
       const proc = spawn(filename, { stdio: 'pipe' });
       let stdout = '';
       let stderr = '';
+      //TODO: do we need the old version?
+
       proc.stdin.write(JSON.stringify(record));
       proc.stdin.end();
+
       proc.stdout.on('data', (data) => {
         stdout += data;
       });

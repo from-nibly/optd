@@ -66,7 +66,11 @@ export class KindController {
       response = KindAPIResponse.fromRecord(created);
     }
 
-    this.hookService.configureHooks(kindName, body.spec.hooks);
+    this.hookService.configureHooks(
+      kindName,
+      response.metadata.rev,
+      body.spec.hooks,
+    );
 
     return response;
   }
