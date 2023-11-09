@@ -1,7 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, MiddlewareConsumer } from '@nestjs/common';
 import { DatabaseService } from './database/databases.service';
 import { HooksService } from './hooks/hooks.service';
-import * as PouchDB from 'pouchdb';
 
 @Injectable()
 export class AppService {
