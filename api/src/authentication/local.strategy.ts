@@ -12,22 +12,22 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     super();
   }
 
-  async validate(username: string, password: string) {
-    try {
-      const subject = await this.authService.validateSubject(
-        username,
-        password,
-      );
-      if (!subject) {
-        throw new UnauthorizedException();
-      }
-      return subject;
-    } catch (e) {
-      if (isPouchDBError(e)) {
-        this.logger.error(e);
-        throw new UnauthorizedException();
-      }
-      throw e;
-    }
-  }
+  // async validate(username: string, password: string) {
+  //   try {
+  //     const subject = await this.authService.validateSubject(
+  //       username,
+  //       password,
+  //     );
+  //     if (!subject) {
+  //       throw new UnauthorizedException();
+  //     }
+  //     return subject;
+  //   } catch (e) {
+  //     if (isPouchDBError(e)) {
+  //       this.logger.error(e);
+  //       throw new UnauthorizedException();
+  //     }
+  //     throw e;
+  //   }
+  // }
 }

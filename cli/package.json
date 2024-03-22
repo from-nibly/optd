@@ -32,7 +32,9 @@
     "typescript": "^5.0.0"
   },
   "trustedDependencies": [
-    "embedded-postgres",
-    "@embedded-postgres/linux-64"
+    "pouchdb",
+    "pouchdb-server",
+    "leveldown",
+    "node-gyp-build"
   ]
 }

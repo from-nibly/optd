@@ -12,24 +12,21 @@ export class AppService {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    const kinds = await this.databaseService.kindDB.allDocs({
-      startkey: 'kind/',
-      endkey: 'kind/{}',
-      include_docs: true,
-    });
-
-    for (const doc of kinds.rows) {
-      const name = doc.id.split('/')[1];
-      this.logger.debug(`initializing database ${name}`);
-      this.databaseService.initDatabase(name);
-
-      const kindRecord = doc.doc!;
-
-      this.hooksService.configureHooks(
-        name,
-        kindRecord._rev,
-        kindRecord.spec.hooks,
-      );
-    }
+    // const kinds = await this.databaseService.kindDB.allDocs({
+    //   startkey: 'kind/',
+    //   endkey: 'kind/{}',
+    //   include_docs: true,
+    // });
+    // for (const doc of kinds.rows) {
+    //   const name = doc.id.split('/')[1];
+    //   this.logger.debug(`initializing database ${name}`);
+    //   this.databaseService.initDatabase(name);
+    //   const kindRecord = doc.doc!;
+    //   this.hooksService.configureHooks(
+    //     name,
+    //     kindRecord._rev,
+    //     kindRecord.spec.hooks,
+    //   );
+    // }
   }
 }

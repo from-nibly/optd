@@ -1,32 +1,37 @@
 import { Injectable } from '@nestjs/common';
-import * as PouchDB from 'pouchdb';
-import { KindRecord } from 'src/meta/kinds/kinds.types.record';
-import { ResourceRecord } from 'src/resources/resources.types.record';
-import { SubjectRecord } from 'src/subjects/subjects.types.record';
-import { Optional } from 'src/utils.types';
+
+import * as knex from 'knex';
+
+const tableNames = {
+  'kind-tables': 'kind_tables',
+};
+
+type TableName = keyof typeof tableNames;
 
 @Injectable()
 export class DatabaseService {
-  public readonly default: any;
-  public readonly kindDB: PouchDB.Database<Optional<KindRecord, '_rev'>>;
-  public readonly subjectDB: PouchDB.Database<Optional<SubjectRecord, '_rev'>>;
+  private knex: knex.Knex;
 
-  private readonly dynamicDatabases: Record<
-    string,
-    PouchDB.Database<Optional<ResourceRecord, '_rev'>>
-  > = {};
+  constructor() {}
 
-  constructor() {
-    this.default = PouchDB.defaults({ prefix: './db/' });
-    this.kindDB = new this.default('meta_kinds');
-    this.subjectDB = new this.default('meta_subjects');
+  get client() {
+    if (!this.knex) {
+      this.knex = knex({
+        client: 'pg',
+        connection: {
+          host: 'localhost',
+          user: 'optd',
+          password: 'foobar',
+          database: 'optd',
+        },
+      });
+    }
+    return this.knex;
   }
 
-  initDatabase(name: string) {
-    this.dynamicDatabases[name] = new this.default(`resources_${name}`);
-  }
+  async getResourceTables() {}
 
-  getDatabase(name: string) {
-    return this.dynamicDatabases[name];
+  getTableName(key: TableName) {
+    return tableNames[key];
   }
 }

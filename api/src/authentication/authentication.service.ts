@@ -7,24 +7,24 @@ import { SubjectRecord } from 'src/subjects/subjects.types.record';
 export class AuthenticationService {
   constructor(private readonly subjectService: SubjectService) {}
 
-  async validateSubject(
-    username: string,
-    password: string,
-  ): Promise<SubjectRecord | null> {
-    const subject = await this.subjectService.getSubject(username);
+  // async validateSubject(
+  //   username: string,
+  //   password: string,
+  // ): Promise<SubjectRecord | null> {
+  //   const subject = await this.subjectService.getSubject(username);
 
-    const matches = await bcrypt.compare(password, subject.spec.passwordHash!);
-    if (matches) {
-      return subject;
-    }
-    return null;
-  }
+  //   const matches = await bcrypt.compare(password, subject.spec.passwordHash!);
+  //   if (matches) {
+  //     return subject;
+  //   }
+  //   return null;
+  // }
 
-  async login(user: any) {
-    const payload = { username: user.username, sub: user.userId };
+  // async login(user: any) {
+  //   const payload = { username: user.username, sub: user.userId };
 
-    // return {
-    //   access_token: this.jwtService.sign(payload),
-    // };
-  }
+  //   // return {
+  //   //   access_token: this.jwtService.sign(payload),
+  //   // };
+  // }
 }

@@ -7,4 +7,10 @@ import { DatabaseService } from './databases.service';
   providers: [DatabaseService],
   exports: [DatabaseService],
 })
-export class DatabaseModule {}
+export class DatabaseModule {
+  constructor(private readonly db: DatabaseService) {}
+
+  async onModuleInit() {
+    this.db.client(this.db.getTableName('kind-tables')).select('*');
+  }
+}
