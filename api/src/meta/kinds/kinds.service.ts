@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/databases.service';
 import { KindDBRecord } from './kinds.types.record';
 import { Kind } from './kinds.types';
@@ -13,34 +13,25 @@ export class KindService {
     const resp = await this.dbService
       .client('meta_kind')
       .select<KindDBRecord[]>('*');
-    const results = resp.map(
-      (r) =>
-        new Kind({
-          metadata: {
-            name: r.name,
-            labels: r.labels,
-            annotations: r.annotations,
-          },
-          spec: {
-            hooks: r.spec.hooks,
-          },
-          state: r.state,
-          status: r.status,
-          history: {
-            id: r.revision_id,
-            by: r.revision_by,
-            at: r.revision_at,
-            message: r.revision_message,
-            parent: null,
-          },
-        }),
-    );
+    const results = resp.map((r) => Kind.fromDBRecord(r));
     return results;
   }
 
-  // async getKind(name: string): Promise<KindRecord> {
-  //   return await this.dbService.kindDB.get(KindRecord.createID(name));
-  // }
+  async getKind(name: string): Promise<Kind> {
+    const resp = await this.dbService
+      .client('meta_kind')
+      .select<KindDBRecord[]>('*')
+      .where('name', name);
+    //error handling
+    if (resp.length === 0) {
+      throw new NotFoundException(`Kind with name ${name} not found`);
+    }
+    if (resp.length > 1) {
+      this.logger.error(`found multiple kinds with name ${name}, using first`);
+      throw new Error('multiple kinds with same name');
+    }
+    return Kind.fromDBRecord(resp[0]);
+  }
 
   // async updateKind(
   //   kind: UpdateKindRecord,

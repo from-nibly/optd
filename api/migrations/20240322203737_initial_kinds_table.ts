@@ -24,6 +24,7 @@ export async function up(knex: Knex): Promise<void> {
     table.datetime('revision_at', { useTz: true }).notNullable();
     table.string('revision_by', 255).notNullable();
     table.text('revision_message').nullable();
+    table.uuid('revision_parent').notNullable();
   };
 
   await knex.schema.createTable('meta_kind', (table) => {
@@ -34,7 +35,6 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('meta_kind_history', (table) => {
     commonFields(table);
     table.primary(['name', 'namespace', 'revision_id']);
-    table.uuid('revision_parent').notNullable();
     //make sure bugs can't update history?
     //might need to be able to delete history?
     knex.raw('REVOKE UPDATE ON meta_kind_history FROM optd');

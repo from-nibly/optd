@@ -1,4 +1,10 @@
-import { GlobalMeta, GlobalRecord, History } from 'src/types/types';
+import {
+  GlobalMeta,
+  GlobalRecord,
+  History,
+  NonMethodFields,
+} from 'src/types/types';
+import { KindDBRecord } from './kinds.types.record';
 
 export class KindHookSpec {
   validate?: string;
@@ -29,10 +35,32 @@ export class Kind extends GlobalRecord {
   status: any;
   history: History;
 
-  constructor(obj: Kind) {
+  constructor(obj: NonMethodFields<Kind>) {
     super(obj);
     //TODO is this redundant?
     this.spec = new KindSpec(obj.spec);
+  }
+
+  static fromDBRecord(record: KindDBRecord): Kind {
+    return new Kind({
+      metadata: {
+        name: record.name,
+        labels: record.labels,
+        annotations: record.annotations,
+      },
+      spec: {
+        hooks: record.spec.hooks,
+      },
+      state: record.state,
+      status: record.status,
+      history: {
+        id: record.revision_id,
+        by: record.revision_by,
+        at: record.revision_at,
+        message: record.revision_message,
+        parent: null,
+      },
+    });
   }
 }
 

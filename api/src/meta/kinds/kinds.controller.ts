@@ -2,6 +2,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Param,
   UseInterceptors,
 } from '@nestjs/common';
 import { HooksService } from 'src/hooks/hooks.service';
@@ -23,11 +24,11 @@ export class KindController {
     return kinds.map((r) => KindAPIResponse.fromRecord(r));
   }
 
-  // @Get('/:name')
-  // async getKind(@Param('name') name: string): Promise<KindAPIResponse> {
-  //   const record = await this.kindService.getKind(name);
-  //   return KindAPIResponse.fromRecord(record);
-  // }
+  @Get('/:name')
+  async getKind(@Param('name') name: string): Promise<KindAPIResponse> {
+    const record = await this.kindService.getKind(name);
+    return KindAPIResponse.fromRecord(record);
+  }
 
   // @Put('/:name')
   // async createKind(

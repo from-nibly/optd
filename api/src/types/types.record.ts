@@ -10,6 +10,7 @@ export interface DBRecord {
   revision_at: string;
   revision_by: string;
   revision_message?: string;
+  revision_parent: string | null;
 }
 
 export interface DBRecordHistory extends DBRecord {
