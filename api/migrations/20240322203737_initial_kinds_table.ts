@@ -9,8 +9,8 @@ export async function up(knex: Knex): Promise<void> {
       .notNullable();
 
     // unstructured in database
-    table.jsonb('annotations').notNullable();
-    table.jsonb('labels').notNullable();
+    table.jsonb('metadata_annotations').notNullable();
+    table.jsonb('metadata_labels').notNullable();
     table.jsonb('status').notNullable();
 
     //single string to represent current state
@@ -34,6 +34,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('meta_kind_history', (table) => {
     commonFields(table);
     table.primary(['name', 'namespace', 'revision_id']);
+    table.uuid('revision_parent').notNullable();
     //make sure bugs can't update history?
     //might need to be able to delete history?
     knex.raw('REVOKE UPDATE ON meta_kind_history FROM optd');

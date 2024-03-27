@@ -1,12 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/database/databases.service';
-import {
-  CreateKindRecord,
-  KindRecord,
-  UpdateKindRecord,
-} from './kinds.types.record';
-import { History } from 'src/types/types';
-import { isPouchDBError } from 'src/utils.types';
+import { KindDBRecord } from './kinds.types.record';
+import { Kind } from './kinds.types';
 
 @Injectable()
 export class KindService {
@@ -14,14 +9,34 @@ export class KindService {
 
   constructor(private readonly dbService: DatabaseService) {}
 
-  // async listKinds(): Promise<KindRecord[]> {
-  //   const resp = await this.dbService.kindDB.allDocs({
-  //     startkey: 'kind/',
-  //     endkey: 'kind/{}',
-  //     include_docs: true,
-  //   });
-  //   return resp.rows.map((r) => new KindRecord(r.doc!));
-  // }
+  async listKinds(): Promise<Kind[]> {
+    const resp = await this.dbService
+      .client('meta_kind')
+      .select<KindDBRecord[]>('*');
+    const results = resp.map(
+      (r) =>
+        new Kind({
+          metadata: {
+            name: r.name,
+            labels: r.labels,
+            annotations: r.annotations,
+          },
+          spec: {
+            hooks: r.spec.hooks,
+          },
+          state: r.state,
+          status: r.status,
+          history: {
+            id: r.revision_id,
+            by: r.revision_by,
+            at: r.revision_at,
+            message: r.revision_message,
+            parent: null,
+          },
+        }),
+    );
+    return results;
+  }
 
   // async getKind(name: string): Promise<KindRecord> {
   //   return await this.dbService.kindDB.get(KindRecord.createID(name));

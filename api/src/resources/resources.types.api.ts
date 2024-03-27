@@ -3,7 +3,7 @@ import {
   UpdateGlobalMetaApiBody,
 } from 'src/types/types.api';
 import { ResourceRecord } from './resources.types.record';
-import { History, UpdateGlobalMeta } from 'src/types/types';
+import { History } from 'src/types/types';
 import { UpdateResource } from './resources.types';
 
 export class ResourceAPIResponse {
@@ -26,7 +26,6 @@ export class ResourceAPIResponse {
         kind,
         name: ResourceRecord.splitID(record._id).name,
         namespace: ResourceRecord.splitID(record._id).namespace,
-        rev: record._rev,
       },
       spec: record.spec,
       status: record.status,
@@ -49,6 +48,6 @@ export class UpdateResourceAPIBody extends UpdateResource {
   static isUpdateResourceAPIBody(
     body: PutResourceAPIBody | UpdateResourceAPIBody,
   ): body is UpdateResourceAPIBody {
-    return body.metadata.rev !== undefined;
+    return false;
   }
 }

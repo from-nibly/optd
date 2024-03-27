@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
 import * as knex from 'knex';
+import { addAbortSignal } from 'stream';
 
 const tableNames = {
-  'kind-tables': 'kind_tables',
+  'kind-tables': {
+    name: 'meta_kind',
+    history: 'meta_kind_history',
+  },
 };
 
 type TableName = keyof typeof tableNames;
@@ -29,7 +33,7 @@ export class DatabaseService {
     return this.knex;
   }
 
-  async getResourceTables() {}
+  async getKindTables() {}
 
   getTableName(key: TableName) {
     return tableNames[key];

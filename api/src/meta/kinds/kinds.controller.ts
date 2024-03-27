@@ -1,20 +1,12 @@
 import {
-  Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
-  Param,
-  Put,
   UseInterceptors,
 } from '@nestjs/common';
-import {
-  KindAPIResponse,
-  PutKindAPIBody,
-  UpdateKindAPIBody,
-} from './kinds.types.api';
-import { KindService } from './kinds.service';
-import { CreateKindRecord, UpdateKindRecord } from './kinds.types.record';
 import { HooksService } from 'src/hooks/hooks.service';
+import { KindService } from './kinds.service';
+import { KindAPIResponse } from './kinds.types.api';
 
 @Controller('/meta/kinds')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -24,12 +16,12 @@ export class KindController {
     private readonly hookService: HooksService,
   ) {}
 
-  // @Get('/')
-  // async listKinds(): Promise<KindAPIResponse[]> {
-  //   const kinds = await this.kindService.listKinds();
+  @Get('/')
+  async listKinds(): Promise<KindAPIResponse[]> {
+    const kinds = await this.kindService.listKinds();
 
-  //   return kinds.map((r) => KindAPIResponse.fromRecord(r));
-  // }
+    return kinds.map((r) => KindAPIResponse.fromRecord(r));
+  }
 
   // @Get('/:name')
   // async getKind(@Param('name') name: string): Promise<KindAPIResponse> {

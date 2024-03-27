@@ -1,17 +1,12 @@
 export class GlobalMeta {
+  name: string;
   labels: Record<string, string>;
+  annotations: Record<string, string>;
 
-  constructor(partial: GlobalMeta) {
-    this.labels = partial.labels;
-  }
-}
-
-export class UpdateGlobalMeta extends GlobalMeta {
-  rev?: string;
-
-  constructor(partial: UpdateGlobalMeta) {
-    super(partial);
-    this.rev = partial.rev;
+  constructor(obj: GlobalMeta) {
+    this.labels = obj.labels;
+    this.name = obj.name;
+    this.annotations = obj.annotations;
   }
 }
 
@@ -25,16 +20,45 @@ export class NamespacedMeta extends GlobalMeta {
 }
 
 export class History {
+  id: string;
   by: string;
   at: string;
-  message: string;
+  message?: string;
   parent: string | null;
 
   constructor(partial: History) {
     Object.assign(this, partial);
   }
+}
 
-  static createID(name: string, rev: string, kind: string): string {
-    return `hist/${name}/${rev}/${kind}`;
+export class GlobalRecord {
+  metadata: GlobalMeta;
+  spec: any;
+  status: any;
+  state: string;
+  history: History;
+
+  constructor(obj: GlobalRecord) {
+    this.metadata = new GlobalMeta(obj.metadata);
+    this.spec = obj.spec;
+    this.status = obj.status;
+    this.state = obj.state;
+    this.history = new History(obj.history);
+  }
+}
+
+export class NamespacedRecord {
+  metadata: NamespacedMeta;
+  spec: any;
+  status: any;
+  state: string;
+  history: History;
+
+  constructor(obj: NamespacedRecord) {
+    this.metadata = obj.metadata;
+    this.spec = obj.spec;
+    this.status = obj.status;
+    this.state = obj.state;
+    this.history = obj.history;
   }
 }

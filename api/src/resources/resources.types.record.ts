@@ -1,19 +1,20 @@
-import { GlobalMetaRecord, Record } from 'src/types/types.record';
+import { DBRecord } from 'src/types/types.record';
 import { CreateResource, Resource, UpdateResource } from './resources.types';
 import {
   PutResourceAPIBody,
   UpdateResourceAPIBody,
 } from './resources.types.api';
+import { GlobalMeta } from 'src/types/types';
 
 //TODO: implements record
 export class ResourceRecord extends Resource {
-  metadata: GlobalMetaRecord;
+  metadata: GlobalMeta;
   _rev: string;
   _id: string;
 
   constructor(partial: ResourceRecord) {
     super(partial);
-    this.metadata = new GlobalMetaRecord(partial.metadata);
+    this.metadata = new GlobalMeta(partial.metadata);
     this._id = partial._id;
     this._rev = partial._rev;
   }
@@ -42,8 +43,10 @@ export class CreateResourceRecord extends CreateResource {
     name: string,
   ): CreateResourceRecord {
     return new CreateResourceRecord({
-      metadata: new GlobalMetaRecord({
+      metadata: new GlobalMeta({
         labels: body.metadata.labels,
+        annotations: body.metadata.annotations,
+        name: body.metadata.name,
       }),
       _id: ResourceRecord.createID(namespace, name),
       spec: body.spec,
@@ -52,15 +55,10 @@ export class CreateResourceRecord extends CreateResource {
   }
 }
 
-export class UpdateResourceRecord extends UpdateResource implements Record {
-  _rev: string;
-  _id: string;
-
+export class UpdateResourceRecord extends UpdateResource {
   //TODO: update kind record should have specific things be made optional
   constructor(partial: UpdateResourceRecord) {
     super(partial);
-    this._id = partial._id;
-    this._rev = partial._rev;
   }
 
   static fromAPIBody(
@@ -69,11 +67,11 @@ export class UpdateResourceRecord extends UpdateResource implements Record {
     name: string,
   ): UpdateResourceRecord {
     return new UpdateResourceRecord({
-      metadata: new GlobalMetaRecord({
+      metadata: new GlobalMeta({
         labels: body.metadata.labels,
+        annotations: body.metadata.annotations,
+        name: body.metadata.name,
       }),
-      _id: ResourceRecord.createID(namespace, name),
-      _rev: body.metadata.rev,
       spec: body.spec,
       status: body.status,
     });

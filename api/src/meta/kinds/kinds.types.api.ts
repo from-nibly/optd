@@ -4,45 +4,39 @@ import {
   PutGlobalMetaApiBody,
   UpdateGlobalMetaApiBody,
 } from 'src/types/types.api';
-import { KindSpec, UpdateKind } from './kinds.types';
-import { KindRecord } from './kinds.types.record';
+import { Kind, KindSpec } from './kinds.types';
 
 export class KindAPIResponse {
-  metadata: GlobalMetaApiResponse<'kind'>;
+  metadata: GlobalMetaApiResponse<'Kind'>;
   spec: KindSpec;
   status: any;
   history: History;
+  state: string;
 
   constructor(partial: KindAPIResponse) {
     Object.assign(this, partial);
     this.metadata = new GlobalMetaApiResponse(partial.metadata);
   }
 
-  static fromRecord(record: KindRecord): KindAPIResponse {
+  static fromRecord(record: Kind): KindAPIResponse {
     return new KindAPIResponse({
-      metadata: GlobalMetaApiResponse.fromRecord(
-        record.metadata,
-        'kind',
-        KindRecord.splitID(record._id).name,
-        record._rev,
-      ),
+      metadata: GlobalMetaApiResponse.fromRecord(record.metadata, 'Kind'),
       spec: record.spec,
       status: record.status,
       history: new History(record.history),
+      state: record.state,
     });
   }
 }
 
-export class PutKindAPIBody extends UpdateKind {
+export class PutKindAPIBody {
   metadata: PutGlobalMetaApiBody;
 }
 
-export class UpdateKindAPIBody extends UpdateKind {
+export class UpdateKindAPIBody {
   metadata: UpdateGlobalMetaApiBody;
 
-  constructor(partial: UpdateKindAPIBody) {
-    super(partial);
-  }
+  constructor(partial: UpdateKindAPIBody) {}
 
   static isUpdateKindAPIBody(
     body: PutKindAPIBody | UpdateKindAPIBody,

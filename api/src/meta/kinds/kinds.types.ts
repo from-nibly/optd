@@ -1,4 +1,4 @@
-import { GlobalMeta, History, UpdateGlobalMeta } from 'src/types/types';
+import { GlobalMeta, GlobalRecord, History } from 'src/types/types';
 
 export class KindHookSpec {
   validate?: string;
@@ -17,43 +17,43 @@ export class KindHookSpec {
 export class KindSpec {
   hooks: KindHookSpec;
 
-  constructor(partial: KindSpec) {
-    Object.assign(this, partial);
+  constructor(obj: KindSpec) {
+    //TODO better validation?
+    Object.assign(this, obj);
   }
 }
 
-export class Kind {
+export class Kind extends GlobalRecord {
   metadata: GlobalMeta;
   spec: KindSpec;
   status: any;
   history: History;
 
-  constructor(partial: Kind) {
-    this.metadata = new GlobalMeta(partial.metadata);
-    this.spec = new KindSpec(partial.spec);
-    this.status = partial.status;
-    this.history = new History(partial.history);
+  constructor(obj: Kind) {
+    super(obj);
+    //TODO is this redundant?
+    this.spec = new KindSpec(obj.spec);
   }
 }
 
-export class CreateKind {
-  metadata: GlobalMeta;
-  spec: KindSpec;
+// export class CreateKind {
+//   metadata: GlobalMeta;
+//   spec: KindSpec;
 
-  constructor(partial: CreateKind) {
-    this.metadata = new GlobalMeta(partial.metadata);
-    this.spec = new KindSpec(partial.spec);
-  }
-}
+//   constructor(partial: CreateKind) {
+//     this.metadata = new GlobalMeta(partial.metadata);
+//     this.spec = new KindSpec(partial.spec);
+//   }
+// }
 
-export class UpdateKind {
-  metadata: UpdateGlobalMeta;
-  spec: KindSpec;
-  status: any;
+// export class UpdateKind {
+//   metadata: UpdateGlobalMeta;
+//   spec: KindSpec;
+//   status: any;
 
-  constructor(partial: UpdateKind) {
-    this.metadata = new UpdateGlobalMeta(partial.metadata);
-    this.spec = new KindSpec(partial.spec);
-    this.status = partial.status;
-  }
-}
+//   constructor(partial: UpdateKind) {
+//     this.metadata = new UpdateGlobalMeta(partial.metadata);
+//     this.spec = new KindSpec(partial.spec);
+//     this.status = partial.status;
+//   }
+// }

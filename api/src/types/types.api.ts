@@ -1,31 +1,25 @@
 import { GlobalMeta } from './types';
-import { GlobalMetaRecord } from './types.record';
 
 export class GlobalMetaApiResponse<
   K extends string = string,
 > extends GlobalMeta {
   kind: K;
-  name: string;
-  rev: string;
 
   constructor(partial: GlobalMetaApiResponse<K>) {
     super(partial);
     this.kind = partial.kind;
     this.name = partial.name;
-    this.rev = partial.rev;
   }
 
   static fromRecord<K extends string = string>(
-    record: GlobalMetaRecord,
+    metadata: GlobalMeta,
     kind: K,
-    name: string,
-    rev: string,
   ): GlobalMetaApiResponse<K> {
     return new GlobalMetaApiResponse({
       kind: kind,
-      name: name,
-      labels: record.labels,
-      rev: rev,
+      name: metadata.name,
+      labels: metadata.labels,
+      annotations: metadata.annotations,
     });
   }
 }

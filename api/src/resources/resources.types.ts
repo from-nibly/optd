@@ -1,4 +1,4 @@
-import { GlobalMeta, History, UpdateGlobalMeta } from 'src/types/types';
+import { GlobalMeta, History } from 'src/types/types';
 
 export class HookableResource {
   metadata: GlobalMeta;
@@ -29,12 +29,12 @@ export class Resource {
 }
 
 export class UpdateResource {
-  metadata: UpdateGlobalMeta;
+  metadata: GlobalMeta;
   spec: any;
   status: any;
 
   constructor(partial: UpdateResource) {
-    this.metadata = new UpdateGlobalMeta(partial.metadata);
+    this.metadata = new GlobalMeta(partial.metadata);
     this.spec = partial.spec;
     this.status = partial.status;
   }
