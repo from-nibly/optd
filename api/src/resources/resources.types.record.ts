@@ -6,7 +6,6 @@ import {
 } from './resources.types.api';
 import { GlobalMeta } from 'src/types/types';
 
-//TODO: implements record
 export class ResourceRecord extends Resource {
   metadata: GlobalMeta;
   _rev: string;
@@ -56,7 +55,6 @@ export class CreateResourceRecord extends CreateResource {
 }
 
 export class UpdateResourceRecord extends UpdateResource {
-  //TODO: update kind record should have specific things be made optional
   constructor(partial: UpdateResourceRecord) {
     super(partial);
   }

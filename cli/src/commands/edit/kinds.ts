@@ -35,8 +35,6 @@ export class EditKindCommand extends EditCommand {
 
     delete outputObj.metadata.kind;
 
-    const { history, ...rest } = outputObj;
-
-    await client.url(`/meta/kinds/${kind}`).json(rest).put();
+    await client.url(`/meta/kinds/${kind}`).json(outputObj).put();
   }
 }

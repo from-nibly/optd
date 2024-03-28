@@ -1,10 +1,13 @@
 import {
   CreateGlobalMeta,
   CreateGlobalRecord,
+  GlobalMeta,
   GlobalRecord,
+  History,
   NonMethodFields,
+  UserContext,
 } from 'src/types/types';
-import { PutKindAPIBody } from './kinds.types.api';
+import { PutKindAPIBody, UpdateKindAPIBody } from './kinds.types.api';
 import { KindDBRecord } from './kinds.types.record';
 
 export class KindHookSpec {
@@ -35,12 +38,10 @@ export class Kind extends GlobalRecord {
 
   constructor(obj: NonMethodFields<Kind>) {
     super(obj);
-    //TODO is this redundant?
     this.spec = new KindSpec(obj.spec);
   }
 
   static fromDBRecord(record: KindDBRecord): Kind {
-    console.log('fromDBRecord', record);
     return new Kind({
       metadata: {
         name: record.name,
@@ -57,7 +58,7 @@ export class Kind extends GlobalRecord {
         by: record.revision_by,
         at: record.revision_at,
         message: record.revision_message,
-        parent: null,
+        parent: record.revision_parent,
       },
     });
   }
@@ -82,14 +83,32 @@ export class CreateKind extends CreateGlobalRecord {
   }
 }
 
-// export class UpdateKind {
-//   metadata: UpdateGlobalMeta;
-//   spec: KindSpec;
-//   status: any;
+export class UpdateKind {
+  metadata: GlobalMeta;
+  spec: KindSpec;
+  status: any;
+  state: string;
+  history: Pick<History, 'id'>;
 
-//   constructor(partial: UpdateKind) {
-//     this.metadata = new UpdateGlobalMeta(partial.metadata);
-//     this.spec = new KindSpec(partial.spec);
-//     this.status = partial.status;
-//   }
-// }
+  constructor(partial: UpdateKind) {
+    this.metadata = new GlobalMeta(partial.metadata);
+    this.spec = new KindSpec(partial.spec);
+    this.status = partial.status;
+    this.state = partial.state;
+    this.history = partial.history;
+  }
+
+  static fromApiRequest(request: UpdateKindAPIBody): UpdateKind {
+    return new UpdateKind({
+      metadata: request.metadata,
+      spec: {
+        hooks: request.spec.hooks ?? {},
+      },
+      state: request.state,
+      status: request.status,
+      history: {
+        id: request.history.id,
+      },
+    });
+  }
+}

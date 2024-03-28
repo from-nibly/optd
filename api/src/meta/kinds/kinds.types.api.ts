@@ -5,6 +5,7 @@ import {
   UpdateGlobalMetaApiBody,
 } from 'src/types/types.api';
 import { Kind, KindSpec } from './kinds.types';
+import { Global } from '@nestjs/common';
 
 export class KindAPIResponse {
   metadata: GlobalMetaApiResponse<'Kind'>;
@@ -31,7 +32,7 @@ export class KindAPIResponse {
 
 export class PutKindAPIBody {
   metadata: PutGlobalMetaApiBody;
-  //TODO: better valuation of spec
+  //TODO: better validation of spec
   spec: Partial<KindSpec>;
   status?: any;
   state: string;
@@ -39,9 +40,20 @@ export class PutKindAPIBody {
 
 export class UpdateKindAPIBody {
   metadata: UpdateGlobalMetaApiBody;
-  constructor(partial: UpdateKindAPIBody) {}
+  spec: Partial<KindSpec>;
+  status?: any;
+  state: string;
+  history: Pick<History, 'id'>;
+
+  constructor(partial: UpdateKindAPIBody) {
+    Object.assign(this, partial);
+    this.metadata = new GlobalMetaApiResponse(partial.metadata);
+    //only take the id from the history. this is required for the update
+    this.history = { id: partial.history.id };
+  }
 
   static isUpdateKindAPIBody(body: any): body is UpdateKindAPIBody {
-    return false;
+    console.log('testing', body);
+    return body.history?.id !== undefined;
   }
 }

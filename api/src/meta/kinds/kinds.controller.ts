@@ -3,6 +3,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Logger,
   Param,
   Put,
   UseInterceptors,
@@ -14,11 +15,14 @@ import {
   PutKindAPIBody,
   UpdateKindAPIBody,
 } from './kinds.types.api';
-import { CreateKind } from './kinds.types';
+import { CreateKind, UpdateKind } from './kinds.types';
+import { UserContext } from 'src/types/types';
 
 @Controller('/meta/kinds')
 @UseInterceptors(ClassSerializerInterceptor)
 export class KindController {
+  private readonly logger = new Logger(KindController.name);
+
   constructor(
     private readonly kindService: KindService,
     private readonly hookService: HooksService,
@@ -46,17 +50,18 @@ export class KindController {
 
     let response: KindAPIResponse | undefined = undefined;
 
+    this.logger.log('got body', body);
     if (UpdateKindAPIBody.isUpdateKindAPIBody(body)) {
-      // const record = UpdateKindRecord.fromAPIBody(body, kindName);
+      const record = UpdateKind.fromApiRequest(body);
+      this.logger.log('got record', { record });
 
-      // const updated = await this.kindService.updateKind(
-      //   record,
-      //   'test user',
-      //   'test message',
-      // );
+      const updated = await this.kindService.updateKind(
+        record,
+        'test user',
+        'test message',
+      );
 
-      // response = KindAPIResponse.fromRecord(updated);
-      response = {} as KindAPIResponse;
+      response = KindAPIResponse.fromRecord(updated);
     } else {
       const record = CreateKind.fromApiRequest(body);
       const created = await this.kindService.createKind(
