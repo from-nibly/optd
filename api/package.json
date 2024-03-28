@@ -34,7 +34,8 @@
     "pouchdb": "^8.0.1",
     "pouchdb-server": "^4.2.0",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
@@ -47,6 +48,7 @@
     "@types/passport-local": "^1.0.38",
     "@types/pouchdb": "^6.4.2",
     "@types/supertest": "^2.0.12",
+    "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.42.0",

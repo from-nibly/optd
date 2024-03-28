@@ -25,11 +25,10 @@ export class GlobalMetaApiResponse<
 }
 
 export class PutGlobalMetaApiBody extends GlobalMeta {
-  rev?: string;
-
+  kind: string;
   constructor(partial: PutGlobalMetaApiBody) {
     super(partial);
-    this.rev = partial.rev;
+    this.kind = partial.kind;
   }
 }
 

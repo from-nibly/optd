@@ -1,9 +1,10 @@
 import {
-  GlobalMeta,
+  CreateGlobalMeta,
+  CreateGlobalRecord,
   GlobalRecord,
-  History,
   NonMethodFields,
 } from 'src/types/types';
+import { PutKindAPIBody } from './kinds.types.api';
 import { KindDBRecord } from './kinds.types.record';
 
 export class KindHookSpec {
@@ -23,17 +24,14 @@ export class KindHookSpec {
 export class KindSpec {
   hooks: KindHookSpec;
 
-  constructor(obj: KindSpec) {
+  constructor(obj: Partial<KindSpec>) {
     //TODO better validation?
-    Object.assign(this, obj);
+    this.hooks = obj.hooks ?? {};
   }
 }
 
 export class Kind extends GlobalRecord {
-  metadata: GlobalMeta;
   spec: KindSpec;
-  status: any;
-  history: History;
 
   constructor(obj: NonMethodFields<Kind>) {
     super(obj);
@@ -42,11 +40,12 @@ export class Kind extends GlobalRecord {
   }
 
   static fromDBRecord(record: KindDBRecord): Kind {
+    console.log('fromDBRecord', record);
     return new Kind({
       metadata: {
         name: record.name,
-        labels: record.labels,
-        annotations: record.annotations,
+        labels: record.metadata_labels,
+        annotations: record.metadata_annotations,
       },
       spec: {
         hooks: record.spec.hooks,
@@ -64,15 +63,24 @@ export class Kind extends GlobalRecord {
   }
 }
 
-// export class CreateKind {
-//   metadata: GlobalMeta;
-//   spec: KindSpec;
+export class CreateKind extends CreateGlobalRecord {
+  constructor(partial: CreateKind) {
+    super(partial);
+    this.metadata = new CreateGlobalMeta(partial.metadata);
+    this.spec = new KindSpec(partial.spec ?? {});
+    this.state = 'pending';
+    this.status = partial.status ?? {};
+  }
 
-//   constructor(partial: CreateKind) {
-//     this.metadata = new GlobalMeta(partial.metadata);
-//     this.spec = new KindSpec(partial.spec);
-//   }
-// }
+  static fromApiRequest(request: PutKindAPIBody): CreateKind {
+    return new CreateKind({
+      metadata: request.metadata,
+      spec: request.spec,
+      state: 'pending',
+      status: request.status,
+    });
+  }
+}
 
 // export class UpdateKind {
 //   metadata: UpdateGlobalMeta;

@@ -31,16 +31,17 @@ export class KindAPIResponse {
 
 export class PutKindAPIBody {
   metadata: PutGlobalMetaApiBody;
+  //TODO: better valuation of spec
+  spec: Partial<KindSpec>;
+  status?: any;
+  state: string;
 }
 
 export class UpdateKindAPIBody {
   metadata: UpdateGlobalMetaApiBody;
-
   constructor(partial: UpdateKindAPIBody) {}
 
-  static isUpdateKindAPIBody(
-    body: PutKindAPIBody | UpdateKindAPIBody,
-  ): body is UpdateKindAPIBody {
-    return body.metadata.rev !== undefined;
+  static isUpdateKindAPIBody(body: any): body is UpdateKindAPIBody {
+    return false;
   }
 }

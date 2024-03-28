@@ -1,4 +1,4 @@
-import { DBRecord } from 'src/types/types.record';
+import { GlobalDBRecord } from 'src/types/types.record';
 import { CreateResource, Resource, UpdateResource } from './resources.types';
 import {
   PutResourceAPIBody,

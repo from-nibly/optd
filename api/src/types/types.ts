@@ -9,9 +9,21 @@ export class GlobalMeta {
   annotations: Record<string, string>;
 
   constructor(obj: GlobalMeta) {
-    this.labels = obj.labels;
     this.name = obj.name;
+    this.labels = obj.labels;
     this.annotations = obj.annotations;
+  }
+}
+
+export class CreateGlobalMeta {
+  name: string;
+  labels?: Record<string, string>;
+  annotations?: Record<string, string>;
+
+  constructor(partial: CreateGlobalMeta) {
+    this.name = partial.name;
+    this.labels = partial.labels;
+    this.annotations = partial.annotations;
   }
 }
 
@@ -31,8 +43,11 @@ export class History {
   message?: string;
   parent: string | null;
 
-  constructor(partial: NonMethodFields<History>) {
-    Object.assign(this, partial);
+  constructor(obj: NonMethodFields<Exclude<History, 'at'>>) {
+    this.id = obj.id;
+    this.by = obj.by;
+    this.message = obj.message;
+    this.parent = obj.parent;
   }
 }
 
@@ -52,6 +67,20 @@ export class GlobalRecord {
   }
 }
 
+export class CreateGlobalRecord {
+  metadata: CreateGlobalMeta;
+  spec?: any;
+  status?: any;
+  state: 'pending';
+
+  constructor(partial: CreateGlobalRecord) {
+    this.metadata = new CreateGlobalMeta(partial.metadata);
+    this.spec = partial.spec;
+    this.status = partial.status;
+    this.state = partial.state;
+  }
+}
+
 export class NamespacedRecord {
   metadata: NamespacedMeta;
   spec: any;
@@ -65,5 +94,13 @@ export class NamespacedRecord {
     this.status = obj.status;
     this.state = obj.state;
     this.history = obj.history;
+  }
+}
+
+export class UserContext {
+  username: string;
+
+  constructor(username: string) {
+    this.username = username;
   }
 }

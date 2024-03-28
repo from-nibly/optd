@@ -1,7 +1,8 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/databases.service';
-import { KindDBRecord } from './kinds.types.record';
-import { Kind } from './kinds.types';
+import { KindDBRecord, fromCreateRecord } from './kinds.types.record';
+import { CreateKind, Kind } from './kinds.types';
+import { UserContext } from 'src/types/types';
 
 @Injectable()
 export class KindService {
@@ -83,23 +84,21 @@ export class KindService {
   //   }
   // }
 
-  // async createKind(
-  //   kind: CreateKindRecord,
-  //   user: string,
-  //   message: string,
-  // ): Promise<KindRecord> {
-  //   this.logger.debug('creating kind record');
-  //   const newRecord = {
-  //     ...kind,
-  //     history: new History({
-  //       by: user,
-  //       at: new Date().toISOString(),
-  //       message,
-  //       parent: null,
-  //     }),
-  //     status: {},
-  //   };
-  //   const result = await this.dbService.kindDB.put(newRecord);
-  //   return this.dbService.kindDB.get(result.id);
-  // }
+  async createKind(
+    kind: CreateKind,
+    user: string,
+    message?: string,
+  ): Promise<Kind> {
+    this.logger.debug('creating kind record', kind);
+
+    const dbRecord = fromCreateRecord(kind, new UserContext(user), message);
+    const resp = await this.dbService
+      .client('meta_kind')
+      .insert<KindDBRecord>(dbRecord)
+      .returning('*');
+
+    this.logger.log('created kind record', resp);
+
+    return Kind.fromDBRecord(resp[0]);
+  }
 }

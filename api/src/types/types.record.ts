@@ -1,8 +1,7 @@
-export interface DBRecord {
+export interface GlobalDBRecord {
   name: string;
-  namespace: string;
-  annotations: Record<string, string>;
-  labels: Record<string, string>;
+  metadata_annotations: Record<string, string>;
+  metadata_labels: Record<string, string>;
   status: Record<string, string>;
   state: string;
   spec: any;
@@ -13,6 +12,6 @@ export interface DBRecord {
   revision_parent: string | null;
 }
 
-export interface DBRecordHistory extends DBRecord {
-  revision_parent: string;
+export interface NamespacedDBRecord extends GlobalDBRecord {
+  namespace: string;
 }

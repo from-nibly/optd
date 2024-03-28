@@ -3,10 +3,6 @@ import type { Knex } from 'knex';
 export async function up(knex: Knex): Promise<void> {
   const commonFields = (table: Knex.CreateTableBuilder) => {
     table.string('name', 255).checkRegex('^[a-z][a-z0-9-]*$').notNullable();
-    table
-      .string('namespace', 255)
-      .checkRegex('^[a-z][a-z0-9-]*$')
-      .notNullable();
 
     // unstructured in database
     table.jsonb('metadata_annotations').notNullable();
@@ -24,17 +20,17 @@ export async function up(knex: Knex): Promise<void> {
     table.datetime('revision_at', { useTz: true }).notNullable();
     table.string('revision_by', 255).notNullable();
     table.text('revision_message').nullable();
-    table.uuid('revision_parent').notNullable();
+    table.uuid('revision_parent').nullable();
   };
 
   await knex.schema.createTable('meta_kind', (table) => {
     commonFields(table);
-    table.primary(['name', 'namespace']);
+    table.primary(['name']);
   });
 
   await knex.schema.createTable('meta_kind_history', (table) => {
     commonFields(table);
-    table.primary(['name', 'namespace', 'revision_id']);
+    table.primary(['name', 'revision_id']);
     //make sure bugs can't update history?
     //might need to be able to delete history?
     knex.raw('REVOKE UPDATE ON meta_kind_history FROM optd');
