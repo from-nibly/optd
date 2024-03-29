@@ -16,7 +16,6 @@ import {
   UpdateKindAPIBody,
 } from './kinds.types.api';
 import { CreateKind, UpdateKind } from './kinds.types';
-import { UserContext } from 'src/types/types';
 
 @Controller('/meta/kinds')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -72,11 +71,11 @@ export class KindController {
       response = KindAPIResponse.fromRecord(created);
     }
 
-    // this.hookService.configureHooks(
-    //   kindName,
-    //   response.metadata.rev,
-    //   body.spec.hooks,
-    // );
+    this.hookService.configureHooks(
+      kindName,
+      response.history.id,
+      response.spec.hooks,
+    );
 
     return response;
   }

@@ -7,6 +7,7 @@ import {
 } from './kinds.types.record';
 import { CreateKind, Kind, UpdateKind } from './kinds.types';
 import { UserContext } from 'src/types/types';
+import { Knex } from 'knex';
 
 @Injectable()
 export class KindService {
@@ -87,48 +88,6 @@ export class KindService {
       //TODO: this should be an API resource
       return Kind.fromDBRecord(existing);
     });
-
-    // const { _rev, ...restExisting } = existing;
-
-    // const name = KindRecord.splitID(kind._id).name;
-
-    // const history = {
-    //   ...restExisting,
-    //   _id: History.createID(name, _rev, 'kind'),
-    // };
-
-    // let historyRev: string | undefined;
-
-    // try {
-    //   const res = await this.dbService.kindDB.put(history);
-    //   historyRev = res.rev;
-    //   const histID = res.id;
-
-    //   const newDocument = {
-    //     ...kind,
-    //     history: new History({
-    //       by: user,
-    //       at: new Date().toISOString(),
-    //       message,
-    //       parent: histID,
-    //     }),
-    //   };
-
-    //   const documentResult = await this.dbService.kindDB.put(newDocument);
-    //   return await this.dbService.kindDB.get(documentResult.id);
-    // } catch (e) {
-    //   if (isPouchDBError(e)) {
-    //     if (historyRev && e.docId !== history._id) {
-    //       this.logger.debug(
-    //         'reverting history document after creation failure',
-    //       );
-    //       this.dbService.kindDB.remove({ _id: history._id, _rev: historyRev });
-    //       throw e;
-    //     }
-    //   }
-    //   this.logger.error('unhandled error', e);
-    //   throw e;
-    // }
   }
 
   async createKind(
@@ -139,13 +98,59 @@ export class KindService {
     this.logger.debug('creating kind record', kind);
 
     const dbRecord = fromCreateRecord(kind, new UserContext(user), message);
-    const resp = await this.dbService
-      .client('meta_kind')
-      .insert<KindDBRecord>(dbRecord)
-      .returning('*');
+    return this.dbService.client.transaction(async (trx) => {
+      const resp = await trx('meta_kind')
+        .insert<KindDBRecord>(dbRecord)
+        .returning('*');
 
-    this.logger.log('created kind record', resp);
+      await this.createNamespacedKindTables(kind.metadata.name, trx);
 
-    return Kind.fromDBRecord(resp[0]);
+      return Kind.fromDBRecord(resp[0]);
+    });
+  }
+
+  private async createNamespacedKindTables(
+    name: string,
+    trx: Knex.Transaction,
+  ) {
+    const commonFields = (table: Knex.CreateTableBuilder) => {
+      table.string('name', 255).checkRegex('^[a-z][a-z0-9-]*$').notNullable();
+      table
+        .string('namespace', 255)
+        .checkRegex('^[a-z][a-z0-9-]*$')
+        .notNullable();
+
+      // unstructured in database
+      table.jsonb('metadata_annotations').notNullable();
+      table.jsonb('metadata_labels').notNullable();
+      table.jsonb('status').notNullable();
+
+      //single string to represent current state
+      table.string('state', 255).checkRegex('^[a-z][a-z0-9-]*$').notNullable();
+
+      //spec is unstructured
+      table.jsonb('spec').notNullable();
+
+      //history
+      table.uuid('revision_id').notNullable();
+      table.datetime('revision_at', { useTz: true }).notNullable();
+      table.string('revision_by', 255).notNullable();
+      table.text('revision_message').nullable();
+      table.uuid('revision_parent').nullable();
+    };
+
+    await trx.schema.createTable(`resource_${name}`, (table) => {
+      commonFields(table);
+      table.primary(['name', 'namespace']);
+    });
+
+    await trx.schema.createTable(`resource_${name}_history`, (table) => {
+      commonFields(table);
+      table.primary(['name', 'namespace', 'revision_id']);
+      //make sure bugs can't update history?
+      //might need to be able to delete history?
+      trx.raw('REVOKE UPDATE ON meta_kind_history FROM optd');
+      trx.raw('REVOKE UPDATE ON meta_kind_history FROM optd');
+    });
   }
 }

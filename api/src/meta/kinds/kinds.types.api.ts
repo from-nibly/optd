@@ -5,7 +5,6 @@ import {
   UpdateGlobalMetaApiBody,
 } from 'src/types/types.api';
 import { Kind, KindSpec } from './kinds.types';
-import { Global } from '@nestjs/common';
 
 export class KindAPIResponse {
   metadata: GlobalMetaApiResponse<'Kind'>;
