@@ -71,12 +71,6 @@ export class KindController {
       response = KindAPIResponse.fromRecord(created);
     }
 
-    this.hookService.configureHooks(
-      kindName,
-      response.history.id,
-      response.spec.hooks,
-    );
-
     return response;
   }
 }

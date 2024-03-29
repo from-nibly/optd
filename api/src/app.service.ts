@@ -22,11 +22,6 @@ export class AppService {
     //   this.logger.debug(`initializing database ${name}`);
     //   this.databaseService.initDatabase(name);
     //   const kindRecord = doc.doc!;
-    //   this.hooksService.configureHooks(
-    //     name,
-    //     kindRecord._rev,
-    //     kindRecord.spec.hooks,
-    //   );
     // }
   }
 }

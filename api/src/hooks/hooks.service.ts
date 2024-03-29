@@ -4,6 +4,7 @@ import { HookableResource } from 'src/resources/resources.types';
 import { HookDatabase, HookError } from './hooks.types';
 import { spawn } from 'child_process';
 import { KindHookSpec } from 'src/meta/kinds/kinds.types';
+import { DatabaseService } from 'src/database/databases.service';
 
 interface HookResult {
   stdout: string;
@@ -16,31 +17,29 @@ export class HooksService {
   private readonly logger = new Logger(HooksService.name);
   hooks: HookDatabase = {};
 
-  configureHooks(kind: string, revision: string, hooks: KindHookSpec) {
-    this.logger.debug('configuring hooks', kind);
-    //clear old hooks
-    this.hooks[kind] = { rev: revision };
+  constructor(private readonly database: DatabaseService) {}
 
-    if (hooks) {
-      let hook: keyof KindHookSpec;
-      for (hook in hooks) {
-        this.logger.debug(`adding hook ${kind}:${hook}`);
-        this.hooks[kind][hook] = hooks[hook];
-      }
-    }
-  }
-
-  async executeHook(
-    event: keyof KindHookSpec,
+  async obtainMaterializedHook(
     kind: string,
-    record: HookableResource,
-    onError?: (err: HookError) => Promise<void>,
-  ): Promise<HookResult> {
-    this.logger.debug('executing event', event, record);
-    const script = this.hooks[kind]?.[event];
+    event: keyof KindHookSpec,
+  ): Promise<string | undefined> {
+    //TODO: performance caching
+    const [spec, ...extra] = await this.database
+      .client('meta_kind')
+      .where('name', kind)
+      .select('spec');
+    if (extra.length > 0) {
+      throw new Error('multiple kinds with same name');
+    }
+
+    if (!spec) {
+      throw new Error(`kind ${kind} not found`);
+    }
+
+    const script = spec.hooks?.[event];
+
     if (!script) {
-      this.logger.debug(`no script found for event ${event}:${kind}`);
-      return { code: 0, stdout: '', stderr: '' };
+      return undefined;
     }
 
     const dir = `/tmp/optdctl/hooks/${kind}`;
@@ -49,6 +48,21 @@ export class HooksService {
 
     await fs.writeFile(filename, script);
     await fs.chmod(filename, 0o700);
+
+    return filename;
+  }
+
+  async executeHook(
+    event: keyof KindHookSpec,
+    kind: string,
+    record: HookableResource,
+    onError?: (err: HookError) => Promise<void>,
+  ): Promise<HookResult | undefined> {
+    this.logger.debug('executing event', event, record);
+    const filename = await this.obtainMaterializedHook(kind, event);
+    if (!filename) {
+      return undefined;
+    }
 
     return new Promise<HookResult>((resolve, reject) => {
       const proc = spawn(filename, { stdio: 'pipe' });
