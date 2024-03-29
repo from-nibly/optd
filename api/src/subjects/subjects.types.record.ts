@@ -1,6 +1,6 @@
-import { ResourceRecord } from 'src/resources/resources.types.record';
+import { ResourceDBRecord } from 'src/resources/resources.types.record';
 import { SubjectSpec } from './subjects.types';
 
-export class SubjectRecord extends ResourceRecord {
+export interface SubjectRecord extends ResourceDBRecord {
   spec: SubjectSpec;
 }

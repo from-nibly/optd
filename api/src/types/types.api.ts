@@ -1,4 +1,4 @@
-import { GlobalMeta } from './types';
+import { GlobalMeta, NamespacedMeta } from './types';
 
 export class GlobalMetaApiResponse<
   K extends string = string,
@@ -8,7 +8,6 @@ export class GlobalMetaApiResponse<
   constructor(partial: GlobalMetaApiResponse<K>) {
     super(partial);
     this.kind = partial.kind;
-    this.name = partial.name;
   }
 
   static fromRecord<K extends string = string>(
@@ -48,5 +47,18 @@ export class NamespacedMetaApiResponse<
   constructor(partial: NamespacedMetaApiResponse<K>) {
     super(partial);
     this.namespace = partial.namespace;
+  }
+
+  static fromRecord<K extends string = string>(
+    metadata: NamespacedMeta,
+    kind: K,
+  ): NamespacedMetaApiResponse<K> {
+    return new NamespacedMetaApiResponse({
+      kind: kind,
+      name: metadata.name,
+      labels: metadata.labels,
+      annotations: metadata.annotations,
+      namespace: metadata.namespace,
+    });
   }
 }

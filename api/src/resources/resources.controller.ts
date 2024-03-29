@@ -1,24 +1,14 @@
 import {
-  Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
   Logger,
   Param,
-  Put,
   UseInterceptors,
 } from '@nestjs/common';
-import { ResourceService } from './resources.service';
-import {
-  PutResourceAPIBody,
-  ResourceAPIResponse,
-  UpdateResourceAPIBody,
-} from './resources.types.api';
-import {
-  CreateResourceRecord,
-  UpdateResourceRecord,
-} from './resources.types.record';
 import { HooksService } from 'src/hooks/hooks.service';
+import { ResourceService } from './resources.service';
+import { ResourceAPIResponse } from './resources.types.api';
 
 @Controller('/namespaces/:namespace/:resourceKind/')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -29,20 +19,20 @@ export class ResourceController {
     private readonly hookService: HooksService,
   ) {}
 
-  // @Get('/')
-  // async listResources(
-  //   @Param('namespace') namespace: string,
-  //   @Param('resourceKind') resourceKind: string,
-  // ): Promise<ResourceAPIResponse[]> {
-  //   this.logger.debug(`getting resources for ${namespace}/${resourceKind}`);
-  //   const resources = await this.resourceService.listResources(
-  //     namespace,
-  //     resourceKind,
-  //   );
-  //   return resources.map((r) =>
-  //     ResourceAPIResponse.fromRecord(r, resourceKind),
-  //   );
-  // }
+  @Get('/')
+  async listResources(
+    @Param('namespace') namespace: string,
+    @Param('resourceKind') resourceKind: string,
+  ): Promise<ResourceAPIResponse[]> {
+    this.logger.debug(`getting resources for ${namespace}/${resourceKind}`);
+    const resources = await this.resourceService.listResources(
+      namespace,
+      resourceKind,
+    );
+    return resources.map((r) =>
+      ResourceAPIResponse.fromRecord(r, resourceKind),
+    );
+  }
 
   // @Get('/:name')
   // async getResource(

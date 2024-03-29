@@ -1,13 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/database/databases.service';
 import { HooksService } from 'src/hooks/hooks.service';
-import { History } from 'src/types/types';
-import { isPouchDBError } from 'src/utils.types';
-import {
-  CreateResourceRecord,
-  ResourceRecord,
-  UpdateResourceRecord,
-} from './resources.types.record';
+import { Resource } from './resources.types';
 
 @Injectable()
 export class ResourceService {
@@ -22,18 +16,17 @@ export class ResourceService {
   //   return this.dbService.getDatabase(resourceKind);
   // }
 
-  // async listResources(
-  //   namespace: string,
-  //   resourceKind: string,
-  // ): Promise<ResourceRecord[]> {
-  //   const resp = await this.getDatabase(resourceKind).allDocs({
-  //     startkey: `ns/${namespace}/`,
-  //     endkey: `ns/${namespace}/{}`,
-  //     include_docs: true,
-  //   });
-
-  //   return resp.rows.map((r) => new ResourceRecord(r.doc!));
-  // }
+  async listResources(
+    namespace: string,
+    resourceKind: string,
+  ): Promise<Resource[]> {
+    //TODO: pagination...
+    const resp = await this.dbService
+      .client(this.dbService.getKindHistoryTableName(resourceKind))
+      .select('*')
+      .where('namespace', namespace);
+    return resp.map((r) => Resource.fromDBRecord(r));
+  }
 
   // async getResource(
   //   namespace: string,
