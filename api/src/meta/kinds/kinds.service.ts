@@ -1,10 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/databases.service';
-import {
-  KindDBRecord,
-  fromCreateRecord,
-  fromUpdateRecord,
-} from './kinds.types.record';
+import { KindDBRecord } from './kinds.types.record';
 import { CreateKind, Kind, UpdateKind } from './kinds.types';
 import { UserContext } from 'src/types/types';
 import { Knex } from 'knex';
@@ -67,8 +63,7 @@ export class KindService {
       await trx('meta_kind').where('name', kind.metadata.name).del();
       const [updated, ...extraUpdate] = await trx('meta_kind')
         .insert<KindDBRecord>(
-          fromUpdateRecord(
-            kind,
+          kind.toDBRecord(
             new UserContext(user),
             //this must come from the request (and not the current db state) otherwise the database optimistic locking wont work
             kind.history.id,
@@ -97,7 +92,7 @@ export class KindService {
   ): Promise<Kind> {
     this.logger.debug('creating kind record', kind);
 
-    const dbRecord = fromCreateRecord(kind, new UserContext(user), message);
+    const dbRecord = kind.toDBRecord(new UserContext(user), message);
     return this.dbService.client.transaction(async (trx) => {
       const resp = await trx('meta_kind')
         .insert<KindDBRecord>(dbRecord)

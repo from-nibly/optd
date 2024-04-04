@@ -23,9 +23,9 @@ export class GlobalMetaApiResponse<
   }
 }
 
-export class PutGlobalMetaApiBody extends GlobalMeta {
+export class CreateGlobalMetaApiBody extends GlobalMeta {
   kind: string;
-  constructor(partial: PutGlobalMetaApiBody) {
+  constructor(partial: CreateGlobalMetaApiBody) {
     super(partial);
     this.kind = partial.kind;
   }
@@ -60,5 +60,23 @@ export class NamespacedMetaApiResponse<
       annotations: metadata.annotations,
       namespace: metadata.namespace,
     });
+  }
+}
+
+export class CreateNamespacedMetaApiBody extends CreateGlobalMetaApiBody {
+  namespace: string;
+
+  constructor(partial: CreateNamespacedMetaApiBody) {
+    super(partial);
+    this.namespace = partial.namespace;
+  }
+}
+
+export class UpdateNamespacedMetaApiBody extends UpdateGlobalMetaApiBody {
+  namespace: string;
+
+  constructor(partial: UpdateNamespacedMetaApiBody) {
+    super(partial);
+    this.namespace = partial.namespace;
   }
 }

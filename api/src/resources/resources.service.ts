@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/database/databases.service';
 import { HooksService } from 'src/hooks/hooks.service';
-import { Resource } from './resources.types';
+import { CreateResource, Resource } from './resources.types';
+import { UserContext } from 'src/types/types';
 
 @Injectable()
 export class ResourceService {
@@ -16,16 +17,13 @@ export class ResourceService {
   //   return this.dbService.getDatabase(resourceKind);
   // }
 
-  async listResources(
-    namespace: string,
-    resourceKind: string,
-  ): Promise<Resource[]> {
+  async listResources(namespace: string, kind: string): Promise<Resource[]> {
     //TODO: pagination...
     const resp = await this.dbService
-      .client(this.dbService.getKindHistoryTableName(resourceKind))
+      .client(this.dbService.getKindTableName(kind))
       .select('*')
       .where('namespace', namespace);
-    return resp.map((r) => Resource.fromDBRecord(r));
+    return resp.map((r) => Resource.fromDBRecord(kind, r));
   }
 
   // async getResource(
@@ -114,34 +112,31 @@ export class ResourceService {
   //   }
   // }
 
-  // async createResource(
-  //   record: CreateResourceRecord,
-  //   resourceKind: string,
-  //   username: string,
-  //   message: string,
-  // ): Promise<ResourceRecord> {
-  //   const newRecord = {
-  //     ...record,
-  //     history: new History({
-  //       by: username,
-  //       at: new Date().toISOString(),
-  //       message,
-  //       parent: null,
-  //     }),
-  //   };
+  async createResource(
+    record: CreateResource,
+    resourceKind: string,
+    username: string,
+    message: string,
+  ): Promise<Resource> {
+    return this.dbService.client.transaction(async (trx) => {
+      await this.hookService.executeHook('preCreate', resourceKind, record);
 
-  //   await this.hookService.executeHook('preCreate', resourceKind, newRecord);
+      const dbRecord = record.toDBRecord(new UserContext(username), message);
 
-  //   const result = await this.getDatabase(resourceKind).put(newRecord);
+      const newDBRecord = await trx(
+        this.dbService.getKindTableName(record.metadata.kind),
+      )
+        .insert(dbRecord)
+        .returning('*');
 
-  //   const resultRecord = await this.getDatabase(resourceKind).get(result.id);
+      const newRecord = Resource.fromDBRecord(
+        record.metadata.kind,
+        newDBRecord[0],
+      );
 
-  //   await this.hookService.executeHook(
-  //     'postCreate',
-  //     resourceKind,
-  //     resultRecord,
-  //   );
+      await this.hookService.executeHook('postCreate', resourceKind, newRecord);
 
-  //   return resultRecord;
-  // }
+      return newRecord;
+    });
+  }
 }

@@ -1,7 +1,7 @@
 import { History } from 'src/types/types';
 import {
   GlobalMetaApiResponse,
-  PutGlobalMetaApiBody,
+  CreateGlobalMetaApiBody,
   UpdateGlobalMetaApiBody,
 } from 'src/types/types.api';
 import { Kind, KindSpec } from './kinds.types';
@@ -29,8 +29,8 @@ export class KindAPIResponse {
   }
 }
 
-export class PutKindAPIBody {
-  metadata: PutGlobalMetaApiBody;
+export class CreateKindAPIBody {
+  metadata: CreateGlobalMetaApiBody;
   //TODO: better validation of spec
   spec: Partial<KindSpec>;
   status?: any;

@@ -55,7 +55,8 @@ export class HooksService {
   async executeHook(
     event: keyof KindHookSpec,
     kind: string,
-    record: HookableResource,
+    //TODO: need to break this method out into multiple methods so types can be exact
+    record: any,
     onError?: (err: HookError) => Promise<void>,
   ): Promise<HookResult | undefined> {
     this.logger.debug('executing event', event, record);

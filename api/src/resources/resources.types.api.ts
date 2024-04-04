@@ -1,6 +1,10 @@
 import { History } from 'src/types/types';
-import { NamespacedMetaApiResponse } from 'src/types/types.api';
-import { Resource } from './resources.types';
+import {
+  CreateNamespacedMetaApiBody,
+  NamespacedMetaApiResponse,
+  UpdateNamespacedMetaApiBody,
+} from 'src/types/types.api';
+import { Resource, UpdateResource } from './resources.types';
 
 export class ResourceAPIResponse {
   metadata: NamespacedMetaApiResponse;
@@ -27,20 +31,27 @@ export class ResourceAPIResponse {
   }
 }
 
-// export class PutResourceAPIBody extends UpdateResource {
-//   metadata: NamespacedMetaApiResponse;
-// }
+export class CreateResourceAPIBody {
+  metadata: CreateNamespacedMetaApiBody;
+  spec: any;
+  status: any;
+  state: string;
+}
 
-// export class UpdateResourceAPIBody extends UpdateResource {
-//   metadata: UpdateGlobalMetaApiBody;
+export class UpdateResourceAPIBody {
+  metadata: UpdateNamespacedMetaApiBody;
+  spec: any;
+  status: any;
+  state: string;
+  history: Pick<History, 'id'>;
 
-//   constructor(partial: UpdateResourceAPIBody) {
-//     super(partial);
-//   }
+  constructor(partial: UpdateResourceAPIBody) {
+    Object.assign(this, partial);
+    this.metadata = new UpdateNamespacedMetaApiBody(partial.metadata);
+    this.history = { id: partial.history.id };
+  }
 
-//   static isUpdateResourceAPIBody(
-//     body: PutResourceAPIBody | UpdateResourceAPIBody,
-//   ): body is UpdateResourceAPIBody {
-//     return false;
-//   }
-// }
+  static isUpdateResourceAPIBody(body: any): body is UpdateResourceAPIBody {
+    return body.history?.id !== undefined;
+  }
+}

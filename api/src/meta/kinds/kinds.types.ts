@@ -7,8 +7,9 @@ import {
   NonMethodFields,
   UserContext,
 } from 'src/types/types';
-import { PutKindAPIBody, UpdateKindAPIBody } from './kinds.types.api';
+import { CreateKindAPIBody, UpdateKindAPIBody } from './kinds.types.api';
 import { KindDBRecord } from './kinds.types.record';
+import { v4 as uuid } from 'uuid';
 
 export class KindHookSpec {
   validate?: string;
@@ -47,6 +48,7 @@ export class Kind extends GlobalRecord {
         name: record.name,
         labels: record.metadata_labels,
         annotations: record.metadata_annotations,
+        kind: 'Kind',
       },
       spec: {
         hooks: record.spec.hooks,
@@ -65,7 +67,7 @@ export class Kind extends GlobalRecord {
 }
 
 export class CreateKind extends CreateGlobalRecord {
-  constructor(partial: CreateKind) {
+  constructor(partial: NonMethodFields<CreateKind>) {
     super(partial);
     this.metadata = new CreateGlobalMeta(partial.metadata);
     this.spec = new KindSpec(partial.spec ?? {});
@@ -73,13 +75,29 @@ export class CreateKind extends CreateGlobalRecord {
     this.status = partial.status ?? {};
   }
 
-  static fromApiRequest(request: PutKindAPIBody): CreateKind {
+  static fromApiRequest(request: CreateKindAPIBody): CreateKind {
     return new CreateKind({
       metadata: request.metadata,
       spec: request.spec,
       state: 'pending',
       status: request.status,
     });
+  }
+
+  toDBRecord(actor: UserContext, message?: string): KindDBRecord {
+    return {
+      name: this.metadata.name,
+      metadata_annotations: this.metadata.annotations ?? {},
+      metadata_labels: this.metadata.labels ?? {},
+      status: this.status ?? {},
+      state: 'pending',
+      spec: this.spec,
+      revision_id: uuid(),
+      revision_at: new Date().toISOString(),
+      revision_by: actor.username,
+      revision_message: message,
+      revision_parent: null,
+    };
   }
 }
 
@@ -90,7 +108,7 @@ export class UpdateKind {
   state: string;
   history: Pick<History, 'id'>;
 
-  constructor(partial: UpdateKind) {
+  constructor(partial: NonMethodFields<UpdateKind>) {
     this.metadata = new GlobalMeta(partial.metadata);
     this.spec = new KindSpec(partial.spec);
     this.status = partial.status;
@@ -110,5 +128,25 @@ export class UpdateKind {
         id: request.history.id,
       },
     });
+  }
+
+  toDBRecord(
+    actor: UserContext,
+    parent_revision: string,
+    message: string | undefined,
+  ): KindDBRecord {
+    return {
+      name: this.metadata.name,
+      metadata_annotations: this.metadata.annotations,
+      metadata_labels: this.metadata.labels,
+      status: this.status,
+      state: this.state,
+      spec: this.spec,
+      revision_id: uuid(),
+      revision_at: new Date().toISOString(),
+      revision_by: actor.username,
+      revision_message: message,
+      revision_parent: parent_revision,
+    };
   }
 }

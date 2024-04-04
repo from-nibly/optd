@@ -1,14 +1,21 @@
 import {
+  Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
   Logger,
   Param,
+  Put,
   UseInterceptors,
 } from '@nestjs/common';
 import { HooksService } from 'src/hooks/hooks.service';
 import { ResourceService } from './resources.service';
-import { ResourceAPIResponse } from './resources.types.api';
+import {
+  CreateResourceAPIBody,
+  ResourceAPIResponse,
+  UpdateResourceAPIBody,
+} from './resources.types.api';
+import { CreateResource, UpdateResource } from './resources.types';
 
 @Controller('/namespaces/:namespace/:resourceKind/')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -49,34 +56,39 @@ export class ResourceController {
   //   return ResourceAPIResponse.fromRecord(resource, resourceKind);
   // }
 
-  // @Put('/:name')
-  // async putResource(
-  //   @Param('namespace') namespace: string,
-  //   @Param('resourceKind') resourceKind: string,
-  //   @Param('name') name: string,
-  //   @Body() body: PutResourceAPIBody | UpdateResourceAPIBody,
-  // ): Promise<ResourceAPIResponse> {
-  //   await this.hookService.executeHook('validate', resourceKind, body);
+  @Put('/:name')
+  async putResource(
+    @Param('namespace') namespace: string,
+    @Param('resourceKind') resourceKind: string,
+    @Param('name') name: string,
+    @Body() body: CreateResourceAPIBody | UpdateResourceAPIBody,
+  ): Promise<ResourceAPIResponse> {
+    if (UpdateResourceAPIBody.isUpdateResourceAPIBody(body)) {
+      // const record = UpdateResource.fromAPIRequest(body, namespace, name);
+      // await this.hookService.executeHook('validate', resourceKind, record);
+      // const updated = await this.resourceService.updateResource(
+      //   record,
+      //   resourceKind,
+      //   'test user',
+      //   'test message',
+      // );
+      // return ResourceAPIResponse.fromRecord(updated, resourceKind);
+    }
 
-  //   if (UpdateResourceAPIBody.isUpdateResourceAPIBody(body)) {
-  //     const record = UpdateResourceRecord.fromAPIBody(body, namespace, name);
-
-  //     const updated = await this.resourceService.updateResource(
-  //       record,
-  //       resourceKind,
-  //       'test user',
-  //       'test message',
-  //     );
-  //     return ResourceAPIResponse.fromRecord(updated, resourceKind);
-  //   }
-
-  //   const record = CreateResourceRecord.fromAPIBody(body, namespace, name);
-  //   const created = await this.resourceService.createResource(
-  //     record,
-  //     resourceKind,
-  //     'test user',
-  //     'test message',
-  //   );
-  //   return ResourceAPIResponse.fromRecord(created, resourceKind);
-  // }
+    const record = CreateResource.fromAPIRequest(
+      body,
+      body.metadata.kind ?? resourceKind,
+      body.metadata.namespace ?? namespace,
+      body.metadata.name ?? name,
+    );
+    this.logger.log('testing', { record });
+    await this.hookService.executeHook('validate', resourceKind, record);
+    const created = await this.resourceService.createResource(
+      record,
+      resourceKind,
+      'test user',
+      'test message',
+    );
+    return ResourceAPIResponse.fromRecord(created, resourceKind);
+  }
 }

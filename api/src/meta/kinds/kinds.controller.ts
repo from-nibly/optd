@@ -12,7 +12,7 @@ import { HooksService } from 'src/hooks/hooks.service';
 import { KindService } from './kinds.service';
 import {
   KindAPIResponse,
-  PutKindAPIBody,
+  CreateKindAPIBody,
   UpdateKindAPIBody,
 } from './kinds.types.api';
 import { CreateKind, UpdateKind } from './kinds.types';
@@ -43,7 +43,7 @@ export class KindController {
   @Put('/:name')
   async createKind(
     @Param('name') kindName: string,
-    @Body() body: PutKindAPIBody | UpdateKindAPIBody,
+    @Body() body: CreateKindAPIBody | UpdateKindAPIBody,
   ): Promise<KindAPIResponse> {
     //TODO: be loose with what you accept
 

@@ -7,11 +7,13 @@ export class GlobalMeta {
   name: string;
   labels: Record<string, string>;
   annotations: Record<string, string>;
+  kind: string;
 
   constructor(obj: GlobalMeta) {
     this.name = obj.name;
     this.labels = obj.labels;
     this.annotations = obj.annotations;
+    this.kind = obj.kind;
   }
 }
 
@@ -19,11 +21,13 @@ export class CreateGlobalMeta {
   name: string;
   labels?: Record<string, string>;
   annotations?: Record<string, string>;
+  kind: string;
 
-  constructor(partial: CreateGlobalMeta) {
+  constructor(partial: NonMethodFields<CreateGlobalMeta>) {
     this.name = partial.name;
     this.labels = partial.labels;
     this.annotations = partial.annotations;
+    this.kind = partial.kind;
   }
 }
 
@@ -31,6 +35,15 @@ export class NamespacedMeta extends GlobalMeta {
   namespace: string;
 
   constructor(partial: NonMethodFields<NamespacedMeta>) {
+    super(partial);
+    this.namespace = partial.namespace;
+  }
+}
+
+export class CreateNamespacedMeta extends CreateGlobalMeta {
+  namespace: string;
+
+  constructor(partial: CreateNamespacedMeta) {
     super(partial);
     this.namespace = partial.namespace;
   }
@@ -78,6 +91,22 @@ export class CreateGlobalRecord {
     this.spec = partial.spec;
     this.status = partial.status;
     this.state = partial.state;
+  }
+}
+
+export class UpdateGlobalRecord {
+  metadata: CreateGlobalMeta;
+  spec?: any;
+  status?: any;
+  state: string;
+  history: Pick<History, 'id'>;
+
+  constructor(partial: UpdateGlobalRecord) {
+    this.metadata = new CreateGlobalMeta(partial.metadata);
+    this.spec = partial.spec;
+    this.status = partial.status;
+    this.state = partial.state;
+    this.history = { id: partial.history.id };
   }
 }
 
