@@ -52,7 +52,6 @@ export class UpdateKindAPIBody {
   }
 
   static isUpdateKindAPIBody(body: any): body is UpdateKindAPIBody {
-    console.log('testing', body);
     return body.history?.id !== undefined;
   }
 }

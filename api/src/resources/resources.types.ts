@@ -17,12 +17,14 @@ export class HookableResource {
   spec: any;
   status: any;
   history?: History;
+  state: string;
 
   constructor(partial: Resource) {
     this.metadata = new NamespacedMeta(partial.metadata);
     this.spec = partial.spec;
     this.status = partial.status;
     this.history = partial.history ? new History(partial.history) : undefined;
+    this.state = partial.state;
   }
 }
 
@@ -38,6 +40,7 @@ export class Resource {
     this.spec = partial.spec;
     this.status = partial.status;
     this.history = new History(partial.history);
+    this.state = partial.state;
   }
 
   static fromDBRecord(kind: string, record: ResourceDBRecord): Resource {
@@ -66,7 +69,6 @@ export class Resource {
 export class CreateResource {
   metadata: CreateNamespacedMeta;
   spec: Record<string, any>;
-  status?: Record<string, any>;
 
   constructor(partial: NonMethodFields<CreateResource>) {
     this.metadata = new CreateNamespacedMeta(partial.metadata);
@@ -89,7 +91,6 @@ export class CreateResource {
         kind,
       },
       spec: request.spec,
-      status: request.status,
     });
   }
 
@@ -99,7 +100,7 @@ export class CreateResource {
       namespace: this.metadata.namespace,
       metadata_annotations: this.metadata.annotations ?? {},
       metadata_labels: this.metadata.labels ?? {},
-      status: this.status ?? {},
+      status: {},
       state: 'pending',
       spec: this.spec,
       revision_id: uuid(),
@@ -118,10 +119,12 @@ export class UpdateResource {
   state: string;
   history: Pick<History, 'id'>;
 
-  constructor(partial: UpdateResource) {
+  constructor(partial: NonMethodFields<UpdateResource>) {
     this.metadata = new NamespacedMeta(partial.metadata);
     this.spec = partial.spec;
     this.status = partial.status;
+    this.state = partial.state;
+    this.history = { id: partial.history.id };
   }
 
   static fromAPIRequest(
@@ -140,5 +143,26 @@ export class UpdateResource {
       status: request.status,
       history: { id: request.history.id },
     });
+  }
+
+  toDBRecord(
+    actor: UserContext,
+    parent_revision: string,
+    message: string,
+  ): ResourceDBRecord {
+    return {
+      name: this.metadata.name,
+      namespace: this.metadata.namespace,
+      metadata_annotations: this.metadata.annotations ?? {},
+      metadata_labels: this.metadata.labels ?? {},
+      status: this.status,
+      state: this.state,
+      spec: this.spec,
+      revision_id: uuid(),
+      revision_at: new Date().toISOString(),
+      revision_by: actor.username,
+      revision_message: message,
+      revision_parent: parent_revision,
+    };
   }
 }

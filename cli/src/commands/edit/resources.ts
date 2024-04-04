@@ -46,14 +46,9 @@ export class EditResourceCommand extends EditCommand {
     outputObj.metadata.name ??= name;
     const namespace = outputObj.metadata.namespace ?? 'foo';
 
-    delete outputObj.metadata.namespace;
-    delete outputObj.metadata.kind;
-
-    const { history, ...rest } = outputObj;
-
     await client
       .url(`/namespaces/${namespace}/${kind}/${name}`)
-      .json(rest)
+      .json(outputObj)
       .put()
       .badRequest((res) => {
         const resp = res.json;

@@ -23,11 +23,11 @@ export class DatabaseService {
     return this.knex;
   }
 
-  getKindTableName(resourceName: string) {
+  getResourceTableName(resourceName: string) {
     return `resource_${resourceName}`;
   }
 
-  getKindHistoryTableName(resourceName: string) {
+  getResourceHistoryTableName(resourceName: string) {
     return `resource_${resourceName}_history`;
   }
 }

@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/database/databases.service';
 import { HooksService } from 'src/hooks/hooks.service';
-import { CreateResource, Resource } from './resources.types';
+import { CreateResource, Resource, UpdateResource } from './resources.types';
 import { UserContext } from 'src/types/types';
+import { ResourceDBRecord } from './resources.types.record';
 
 @Injectable()
 export class ResourceService {
@@ -13,104 +14,91 @@ export class ResourceService {
     private readonly hookService: HooksService,
   ) {}
 
-  // private getDatabase(resourceKind: string) {
-  //   return this.dbService.getDatabase(resourceKind);
-  // }
-
   async listResources(namespace: string, kind: string): Promise<Resource[]> {
     //TODO: pagination...
     const resp = await this.dbService
-      .client(this.dbService.getKindTableName(kind))
+      .client(this.dbService.getResourceTableName(kind))
       .select('*')
       .where('namespace', namespace);
     return resp.map((r) => Resource.fromDBRecord(kind, r));
   }
 
-  // async getResource(
-  //   namespace: string,
-  //   resourceKind: string,
-  //   name: string,
-  // ): Promise<ResourceRecord> {
-  //   const resp = await this.getDatabase(resourceKind).get(
-  //     ResourceRecord.createID(namespace, name),
-  //   );
-  //   return new ResourceRecord(resp);
-  // }
+  async getResource(
+    namespace: string,
+    kind: string,
+    name: string,
+  ): Promise<Resource> {
+    const resp = await this.dbService
+      .client(this.dbService.getResourceTableName(kind))
+      .select('*')
+      .where('namespace', namespace)
+      .andWhere('name', name);
+    return Resource.fromDBRecord(kind, resp[0]);
+  }
 
-  // async revertHistory(kind: string, id: string, rev: string) {
-  //   this.getDatabase(kind).remove({
-  //     _id: id,
-  //     _rev: rev,
-  //   });
-  // }
+  async updateResource(
+    record: UpdateResource,
+    kind: string,
+    username: string,
+    message: string,
+  ): Promise<Resource> {
+    const tableName = this.dbService.getResourceTableName(kind);
+    const historyTableName = this.dbService.getResourceHistoryTableName(kind);
+    this.logger.debug('');
 
-  // async updateResource(
-  //   record: UpdateResourceRecord,
-  //   resourceKind: string,
-  //   username: string,
-  //   message: string,
-  // ): Promise<ResourceRecord> {
-  //   const existing = await this.getDatabase(resourceKind).get(record._id);
-  //   const { _rev, ...restExisting } = existing;
+    return this.dbService.client.transaction(async (trx) => {
+      const [existing, ...extra] = await trx(tableName)
+        .select('*')
+        .where('namespace', record.metadata.namespace)
+        .where('name', record.metadata.name);
+      if (extra.length > 0) {
+        this.logger.error(
+          `found multiple resources with name ${record.metadata.name}`,
+        );
+        throw new Error('multiple resources with same name');
+      }
+      if (!existing) {
+        throw new Error('resource not found');
+      }
 
-  //   const name = ResourceRecord.splitID(record._id).name;
+      await this.hookService.executeHook('preUpdate', kind, record);
 
-  //   const history = {
-  //     ...restExisting,
-  //     _id: History.createID(name, _rev, resourceKind),
-  //   };
+      this.logger.debug('inserting history record');
+      const historyResult = await trx(historyTableName)
+        .insert(existing)
+        .returning('*');
+      this.logger.debug('got history', historyResult);
+      this.logger.debug('deleting existing record');
+      const results = await trx(tableName)
+        .where('name', record.metadata.name)
+        .where('namespace', record.metadata.namespace)
+        .del();
+      this.logger.debug('deleted existing record', results);
 
-  //   let historyRev: string | undefined;
+      const [updated, ...extraUpdate] = await trx(tableName)
+        .insert<ResourceDBRecord>(
+          record.toDBRecord(
+            new UserContext(username),
+            existing.revision_id,
+            message,
+          ),
+        )
+        .returning('*');
 
-  //   try {
-  //     const res = await this.getDatabase(resourceKind).put(history);
-  //     historyRev = res.rev;
-  //     const histID = res.id;
+      if (extraUpdate.length > 0) {
+        this.logger.error('multiple resource updates returned');
+        throw new Error('multiple resource updates returned');
+      }
+      if (!updated) {
+        this.logger.error('no resource update returned');
+        throw new Error('no resource update returned');
+      }
 
-  //     const newRecord = {
-  //       ...record,
-  //       history: new History({
-  //         by: username,
-  //         at: new Date().toISOString(),
-  //         message,
-  //         parent: histID,
-  //       }),
-  //     };
+      await this.hookService.executeHook('postUpdate', kind, updated);
 
-  //     await this.hookService.executeHook(
-  //       'preUpdate',
-  //       resourceKind,
-  //       newRecord,
-  //       (err) => this.revertHistory(resourceKind, histID, historyRev!),
-  //     );
-
-  //     const recordResult = await this.getDatabase(resourceKind).put(newRecord);
-  //     const updatedRecord = await this.getDatabase(resourceKind).get(
-  //       recordResult.id,
-  //     );
-
-  //     //TODO: no rollback on postUpdate right?
-  //     await this.hookService.executeHook(
-  //       'postUpdate',
-  //       resourceKind,
-  //       updatedRecord,
-  //     );
-
-  //     return updatedRecord;
-  //   } catch (e) {
-  //     if (isPouchDBError(e)) {
-  //       if (historyRev && e.docId !== history._id) {
-  //         this.logger.error(
-  //           'reverting history document after creation failure',
-  //         );
-
-  //         throw e;
-  //       }
-  //     }
-  //     this.logger.error('unhandled error', e);
-  //     throw e;
-  //   }
-  // }
+      return Resource.fromDBRecord(kind, existing);
+    });
+  }
 
   async createResource(
     record: CreateResource,
@@ -118,13 +106,14 @@ export class ResourceService {
     username: string,
     message: string,
   ): Promise<Resource> {
+    this.logger.debug('creating resource record', record);
     return this.dbService.client.transaction(async (trx) => {
       await this.hookService.executeHook('preCreate', resourceKind, record);
 
       const dbRecord = record.toDBRecord(new UserContext(username), message);
 
       const newDBRecord = await trx(
-        this.dbService.getKindTableName(record.metadata.kind),
+        this.dbService.getResourceTableName(record.metadata.kind),
       )
         .insert(dbRecord)
         .returning('*');

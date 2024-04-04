@@ -42,9 +42,6 @@ export class PutResourceCommand extends PutCommand {
     outputObj.metadata.name ??= name;
     const namespace = outputObj.metadata.namespace ?? 'foo';
 
-    delete outputObj.metadata.namespace;
-    delete outputObj.metadata.kind;
-
     await client
       .url(`/namespaces/${namespace}/${kind}/${name}`)
       .json(outputObj)

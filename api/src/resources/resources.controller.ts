@@ -41,20 +41,20 @@ export class ResourceController {
     );
   }
 
-  // @Get('/:name')
-  // async getResource(
-  //   @Param('namespace') namespace: string,
-  //   @Param('resourceKind') resourceKind: string,
-  //   @Param('name') name: string,
-  // ): Promise<ResourceAPIResponse> {
-  //   this.logger.debug(`getting resource ${namespace}/${resourceKind}/${name}`);
-  //   const resource = await this.resourceService.getResource(
-  //     namespace,
-  //     resourceKind,
-  //     name,
-  //   );
-  //   return ResourceAPIResponse.fromRecord(resource, resourceKind);
-  // }
+  @Get('/:name')
+  async getResource(
+    @Param('namespace') namespace: string,
+    @Param('resourceKind') resourceKind: string,
+    @Param('name') name: string,
+  ): Promise<ResourceAPIResponse> {
+    this.logger.debug(`getting resource ${namespace}/${resourceKind}/${name}`);
+    const resource = await this.resourceService.getResource(
+      namespace,
+      resourceKind,
+      name,
+    );
+    return ResourceAPIResponse.fromRecord(resource, resourceKind);
+  }
 
   @Put('/:name')
   async putResource(
@@ -63,16 +63,17 @@ export class ResourceController {
     @Param('name') name: string,
     @Body() body: CreateResourceAPIBody | UpdateResourceAPIBody,
   ): Promise<ResourceAPIResponse> {
+    this.logger.debug('putting resource', body);
     if (UpdateResourceAPIBody.isUpdateResourceAPIBody(body)) {
-      // const record = UpdateResource.fromAPIRequest(body, namespace, name);
-      // await this.hookService.executeHook('validate', resourceKind, record);
-      // const updated = await this.resourceService.updateResource(
-      //   record,
-      //   resourceKind,
-      //   'test user',
-      //   'test message',
-      // );
-      // return ResourceAPIResponse.fromRecord(updated, resourceKind);
+      const record = UpdateResource.fromAPIRequest(body, namespace, name);
+      await this.hookService.executeHook('validate', resourceKind, record);
+      const updated = await this.resourceService.updateResource(
+        record,
+        resourceKind,
+        'test user',
+        'test message',
+      );
+      return ResourceAPIResponse.fromRecord(updated, resourceKind);
     }
 
     const record = CreateResource.fromAPIRequest(
@@ -81,7 +82,6 @@ export class ResourceController {
       body.metadata.namespace ?? namespace,
       body.metadata.name ?? name,
     );
-    this.logger.log('testing', { record });
     await this.hookService.executeHook('validate', resourceKind, record);
     const created = await this.resourceService.createResource(
       record,

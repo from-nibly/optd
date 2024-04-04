@@ -80,7 +80,6 @@ export class KindService {
         throw new Error('no kind update returned');
       }
 
-      //TODO: this should be an API resource
       return Kind.fromDBRecord(existing);
     });
   }

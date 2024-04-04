@@ -18,9 +18,11 @@ export class ResourceAPIResponse {
     this.spec = partial.spec;
     this.status = partial.status;
     this.history = partial.history;
+    this.state = partial.state;
   }
 
   static fromRecord(record: Resource, kind: string): ResourceAPIResponse {
+    console.log('record', record, kind);
     return new ResourceAPIResponse({
       metadata: NamespacedMetaApiResponse.fromRecord(record.metadata, kind),
       spec: record.spec,
