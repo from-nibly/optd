@@ -1,10 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as fs from 'fs/promises';
-import { HookableResource } from 'src/resources/resources.types';
-import { HookDatabase, HookError } from './hooks.types';
 import { spawn } from 'child_process';
-import { KindHookSpec } from 'src/meta/kinds/kinds.types';
+import * as fs from 'fs/promises';
 import { DatabaseService } from 'src/database/databases.service';
+import { KindHookSpec, KindSpec } from 'src/meta/kinds/kinds.types';
+import { HookDatabase, HookError } from './hooks.types';
 
 interface HookResult {
   stdout: string;
@@ -27,7 +26,7 @@ export class HooksService {
     const [spec, ...extra] = await this.database
       .client('meta_kind')
       .where('name', kind)
-      .select('spec');
+      .select<{ spec: KindSpec }[]>('spec');
     if (extra.length > 0) {
       throw new Error('multiple kinds with same name');
     }
@@ -35,8 +34,9 @@ export class HooksService {
     if (!spec) {
       throw new Error(`kind ${kind} not found`);
     }
+    this.logger.debug('got spec', { spec });
 
-    const script = spec.hooks?.[event];
+    const script = spec.spec.hooks?.[event];
 
     if (!script) {
       return undefined;
@@ -59,7 +59,7 @@ export class HooksService {
     record: any,
     onError?: (err: HookError) => Promise<void>,
   ): Promise<HookResult | undefined> {
-    this.logger.debug('executing event', event, record);
+    this.logger.debug('executing event', { event, record });
     const filename = await this.obtainMaterializedHook(kind, event);
     if (!filename) {
       return undefined;
@@ -83,6 +83,7 @@ export class HooksService {
 
       proc.on('exit', (code) => {
         if (code === 0) {
+          this.logger.debug('hook succeeded', { event, stdout, stderr });
           resolve({ stdout, stderr, code });
         } else {
           const error = new HookError(event, code ?? -1, stderr, stdout);
