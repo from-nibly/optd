@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SubjectService } from 'src/subjects/subjects.service';
 import * as bcrypt from 'bcrypt';
-import { SubjectRecord } from 'src/subjects/subjects.types.record';
+import { SubjectDBRecord } from 'src/subjects/subjects.types.record';
 
 @Injectable()
 export class AuthenticationService {

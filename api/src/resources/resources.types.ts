@@ -94,7 +94,7 @@ export class CreateResource {
     });
   }
 
-  toDBRecord(actor: UserContext, message: string): ResourceDBRecord {
+  toDBRecord(actor: UserContext, message?: string): ResourceDBRecord {
     return {
       name: this.metadata.name,
       namespace: this.metadata.namespace,
