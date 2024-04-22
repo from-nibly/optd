@@ -1,11 +1,11 @@
 import { GlobalMeta, NamespacedMeta } from './types';
 
-export class GlobalMetaApiResponse<
+export class GlobalMetaAPIResponse<
   K extends string = string,
 > extends GlobalMeta {
   kind: K;
 
-  constructor(partial: GlobalMetaApiResponse<K>) {
+  constructor(partial: GlobalMetaAPIResponse<K>) {
     super(partial);
     this.kind = partial.kind;
   }
@@ -13,8 +13,8 @@ export class GlobalMetaApiResponse<
   static fromRecord<K extends string = string>(
     metadata: GlobalMeta,
     kind: K,
-  ): GlobalMetaApiResponse<K> {
-    return new GlobalMetaApiResponse({
+  ): GlobalMetaAPIResponse<K> {
+    return new GlobalMetaAPIResponse({
       kind: kind,
       name: metadata.name,
       labels: metadata.labels,
@@ -23,28 +23,28 @@ export class GlobalMetaApiResponse<
   }
 }
 
-export class CreateGlobalMetaApiBody extends GlobalMeta {
+export class GlobalCreateMetaApiBody extends GlobalMeta {
   kind: string;
-  constructor(partial: CreateGlobalMetaApiBody) {
+  constructor(partial: GlobalCreateMetaApiBody) {
     super(partial);
     this.kind = partial.kind;
   }
 }
 
-export class UpdateGlobalMetaApiBody extends GlobalMeta {
+export class GlobalUpdateMetaApiBody extends GlobalMeta {
   kind: string;
 
-  constructor(partial: UpdateGlobalMetaApiBody) {
+  constructor(partial: GlobalUpdateMetaApiBody) {
     super(partial);
   }
 }
 
-export class NamespacedMetaApiResponse<
+export class NamespacedMetaAPIResponse<
   K extends string = string,
-> extends GlobalMetaApiResponse<K> {
+> extends GlobalMetaAPIResponse<K> {
   namespace: string;
 
-  constructor(partial: NamespacedMetaApiResponse<K>) {
+  constructor(partial: NamespacedMetaAPIResponse<K>) {
     super(partial);
     this.namespace = partial.namespace;
   }
@@ -52,8 +52,8 @@ export class NamespacedMetaApiResponse<
   static fromRecord<K extends string = string>(
     metadata: NamespacedMeta,
     kind: K,
-  ): NamespacedMetaApiResponse<K> {
-    return new NamespacedMetaApiResponse({
+  ): NamespacedMetaAPIResponse<K> {
+    return new NamespacedMetaAPIResponse({
       kind: kind,
       name: metadata.name,
       labels: metadata.labels,
@@ -63,19 +63,19 @@ export class NamespacedMetaApiResponse<
   }
 }
 
-export class CreateNamespacedMetaApiBody extends CreateGlobalMetaApiBody {
+export class NamespacedCreateMetaApiBody extends GlobalCreateMetaApiBody {
   namespace: string;
 
-  constructor(partial: CreateNamespacedMetaApiBody) {
+  constructor(partial: NamespacedCreateMetaApiBody) {
     super(partial);
     this.namespace = partial.namespace;
   }
 }
 
-export class UpdateNamespacedMetaApiBody extends UpdateGlobalMetaApiBody {
+export class NamespacedUpdateMetaApiBody extends GlobalUpdateMetaApiBody {
   namespace: string;
 
-  constructor(partial: UpdateNamespacedMetaApiBody) {
+  constructor(partial: NamespacedUpdateMetaApiBody) {
     super(partial);
     this.namespace = partial.namespace;
   }

@@ -1,11 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/database/databases.service';
 import { Knex } from 'knex';
-import {
-  CreateSubjectRecord,
-  Subject,
-  UpdateSubjectRecord,
-} from './subjects.types';
+import { CreateSubject, Subject, UpdateSubject } from './subjects.types';
 import { SubjectDBRecord } from './subjects.types.record';
 import { UserContext } from 'src/types/types';
 
@@ -14,10 +10,17 @@ export class SubjectService {
   private readonly logger = new Logger(SubjectService.name);
 
   constructor(private readonly databaseService: DatabaseService) {}
+
   async onModuleInit(): Promise<void> {
     //migrations
-    // TODO: do proper migrations here
     this.databaseService.client.transaction(async (trx) => {
+      //check if table exists
+      //TODO: do proper migrations here
+      const tableExists = await trx.schema.hasTable('meta_subject');
+      if (tableExists) {
+        return;
+      }
+
       const commonFields = (table: Knex.CreateTableBuilder) => {
         table.string('name', 255).checkRegex('^[a-z][a-z0-9-]*$').notNullable();
 
@@ -63,7 +66,7 @@ export class SubjectService {
     const resp = await this.databaseService
       .client('meta_subject')
       .select<SubjectDBRecord[]>('*');
-    return resp.map((record) => Subject.fromDBRecord('Subject', record));
+    return resp.map((record) => Subject.fromDBRecord(record));
   }
 
   async getSubject(id: string): Promise<Subject> {
@@ -77,11 +80,11 @@ export class SubjectService {
     if (resp.length > 1) {
       throw new Error('multiple subjects with same id');
     }
-    return Subject.fromDBRecord('Subject', resp[0]);
+    return Subject.fromDBRecord(resp[0]);
   }
 
   async createSubject(
-    subject: CreateSubjectRecord,
+    subject: CreateSubject,
     user: string,
     message?: string,
   ): Promise<Subject> {
@@ -94,13 +97,50 @@ export class SubjectService {
         .insert<SubjectDBRecord>(dbRecord)
         .returning('*');
 
-      return Subject.fromDBRecord('Subject', resp[0]);
+      return Subject.fromDBRecord(resp[0]);
     });
   }
 
-  // async updateSubject(
-  //   subject: UpdateSubjectRecord,
-  //   user: string,
-  //   message?: string,
-  // ): Promise<Subject> {}
+  async updateSubject(
+    subject: UpdateSubject,
+    user: string,
+    message?: string,
+  ): Promise<Subject> {
+    return this.databaseService.client.transaction(async (trx) => {
+      const [existing, ...extra] = await trx('meta_subject')
+        .select('*')
+        .where('name', subject.metadata.name);
+      if (extra.length > 0) {
+        this.logger.error(
+          `found multiple subjects with name ${subject.metadata.name}`,
+        );
+        throw new Error('multiple subjects with same name');
+      }
+      if (!existing) {
+        throw new Error('subject not found');
+      }
+
+      await trx('meta_subject_history').insert(existing);
+      await trx('meta_subject').where('name', subject.metadata.name).del();
+      const [updated, ...extraUpdate] = await trx('meta_subject')
+        .insert<SubjectDBRecord>(
+          subject.toDBRecord(
+            new UserContext(user),
+            existing.revision_id,
+            message,
+          ),
+        )
+        .returning('*');
+      if (extraUpdate.length > 0) {
+        this.logger.error('multiple subject updates returned');
+        throw new Error('multiple subject updates returned');
+      }
+      if (!updated) {
+        this.logger.error('no subject update returned');
+        throw new Error('no subject update returned');
+      }
+
+      return Subject.fromDBRecord(updated);
+    });
+  }
 }

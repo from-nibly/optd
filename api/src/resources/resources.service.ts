@@ -1,9 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/database/databases.service';
 import { HooksService } from 'src/hooks/hooks.service';
-import { CreateResource, Resource, UpdateResource } from './resources.types';
+import {
+  NamespacedCreateResource,
+  NamespacedResource,
+  NamespacedUpdateResource,
+} from './resources.types';
 import { UserContext } from 'src/types/types';
-import { ResourceDBRecord } from './resources.types.record';
+import { NamespacedResourceDBRecord } from './resources.types.record';
 
 @Injectable()
 export class ResourceService {
@@ -14,34 +18,37 @@ export class ResourceService {
     private readonly hookService: HooksService,
   ) {}
 
-  async listResources(namespace: string, kind: string): Promise<Resource[]> {
+  async listResources(
+    namespace: string,
+    kind: string,
+  ): Promise<NamespacedResource[]> {
     //TODO: pagination...
     const resp = await this.dbService
       .client(this.dbService.getResourceTableName(kind))
       .select('*')
       .where('namespace', namespace);
-    return resp.map((r) => Resource.fromDBRecord(kind, r));
+    return resp.map((r) => NamespacedResource.fromDBRecord(kind, r));
   }
 
   async getResource(
     namespace: string,
     kind: string,
     name: string,
-  ): Promise<Resource> {
+  ): Promise<NamespacedResource> {
     const resp = await this.dbService
       .client(this.dbService.getResourceTableName(kind))
       .select('*')
       .where('namespace', namespace)
       .andWhere('name', name);
-    return Resource.fromDBRecord(kind, resp[0]);
+    return NamespacedResource.fromDBRecord(kind, resp[0]);
   }
 
   async updateResource(
-    record: UpdateResource,
+    record: NamespacedUpdateResource,
     kind: string,
     username: string,
     message: string,
-  ): Promise<Resource> {
+  ): Promise<NamespacedResource> {
     const tableName = this.dbService.getResourceTableName(kind);
     const historyTableName = this.dbService.getResourceHistoryTableName(kind);
     this.logger.debug('');
@@ -76,7 +83,7 @@ export class ResourceService {
       this.logger.debug('deleted existing record', results);
 
       const [updated, ...extraUpdate] = await trx(tableName)
-        .insert<ResourceDBRecord>(
+        .insert<NamespacedResourceDBRecord>(
           record.toDBRecord(
             new UserContext(username),
             existing.revision_id,
@@ -96,16 +103,16 @@ export class ResourceService {
 
       await this.hookService.executeHook('postUpdate', kind, updated);
 
-      return Resource.fromDBRecord(kind, existing);
+      return NamespacedResource.fromDBRecord(kind, existing);
     });
   }
 
   async createResource(
-    record: CreateResource,
+    record: NamespacedCreateResource,
     resourceKind: string,
     username: string,
     message: string,
-  ): Promise<Resource> {
+  ): Promise<NamespacedResource> {
     this.logger.debug('creating resource record', record);
     return this.dbService.client.transaction(async (trx) => {
       await this.hookService.executeHook('preCreate', resourceKind, record);
@@ -118,7 +125,7 @@ export class ResourceService {
         .insert(dbRecord)
         .returning('*');
 
-      const newRecord = Resource.fromDBRecord(
+      const newRecord = NamespacedResource.fromDBRecord(
         record.metadata.kind,
         newDBRecord[0],
       );

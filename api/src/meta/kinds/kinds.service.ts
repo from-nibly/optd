@@ -80,7 +80,7 @@ export class KindService {
         throw new Error('no kind update returned');
       }
 
-      return Kind.fromDBRecord(existing);
+      return Kind.fromDBRecord(updated);
     });
   }
 

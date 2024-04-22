@@ -8,24 +8,20 @@ import {
   Put,
   UseInterceptors,
 } from '@nestjs/common';
-import { HooksService } from 'src/hooks/hooks.service';
 import { KindService } from './kinds.service';
+import { CreateKind, UpdateKind } from './kinds.types';
 import {
-  KindAPIResponse,
   CreateKindAPIBody,
+  KindAPIResponse,
   UpdateKindAPIBody,
 } from './kinds.types.api';
-import { CreateKind, UpdateKind } from './kinds.types';
 
 @Controller('/meta/kinds')
 @UseInterceptors(ClassSerializerInterceptor)
 export class KindController {
   private readonly logger = new Logger(KindController.name);
 
-  constructor(
-    private readonly kindService: KindService,
-    private readonly hookService: HooksService,
-  ) {}
+  constructor(private readonly kindService: KindService) {}
 
   @Get('/')
   async listKinds(): Promise<KindAPIResponse[]> {
@@ -51,7 +47,10 @@ export class KindController {
 
     this.logger.log('got body', body);
     if (UpdateKindAPIBody.isUpdateKindAPIBody(body)) {
-      const record = UpdateKind.fromApiRequest(body);
+      const record = UpdateKind.fromAPIRequest(
+        body,
+        body.metadata.name ?? kindName,
+      );
       this.logger.log('got record', { record });
 
       const updated = await this.kindService.updateKind(
@@ -62,7 +61,10 @@ export class KindController {
 
       response = KindAPIResponse.fromRecord(updated);
     } else {
-      const record = CreateKind.fromApiRequest(body);
+      const record = CreateKind.fromAPIRequest(
+        body,
+        body.metadata.name ?? kindName,
+      );
       const created = await this.kindService.createKind(
         record,
         'test user',

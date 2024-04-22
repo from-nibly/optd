@@ -1,3 +1,5 @@
-import { NamespacedDBRecord } from 'src/types/types.record';
+import { GlobalDBRecord, NamespacedDBRecord } from 'src/types/types.record';
 
-export interface ResourceDBRecord extends NamespacedDBRecord {}
+export interface GlobalResourceDBRecord extends GlobalDBRecord {}
+
+export interface NamespacedResourceDBRecord extends NamespacedDBRecord {}

@@ -1,26 +1,31 @@
-import { History } from 'src/types/types';
 import {
-  GlobalMetaApiResponse,
-  CreateGlobalMetaApiBody,
-  UpdateGlobalMetaApiBody,
+  GlobalCreateResourceAPIBody,
+  GlobalResourceAPIResponse,
+  GlobalUpdateResourceAPIBody,
+} from 'src/resources/resources.types.api';
+import { History, NonMethodFields } from 'src/types/types';
+import {
+  GlobalCreateMetaApiBody,
+  GlobalMetaAPIResponse,
+  GlobalUpdateMetaApiBody,
 } from 'src/types/types.api';
 import { Kind, KindSpec } from './kinds.types';
 
-export class KindAPIResponse {
-  metadata: GlobalMetaApiResponse<'Kind'>;
+export class KindAPIResponse extends GlobalResourceAPIResponse {
+  metadata: GlobalMetaAPIResponse<'Kind'>;
   spec: KindSpec;
   status: any;
   history: History;
   state: string;
 
-  constructor(partial: KindAPIResponse) {
-    Object.assign(this, partial);
-    this.metadata = new GlobalMetaApiResponse(partial.metadata);
+  constructor(obj: KindAPIResponse) {
+    super(obj);
+    this.spec = new KindSpec(obj.spec);
   }
 
   static fromRecord(record: Kind): KindAPIResponse {
     return new KindAPIResponse({
-      metadata: GlobalMetaApiResponse.fromRecord(record.metadata, 'Kind'),
+      metadata: GlobalMetaAPIResponse.fromRecord(record.metadata, 'Kind'),
       spec: record.spec,
       status: record.status,
       history: new History(record.history),
@@ -29,26 +34,26 @@ export class KindAPIResponse {
   }
 }
 
-export class CreateKindAPIBody {
-  metadata: CreateGlobalMetaApiBody;
-  //TODO: better validation of spec
+export class CreateKindAPIBody extends GlobalCreateResourceAPIBody {
+  metadata: GlobalCreateMetaApiBody;
   spec: Partial<KindSpec>;
-  status?: any;
-  state: string;
+
+  constructor(object: NonMethodFields<CreateKindAPIBody>) {
+    super(object);
+    this.spec = new KindSpec(object.spec);
+  }
 }
 
-export class UpdateKindAPIBody {
-  metadata: UpdateGlobalMetaApiBody;
-  spec: Partial<KindSpec>;
-  status?: any;
+export class UpdateKindAPIBody extends GlobalUpdateResourceAPIBody {
+  metadata: GlobalUpdateMetaApiBody;
+  spec: KindSpec;
+  status: any;
   state: string;
   history: Pick<History, 'id'>;
 
-  constructor(partial: UpdateKindAPIBody) {
-    Object.assign(this, partial);
-    this.metadata = new GlobalMetaApiResponse(partial.metadata);
-    //only take the id from the history. this is required for the update
-    this.history = { id: partial.history.id };
+  constructor(object: NonMethodFields<UpdateKindAPIBody>) {
+    super(object);
+    this.spec = new KindSpec(object.spec);
   }
 
   static isUpdateKindAPIBody(body: any): body is UpdateKindAPIBody {

@@ -17,13 +17,13 @@ export class GlobalMeta {
   }
 }
 
-export class CreateGlobalMeta {
+export class GlobalCreateMeta {
   name: string;
   labels?: Record<string, string>;
   annotations?: Record<string, string>;
   kind: string;
 
-  constructor(partial: NonMethodFields<CreateGlobalMeta>) {
+  constructor(partial: NonMethodFields<GlobalCreateMeta>) {
     this.name = partial.name;
     this.labels = partial.labels;
     this.annotations = partial.annotations;
@@ -40,10 +40,10 @@ export class NamespacedMeta extends GlobalMeta {
   }
 }
 
-export class CreateNamespacedMeta extends CreateGlobalMeta {
+export class NamespacedCreateMeta extends GlobalCreateMeta {
   namespace: string;
 
-  constructor(partial: CreateNamespacedMeta) {
+  constructor(partial: NamespacedCreateMeta) {
     super(partial);
     this.namespace = partial.namespace;
   }
@@ -80,29 +80,29 @@ export class GlobalRecord {
   }
 }
 
-export class CreateGlobalRecord {
-  metadata: CreateGlobalMeta;
+export class GlobalCreateRecord {
+  metadata: GlobalCreateMeta;
   spec?: any;
   status?: any;
   state: 'pending';
 
-  constructor(partial: CreateGlobalRecord) {
-    this.metadata = new CreateGlobalMeta(partial.metadata);
+  constructor(partial: GlobalCreateRecord) {
+    this.metadata = new GlobalCreateMeta(partial.metadata);
     this.spec = partial.spec;
     this.status = partial.status;
     this.state = partial.state;
   }
 }
 
-export class UpdateGlobalRecord {
-  metadata: CreateGlobalMeta;
+export class GlobalUpdateRecord {
+  metadata: GlobalCreateMeta;
   spec?: any;
   status?: any;
   state: string;
   history: Pick<History, 'id'>;
 
-  constructor(partial: UpdateGlobalRecord) {
-    this.metadata = new CreateGlobalMeta(partial.metadata);
+  constructor(partial: GlobalUpdateRecord) {
+    this.metadata = new GlobalCreateMeta(partial.metadata);
     this.spec = partial.spec;
     this.status = partial.status;
     this.state = partial.state;

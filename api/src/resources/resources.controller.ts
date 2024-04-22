@@ -11,11 +11,14 @@ import {
 import { HooksService } from 'src/hooks/hooks.service';
 import { ResourceService } from './resources.service';
 import {
-  CreateResourceAPIBody,
-  ResourceAPIResponse,
-  UpdateResourceAPIBody,
+  NamespacedCreateResourceAPIBody,
+  NamespacedResourceAPIResponse,
+  NamespacedUpdateResourceAPIBody,
 } from './resources.types.api';
-import { CreateResource, UpdateResource } from './resources.types';
+import {
+  NamespacedCreateResource,
+  NamespacedUpdateResource,
+} from './resources.types';
 
 @Controller('/namespaces/:namespace/:resourceKind/')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -30,14 +33,14 @@ export class ResourceController {
   async listResources(
     @Param('namespace') namespace: string,
     @Param('resourceKind') resourceKind: string,
-  ): Promise<ResourceAPIResponse[]> {
+  ): Promise<NamespacedResourceAPIResponse[]> {
     this.logger.debug(`getting resources for ${namespace}/${resourceKind}`);
     const resources = await this.resourceService.listResources(
       namespace,
       resourceKind,
     );
     return resources.map((r) =>
-      ResourceAPIResponse.fromRecord(r, resourceKind),
+      NamespacedResourceAPIResponse.fromRecord(r, resourceKind),
     );
   }
 
@@ -46,14 +49,14 @@ export class ResourceController {
     @Param('namespace') namespace: string,
     @Param('resourceKind') resourceKind: string,
     @Param('name') name: string,
-  ): Promise<ResourceAPIResponse> {
+  ): Promise<NamespacedResourceAPIResponse> {
     this.logger.debug(`getting resource ${namespace}/${resourceKind}/${name}`);
     const resource = await this.resourceService.getResource(
       namespace,
       resourceKind,
       name,
     );
-    return ResourceAPIResponse.fromRecord(resource, resourceKind);
+    return NamespacedResourceAPIResponse.fromRecord(resource, resourceKind);
   }
 
   @Put('/:name')
@@ -61,11 +64,16 @@ export class ResourceController {
     @Param('namespace') namespace: string,
     @Param('resourceKind') resourceKind: string,
     @Param('name') name: string,
-    @Body() body: CreateResourceAPIBody | UpdateResourceAPIBody,
-  ): Promise<ResourceAPIResponse> {
+    @Body()
+    body: NamespacedCreateResourceAPIBody | NamespacedUpdateResourceAPIBody,
+  ): Promise<NamespacedResourceAPIResponse> {
     this.logger.debug('putting resource', body);
-    if (UpdateResourceAPIBody.isUpdateResourceAPIBody(body)) {
-      const record = UpdateResource.fromAPIRequest(body, namespace, name);
+    if (NamespacedUpdateResourceAPIBody.isUpdateResourceAPIBody(body)) {
+      const record = NamespacedUpdateResource.fromAPIRequest(
+        body,
+        namespace,
+        name,
+      );
       await this.hookService.executeHook('validate', resourceKind, record);
       const updated = await this.resourceService.updateResource(
         record,
@@ -73,10 +81,10 @@ export class ResourceController {
         'test user',
         'test message',
       );
-      return ResourceAPIResponse.fromRecord(updated, resourceKind);
+      return NamespacedResourceAPIResponse.fromRecord(updated, resourceKind);
     }
 
-    const record = CreateResource.fromAPIRequest(
+    const record = NamespacedCreateResource.fromAPIRequest(
       body,
       body.metadata.kind ?? resourceKind,
       body.metadata.namespace ?? namespace,
@@ -89,6 +97,6 @@ export class ResourceController {
       'test user',
       'test message',
     );
-    return ResourceAPIResponse.fromRecord(created, resourceKind);
+    return NamespacedResourceAPIResponse.fromRecord(created, resourceKind);
   }
 }
