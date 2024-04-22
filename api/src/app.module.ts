@@ -6,6 +6,8 @@ import { HooksModule } from './hooks/hooks.module';
 import { KindModule } from './meta/kinds/kinds.module';
 import { ResourcesModule } from './resources/resources.module';
 import { SubjectsModule } from './subjects/subjects.module';
+import { ConfigModule } from '@nestjs/config';
+import configuration from './config/configuration';
 
 @Module({
   imports: [
@@ -15,6 +17,7 @@ import { SubjectsModule } from './subjects/subjects.module';
     HooksModule,
     AuthenticationModule,
     SubjectsModule,
+    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
   ],
   controllers: [],
   providers: [AppService],

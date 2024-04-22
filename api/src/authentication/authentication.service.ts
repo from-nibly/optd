@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { SubjectService } from 'src/subjects/subjects.service';
-import * as bcrypt from 'bcrypt';
-import { SubjectDBRecord } from 'src/subjects/subjects.types.record';
 
 @Injectable()
 export class AuthenticationService {
-  constructor(private readonly subjectService: SubjectService) {}
+  logger = new Logger(AuthenticationService.name);
+
+  constructor(
+    private readonly subjectService: SubjectService,
+    private jwtService: JwtService,
+  ) {}
 
   // async validateSubject(
   //   username: string,
@@ -20,11 +24,21 @@ export class AuthenticationService {
   //   return null;
   // }
 
-  // async login(user: any) {
-  //   const payload = { username: user.username, sub: user.userId };
+  async signIn(subjectName: any, password: string) {
+    const subject = await this.subjectService.getSubject(subjectName);
 
-  //   // return {
-  //   //   access_token: this.jwtService.sign(payload),
-  //   // };
-  // }
+    //TODO: bcrypt
+    if (subject?.spec.passwordHash !== password) {
+      this.logger.log('password check failed');
+      return null;
+    }
+
+    this.logger.log('password check failed');
+
+    const payload = { sub: subjectName, role: 'user' };
+
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
+  }
 }
