@@ -11,6 +11,8 @@ import { ConfigService } from './config/config.service';
 import { container } from 'tsyringe';
 import { DirectoryService } from './config/directory.service';
 import { ClientService } from './client';
+import { GetSubjectCommand } from './commands/get/subjects';
+import { EditSubjectCommand } from './commands/edit/subjects';
 
 const [node, app, ...args] = process.argv;
 
@@ -33,6 +35,8 @@ cli.register(PutKindCommand);
 cli.register(EditKindCommand);
 cli.register(PutsubjectCommand);
 cli.register(AuthLoginCommand);
+cli.register(GetSubjectCommand);
+cli.register(EditSubjectCommand);
 
 cli.register(Builtins.HelpCommand);
 cli.register(Builtins.VersionCommand);
