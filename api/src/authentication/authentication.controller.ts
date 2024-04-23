@@ -8,8 +8,8 @@ import {
   Post,
   Request,
 } from '@nestjs/common';
+import { Public } from './authentication.guard';
 import { AuthenticationService } from './authentication.service';
-import { AuthenticationGuard, Public } from './authentication.guard';
 
 @Controller('/auth')
 export class AuthenticationController {

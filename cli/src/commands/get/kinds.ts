@@ -1,7 +1,9 @@
 import { Command, Option } from 'clipanion';
-import { client } from '../../client';
 import { stringify } from 'yaml';
+import { ClientService } from '../../client';
+import { autoInjectable } from 'tsyringe';
 
+@autoInjectable()
 export class GetKindCommand extends Command {
   static paths = [
     ['get', 'kind'],
@@ -21,9 +23,17 @@ export class GetKindCommand extends Command {
     ],
   });
 
+  private readonly clientService: ClientService;
+
+  constructor(clientService?: ClientService) {
+    super();
+    this.clientService = clientService!;
+  }
+
   name = Option.String({ required: false });
 
   async execute(): Promise<number | void> {
+    const client = await this.clientService.getClient();
     if (this.name) {
       const resp = await client.url(`/meta/kinds/${this.name}`).get().json();
       this.context.stdout.write(stringify(resp) + '\n');

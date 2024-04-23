@@ -1,8 +1,10 @@
 import { Command, Option } from 'clipanion';
 import { PutCommand } from './root';
-import { client } from '../../client';
 import { stringify } from 'yaml';
+import { autoInjectable } from 'tsyringe';
+import { ClientService } from '../../client';
 
+@autoInjectable()
 export class PutsubjectCommand extends PutCommand {
   static paths = [
     ['put', 'subject'],
@@ -29,9 +31,17 @@ export class PutsubjectCommand extends PutCommand {
     ],
   });
 
+  private readonly clientService: ClientService;
+
+  constructor(clientService?: ClientService) {
+    super();
+    this.clientService = clientService!;
+  }
+
   subject = Option.String({ required: false });
 
   async execute(): Promise<number | void> {
+    const client = await this.clientService.getClient();
     let subject = this.subject;
 
     const outputsubject = await this.obtainData(subject, 'subject');

@@ -1,7 +1,9 @@
 import { Command, Option } from 'clipanion';
-import { client } from '../../client';
+import { ClientService } from '../../client';
 import { stringify } from 'yaml';
+import { autoInjectable, inject } from 'tsyringe';
 
+@autoInjectable()
 export class GetResourceCommand extends Command {
   static paths = [['get'], ['g']];
   static usage = Command.Usage({
@@ -14,10 +16,19 @@ export class GetResourceCommand extends Command {
     ],
   });
 
+  private readonly clientService: ClientService;
+
+  constructor(clientService?: ClientService) {
+    super();
+    this.clientService = clientService!;
+  }
+
   kind = Option.String();
   name = Option.String({ required: false });
 
   async execute(): Promise<number | void> {
+    const client = await this.clientService.getClient();
+
     let kind = this.kind;
     let name = this.name;
     let rest = [];

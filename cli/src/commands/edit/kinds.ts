@@ -1,8 +1,10 @@
 import { Command, Option } from 'clipanion';
 import { EditCommand } from './root';
-import { client } from '../../client';
 import { stringify } from 'yaml';
+import { ClientService } from '../../client';
+import { autoInjectable } from 'tsyringe';
 
+@autoInjectable()
 export class EditKindCommand extends EditCommand {
   static paths = [
     ['edit', 'kind'],
@@ -16,9 +18,17 @@ export class EditKindCommand extends EditCommand {
     examples: [['Edit a kind by using your editor', 'optdctl edit <kind>']],
   });
 
+  private readonly clientService: ClientService;
+
+  constructor(clientService?: ClientService) {
+    super();
+    this.clientService = clientService!;
+  }
+
   kind = Option.String({ required: true });
 
   async execute(): Promise<number | void> {
+    const client = await this.clientService.getClient();
     let kind = this.kind;
 
     const existing = await client.url(`/meta/kinds/${kind}`).get().json();

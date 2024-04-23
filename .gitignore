@@ -178,4 +178,4 @@ _users
 mydb
 db
 pouch__all_dbs__
-log*
+*log
