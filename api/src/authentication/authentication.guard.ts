@@ -9,6 +9,8 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { SubjectService } from 'src/subjects/subjects.service';
+import { Subject } from 'src/subjects/subjects.types';
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
@@ -16,6 +18,7 @@ export class AuthenticationGuard implements CanActivate {
     private jwtService: JwtService,
     private reflector: Reflector,
     private configService: ConfigService,
+    private subjectService: SubjectService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -40,7 +43,9 @@ export class AuthenticationGuard implements CanActivate {
         secret: this.configService.get<string>('auth.jwtSecret'),
       });
 
-      request['subject'] = payload;
+      const subject = await this.subjectService.getSubject(payload.sub);
+
+      request['subject'] = subject;
     } catch (e) {
       throw new UnauthorizedException(e);
     }

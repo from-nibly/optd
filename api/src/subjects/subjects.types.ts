@@ -1,4 +1,3 @@
-import { Exclude } from 'class-transformer';
 import {
   GlobalCreateResource,
   GlobalResource,
@@ -12,7 +11,6 @@ import { NonMethodFields } from 'src/types/types';
 import { SubjectDBRecord } from './subjects.types.record';
 
 export class SubjectSpec {
-  @Exclude()
   passwordHash?: string;
 
   constructor(partial: SubjectSpec) {
@@ -23,9 +21,9 @@ export class SubjectSpec {
 export class Subject extends GlobalResource {
   spec: SubjectSpec;
 
-  constructor(partial: Subject) {
-    super(partial);
-    this.spec = new SubjectSpec(partial.spec);
+  constructor(obj: Subject) {
+    super(obj);
+    this.spec = new SubjectSpec(obj.spec);
   }
 
   static fromDBRecord(record: SubjectDBRecord) {
@@ -36,9 +34,9 @@ export class Subject extends GlobalResource {
 export class CreateSubject extends GlobalCreateResource {
   spec: SubjectSpec;
 
-  constructor(partial: NonMethodFields<CreateSubject>) {
-    super(partial);
-    this.spec = new SubjectSpec(partial.spec);
+  constructor(obj: NonMethodFields<CreateSubject>) {
+    super(obj);
+    this.spec = new SubjectSpec(obj.spec);
   }
 
   static fromAPIRequest(
@@ -57,9 +55,9 @@ export class CreateSubject extends GlobalCreateResource {
 export class UpdateSubject extends GlobalUpdateResource {
   spec: SubjectSpec;
 
-  constructor(partial: NonMethodFields<UpdateSubject>) {
-    super(partial);
-    this.spec = new SubjectSpec(partial.spec);
+  constructor(obj: NonMethodFields<UpdateSubject>) {
+    super(obj);
+    this.spec = new SubjectSpec(obj.spec);
   }
 
   static fromAPIRequest(

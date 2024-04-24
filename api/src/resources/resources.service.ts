@@ -6,8 +6,8 @@ import {
   NamespacedResource,
   NamespacedUpdateResource,
 } from './resources.types';
-import { UserContext } from 'src/types/types';
 import { NamespacedResourceDBRecord } from './resources.types.record';
+import { Subject } from 'src/subjects/subjects.types';
 
 @Injectable()
 export class ResourceService {
@@ -46,7 +46,7 @@ export class ResourceService {
   async updateResource(
     record: NamespacedUpdateResource,
     kind: string,
-    username: string,
+    actor: Subject,
     message: string,
   ): Promise<NamespacedResource> {
     const tableName = this.dbService.getResourceTableName(kind);
@@ -84,11 +84,7 @@ export class ResourceService {
 
       const [updated, ...extraUpdate] = await trx(tableName)
         .insert<NamespacedResourceDBRecord>(
-          record.toDBRecord(
-            new UserContext(username),
-            existing.revision_id,
-            message,
-          ),
+          record.toDBRecord(actor, existing.revision_id, message),
         )
         .returning('*');
 
@@ -110,14 +106,14 @@ export class ResourceService {
   async createResource(
     record: NamespacedCreateResource,
     resourceKind: string,
-    username: string,
+    actor: Subject,
     message: string,
   ): Promise<NamespacedResource> {
     this.logger.debug('creating resource record', record);
     return this.dbService.client.transaction(async (trx) => {
       await this.hookService.executeHook('preCreate', resourceKind, record);
 
-      const dbRecord = record.toDBRecord(new UserContext(username), message);
+      const dbRecord = record.toDBRecord(actor, message);
 
       const newDBRecord = await trx(
         this.dbService.getResourceTableName(record.metadata.kind),

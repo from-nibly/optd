@@ -59,6 +59,7 @@ export class History {
   constructor(obj: NonMethodFields<Exclude<History, 'at'>>) {
     this.id = obj.id;
     this.by = obj.by;
+    this.at = obj.at;
     this.message = obj.message;
     this.parent = obj.parent;
   }

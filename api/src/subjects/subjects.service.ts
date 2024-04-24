@@ -3,7 +3,6 @@ import { DatabaseService } from 'src/database/databases.service';
 import { Knex } from 'knex';
 import { CreateSubject, Subject, UpdateSubject } from './subjects.types';
 import { SubjectDBRecord } from './subjects.types.record';
-import { UserContext } from 'src/types/types';
 
 @Injectable()
 export class SubjectService {
@@ -80,17 +79,18 @@ export class SubjectService {
     if (resp.length > 1) {
       throw new Error('multiple subjects with same id');
     }
+    this.logger.debug('got subject', { resp: resp[0] });
     return Subject.fromDBRecord(resp[0]);
   }
 
   async createSubject(
     subject: CreateSubject,
-    user: string,
+    actor: Subject,
     message?: string,
   ): Promise<Subject> {
     this.logger.debug('creating subject record', subject);
 
-    const dbRecord = subject.toDBRecord(new UserContext(user), message);
+    const dbRecord = subject.toDBRecord(actor, message);
 
     return this.databaseService.client.transaction(async (trx) => {
       const resp = await trx('meta_subject')
@@ -103,7 +103,7 @@ export class SubjectService {
 
   async updateSubject(
     subject: UpdateSubject,
-    user: string,
+    actor: Subject,
     message?: string,
   ): Promise<Subject> {
     return this.databaseService.client.transaction(async (trx) => {
@@ -124,11 +124,7 @@ export class SubjectService {
       await trx('meta_subject').where('name', subject.metadata.name).del();
       const [updated, ...extraUpdate] = await trx('meta_subject')
         .insert<SubjectDBRecord>(
-          subject.toDBRecord(
-            new UserContext(user),
-            existing.revision_id,
-            message,
-          ),
+          subject.toDBRecord(actor, existing.revision_id, message),
         )
         .returning('*');
       if (extraUpdate.length > 0) {

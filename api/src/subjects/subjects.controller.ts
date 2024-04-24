@@ -6,6 +6,7 @@ import {
   Logger,
   Param,
   Put,
+  Req,
   UseInterceptors,
 } from '@nestjs/common';
 import { SubjectService } from './subjects.service';
@@ -15,6 +16,7 @@ import {
   UpdateSubjectAPIBody,
 } from './subjects.types.api';
 import { CreateSubject, UpdateSubject } from './subjects.types';
+import { Request } from 'express';
 
 @Controller('/meta/subjects')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -33,19 +35,20 @@ export class SubjectController {
   @Get('/:name')
   async getSubject(@Param('name') name: string): Promise<SubjectAPIResponse> {
     const record = await this.subjectService.getSubject(name);
-    return SubjectAPIResponse.fromRecord(record);
+    const resp = SubjectAPIResponse.fromRecord(record);
+    this.logger.debug('got subject', { record, resp });
+    return resp;
   }
 
   @Put('/:name')
   async createSubject(
     @Param('name') subjectName: string,
     @Body() body: CreateSubjectAPIBody | UpdateSubjectAPIBody,
+    @Req() req: any,
   ): Promise<SubjectAPIResponse> {
-    //TODO: be loose with what you accept
-
+    const actor = req['subject'];
     let response: SubjectAPIResponse | undefined = undefined;
 
-    this.logger.log('got body', body);
     if (UpdateSubjectAPIBody.isUpdateSubjectAPIBody(body)) {
       //TODO: is this the right behavior?
       const record = UpdateSubject.fromAPIRequest(
@@ -56,7 +59,7 @@ export class SubjectController {
 
       const updated = await this.subjectService.updateSubject(
         record,
-        'test user',
+        actor,
         'test message',
       );
 
@@ -68,7 +71,7 @@ export class SubjectController {
       );
       const created = await this.subjectService.createSubject(
         record,
-        'test user',
+        actor,
         'test message',
       );
       response = SubjectAPIResponse.fromRecord(created);

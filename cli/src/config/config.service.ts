@@ -30,6 +30,11 @@ export class ConfigService {
     return this.configCache!;
   }
 
+  async getServer(name: string): Promise<ServerConfig | undefined> {
+    const config = await this.getConfigObj();
+    return config.servers[name];
+  }
+
   async getCurrentServer(): Promise<ServerConfig | undefined> {
     const config = await this.getConfigObj();
     if (!config.current) {

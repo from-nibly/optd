@@ -6,6 +6,7 @@ import {
   Logger,
   Param,
   Put,
+  Req,
   UseInterceptors,
 } from '@nestjs/common';
 import { KindService } from './kinds.service';
@@ -40,7 +41,9 @@ export class KindController {
   async createKind(
     @Param('name') kindName: string,
     @Body() body: CreateKindAPIBody | UpdateKindAPIBody,
+    @Req() req: any,
   ): Promise<KindAPIResponse> {
+    const actor = req['subject'];
     //TODO: be loose with what you accept
 
     let response: KindAPIResponse | undefined = undefined;
@@ -55,7 +58,7 @@ export class KindController {
 
       const updated = await this.kindService.updateKind(
         record,
-        'test user',
+        actor,
         'test message',
       );
 
@@ -67,7 +70,7 @@ export class KindController {
       );
       const created = await this.kindService.createKind(
         record,
-        'test user',
+        actor,
         'test message',
       );
       response = KindAPIResponse.fromRecord(created);

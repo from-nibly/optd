@@ -6,6 +6,7 @@ import {
   Logger,
   Param,
   Put,
+  Req,
   UseInterceptors,
 } from '@nestjs/common';
 import { HooksService } from 'src/hooks/hooks.service';
@@ -66,7 +67,9 @@ export class ResourceController {
     @Param('name') name: string,
     @Body()
     body: NamespacedCreateResourceAPIBody | NamespacedUpdateResourceAPIBody,
+    @Req() req: any,
   ): Promise<NamespacedResourceAPIResponse> {
+    const actor = req['subject'];
     this.logger.debug('putting resource', body);
     if (NamespacedUpdateResourceAPIBody.isUpdateResourceAPIBody(body)) {
       const record = NamespacedUpdateResource.fromAPIRequest(
@@ -78,7 +81,7 @@ export class ResourceController {
       const updated = await this.resourceService.updateResource(
         record,
         resourceKind,
-        'test user',
+        actor,
         'test message',
       );
       return NamespacedResourceAPIResponse.fromRecord(updated, resourceKind);
@@ -94,7 +97,7 @@ export class ResourceController {
     const created = await this.resourceService.createResource(
       record,
       resourceKind,
-      'test user',
+      actor,
       'test message',
     );
     return NamespacedResourceAPIResponse.fromRecord(created, resourceKind);

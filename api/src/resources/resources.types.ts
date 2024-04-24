@@ -5,7 +5,6 @@ import {
   History,
   NamespacedMeta,
   NonMethodFields,
-  UserContext,
 } from 'src/types/types';
 import {
   GlobalResourceDBRecord,
@@ -18,6 +17,7 @@ import {
   NamespacedUpdateResourceAPIBody,
 } from './resources.types.api';
 import { v4 as uuid } from 'uuid';
+import { Subject } from 'src/subjects/subjects.types';
 
 export class HookableResource {
   metadata: NamespacedMeta;
@@ -63,13 +63,13 @@ export class GlobalResource {
         annotations: record.metadata_annotations,
         kind: kind,
       },
-      history: {
+      history: new History({
         id: record.revision_id,
         by: record.revision_by,
         at: record.revision_at,
         message: record.revision_message,
         parent: record.revision_parent,
-      },
+      }),
       spec: record.spec,
       status: record.status,
       state: record.state,
@@ -105,13 +105,13 @@ export class NamespacedResource {
         annotations: record.metadata_annotations,
         kind: kind,
       },
-      history: {
+      history: new History({
         id: record.revision_id,
         by: record.revision_by,
         at: record.revision_at,
         message: record.revision_message,
         parent: record.revision_parent,
-      },
+      }),
       spec: record.spec,
       status: record.status,
       state: record.state,
@@ -145,7 +145,7 @@ export class GlobalCreateResource {
     });
   }
 
-  toDBRecord(actor: UserContext, message?: string): GlobalResourceDBRecord {
+  toDBRecord(actor: Subject, message?: string): GlobalResourceDBRecord {
     return {
       name: this.metadata.name,
       metadata_annotations: this.metadata.annotations ?? {},
@@ -155,7 +155,7 @@ export class GlobalCreateResource {
       spec: this.spec,
       revision_id: uuid(),
       revision_at: new Date().toISOString(),
-      revision_by: actor.username,
+      revision_by: actor.metadata.name,
       revision_message: message,
       revision_parent: null,
     };
@@ -191,7 +191,7 @@ export class NamespacedCreateResource {
     });
   }
 
-  toDBRecord(actor: UserContext, message?: string): NamespacedResourceDBRecord {
+  toDBRecord(actor: Subject, message?: string): NamespacedResourceDBRecord {
     return {
       name: this.metadata.name,
       namespace: this.metadata.namespace,
@@ -202,7 +202,7 @@ export class NamespacedCreateResource {
       spec: this.spec,
       revision_id: uuid(),
       revision_at: new Date().toISOString(),
-      revision_by: actor.username,
+      revision_by: actor.metadata.name,
       revision_message: message,
       revision_parent: null,
     };
@@ -244,7 +244,7 @@ export class GlobalUpdateResource {
   }
 
   toDBRecord(
-    actor: UserContext,
+    actor: Subject,
     parent_revision: string,
     message?: string,
   ): GlobalResourceDBRecord {
@@ -257,7 +257,7 @@ export class GlobalUpdateResource {
       spec: this.spec,
       revision_id: uuid(),
       revision_at: new Date().toISOString(),
-      revision_by: actor.username,
+      revision_by: actor.metadata.name,
       revision_message: message,
       revision_parent: parent_revision,
     };
@@ -299,7 +299,7 @@ export class NamespacedUpdateResource {
   }
 
   toDBRecord(
-    actor: UserContext,
+    actor: Subject,
     parent_revision: string,
     message?: string,
   ): NamespacedResourceDBRecord {
@@ -313,7 +313,7 @@ export class NamespacedUpdateResource {
       spec: this.spec,
       revision_id: uuid(),
       revision_at: new Date().toISOString(),
-      revision_by: actor.username,
+      revision_by: actor.metadata.name,
       revision_message: message,
       revision_parent: parent_revision,
     };

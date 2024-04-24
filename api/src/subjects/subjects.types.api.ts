@@ -3,7 +3,7 @@ import {
   GlobalCreateMetaApiBody,
   GlobalMetaAPIResponse,
 } from 'src/types/types.api';
-import { Subject } from './subjects.types';
+import { Subject, SubjectSpec } from './subjects.types';
 import {
   GlobalCreateResourceAPIBody,
   GlobalResourceAPIResponse,
@@ -12,13 +12,14 @@ import {
 
 export class SubjectAPIResponse extends GlobalResourceAPIResponse {
   metadata: GlobalMetaAPIResponse;
-  spec: any;
+  spec: SubjectSpec;
   status: any;
   history: History;
   state: string;
 
   constructor(obj: SubjectAPIResponse) {
     super(obj);
+    this.spec = new SubjectSpec(obj.spec);
   }
 
   static fromRecord(
@@ -27,7 +28,7 @@ export class SubjectAPIResponse extends GlobalResourceAPIResponse {
   ): SubjectAPIResponse {
     return new SubjectAPIResponse({
       metadata: GlobalMetaAPIResponse.fromRecord(record.metadata, kind),
-      spec: record.spec,
+      spec: new SubjectSpec(record.spec),
       status: record.status,
       history: record.history,
       state: record.state,
@@ -47,8 +48,9 @@ export class UpdateSubjectAPIBody extends GlobalUpdateResourceAPIBody {
   state: string;
   history: Pick<History, 'id'>;
 
-  constructor(partial: UpdateSubjectAPIBody) {
-    super(partial);
+  constructor(obj: UpdateSubjectAPIBody) {
+    super(obj);
+    this.spec = new SubjectSpec(obj.spec);
   }
 
   static isUpdateSubjectAPIBody(body: any): body is UpdateSubjectAPIBody {
