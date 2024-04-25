@@ -23,29 +23,29 @@ export class GlobalCreateMeta {
   annotations?: Record<string, string>;
   kind: string;
 
-  constructor(partial: NonMethodFields<GlobalCreateMeta>) {
-    this.name = partial.name;
-    this.labels = partial.labels;
-    this.annotations = partial.annotations;
-    this.kind = partial.kind;
+  constructor(obj: NonMethodFields<GlobalCreateMeta>) {
+    this.name = obj.name;
+    this.labels = obj.labels;
+    this.annotations = obj.annotations;
+    this.kind = obj.kind;
   }
 }
 
 export class NamespacedMeta extends GlobalMeta {
   namespace: string;
 
-  constructor(partial: NonMethodFields<NamespacedMeta>) {
-    super(partial);
-    this.namespace = partial.namespace;
+  constructor(obj: NonMethodFields<NamespacedMeta>) {
+    super(obj);
+    this.namespace = obj.namespace;
   }
 }
 
 export class NamespacedCreateMeta extends GlobalCreateMeta {
   namespace: string;
 
-  constructor(partial: NamespacedCreateMeta) {
-    super(partial);
-    this.namespace = partial.namespace;
+  constructor(obj: NamespacedCreateMeta) {
+    super(obj);
+    this.namespace = obj.namespace;
   }
 }
 
@@ -87,11 +87,11 @@ export class GlobalCreateRecord {
   status?: any;
   state: 'pending';
 
-  constructor(partial: GlobalCreateRecord) {
-    this.metadata = new GlobalCreateMeta(partial.metadata);
-    this.spec = partial.spec;
-    this.status = partial.status;
-    this.state = partial.state;
+  constructor(obj: GlobalCreateRecord) {
+    this.metadata = new GlobalCreateMeta(obj.metadata);
+    this.spec = obj.spec;
+    this.status = obj.status;
+    this.state = obj.state;
   }
 }
 
@@ -102,12 +102,12 @@ export class GlobalUpdateRecord {
   state: string;
   history: Pick<History, 'id'>;
 
-  constructor(partial: GlobalUpdateRecord) {
-    this.metadata = new GlobalCreateMeta(partial.metadata);
-    this.spec = partial.spec;
-    this.status = partial.status;
-    this.state = partial.state;
-    this.history = { id: partial.history.id };
+  constructor(obj: GlobalUpdateRecord) {
+    this.metadata = new GlobalCreateMeta(obj.metadata);
+    this.spec = obj.spec;
+    this.status = obj.status;
+    this.state = obj.state;
+    this.history = { id: obj.history.id };
   }
 }
 

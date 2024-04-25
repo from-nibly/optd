@@ -10,7 +10,6 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { SubjectService } from 'src/subjects/subjects.service';
-import { Subject } from 'src/subjects/subjects.types';
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {

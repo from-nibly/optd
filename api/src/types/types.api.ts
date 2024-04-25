@@ -5,9 +5,9 @@ export class GlobalMetaAPIResponse<
 > extends GlobalMeta {
   kind: K;
 
-  constructor(partial: GlobalMetaAPIResponse<K>) {
-    super(partial);
-    this.kind = partial.kind;
+  constructor(obj: GlobalMetaAPIResponse<K>) {
+    super(obj);
+    this.kind = obj.kind;
   }
 
   static fromRecord<K extends string = string>(
@@ -25,17 +25,17 @@ export class GlobalMetaAPIResponse<
 
 export class GlobalCreateMetaApiBody extends GlobalMeta {
   kind: string;
-  constructor(partial: GlobalCreateMetaApiBody) {
-    super(partial);
-    this.kind = partial.kind;
+  constructor(obj: GlobalCreateMetaApiBody) {
+    super(obj);
+    this.kind = obj.kind;
   }
 }
 
 export class GlobalUpdateMetaApiBody extends GlobalMeta {
   kind: string;
 
-  constructor(partial: GlobalUpdateMetaApiBody) {
-    super(partial);
+  constructor(obj: GlobalUpdateMetaApiBody) {
+    super(obj);
   }
 }
 
@@ -44,9 +44,9 @@ export class NamespacedMetaAPIResponse<
 > extends GlobalMetaAPIResponse<K> {
   namespace: string;
 
-  constructor(partial: NamespacedMetaAPIResponse<K>) {
-    super(partial);
-    this.namespace = partial.namespace;
+  constructor(obj: NamespacedMetaAPIResponse<K>) {
+    super(obj);
+    this.namespace = obj.namespace;
   }
 
   static fromRecord<K extends string = string>(
@@ -66,17 +66,17 @@ export class NamespacedMetaAPIResponse<
 export class NamespacedCreateMetaApiBody extends GlobalCreateMetaApiBody {
   namespace: string;
 
-  constructor(partial: NamespacedCreateMetaApiBody) {
-    super(partial);
-    this.namespace = partial.namespace;
+  constructor(obj: NamespacedCreateMetaApiBody) {
+    super(obj);
+    this.namespace = obj.namespace;
   }
 }
 
 export class NamespacedUpdateMetaApiBody extends GlobalUpdateMetaApiBody {
   namespace: string;
 
-  constructor(partial: NamespacedUpdateMetaApiBody) {
-    super(partial);
-    this.namespace = partial.namespace;
+  constructor(obj: NamespacedUpdateMetaApiBody) {
+    super(obj);
+    this.namespace = obj.namespace;
   }
 }

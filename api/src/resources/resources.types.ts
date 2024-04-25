@@ -26,12 +26,12 @@ export class HookableResource {
   history?: History;
   state: string;
 
-  constructor(partial: NamespacedResource) {
-    this.metadata = new NamespacedMeta(partial.metadata);
-    this.spec = partial.spec;
-    this.status = partial.status;
-    this.history = partial.history ? new History(partial.history) : undefined;
-    this.state = partial.state;
+  constructor(obj: NamespacedResource) {
+    this.metadata = new NamespacedMeta(obj.metadata);
+    this.spec = obj.spec;
+    this.status = obj.status;
+    this.history = obj.history ? new History(obj.history) : undefined;
+    this.state = obj.state;
   }
 }
 
@@ -43,12 +43,12 @@ export class GlobalResource {
   history: History;
   state: string;
 
-  constructor(partial: GlobalResource) {
-    this.metadata = new GlobalMeta(partial.metadata);
-    this.spec = partial.spec;
-    this.status = partial.status;
-    this.history = new History(partial.history);
-    this.state = partial.state;
+  constructor(obj: GlobalResource) {
+    this.metadata = new GlobalMeta(obj.metadata);
+    this.spec = obj.spec;
+    this.status = obj.status;
+    this.history = new History(obj.history);
+    this.state = obj.state;
   }
 
   static fromDBRecord(
@@ -84,12 +84,12 @@ export class NamespacedResource {
   history: History;
   state: string;
 
-  constructor(partial: NamespacedResource) {
-    this.metadata = new NamespacedMeta(partial.metadata);
-    this.spec = partial.spec;
-    this.status = partial.status;
-    this.history = new History(partial.history);
-    this.state = partial.state;
+  constructor(obj: NamespacedResource) {
+    this.metadata = new NamespacedMeta(obj.metadata);
+    this.spec = obj.spec;
+    this.status = obj.status;
+    this.history = new History(obj.history);
+    this.state = obj.state;
   }
 
   static fromDBRecord(
@@ -123,9 +123,9 @@ export class GlobalCreateResource {
   metadata: GlobalCreateMeta;
   spec: any;
 
-  constructor(partial: NonMethodFields<GlobalCreateResource>) {
-    this.metadata = new GlobalCreateMeta(partial.metadata);
-    this.spec = partial.spec;
+  constructor(obj: NonMethodFields<GlobalCreateResource>) {
+    this.metadata = new GlobalCreateMeta(obj.metadata);
+    this.spec = obj.spec;
   }
 
   static fromAPIRequest<T extends GlobalCreateResourceAPIBody>(
@@ -166,9 +166,9 @@ export class NamespacedCreateResource {
   metadata: NamespacedCreateMeta;
   spec: Record<string, any>;
 
-  constructor(partial: NonMethodFields<NamespacedCreateResource>) {
-    this.metadata = new NamespacedCreateMeta(partial.metadata);
-    this.spec = partial.spec;
+  constructor(obj: NonMethodFields<NamespacedCreateResource>) {
+    this.metadata = new NamespacedCreateMeta(obj.metadata);
+    this.spec = obj.spec;
   }
 
   static fromAPIRequest(
@@ -216,12 +216,12 @@ export class GlobalUpdateResource {
   state: string;
   history: Pick<History, 'id'>;
 
-  constructor(partial: NonMethodFields<GlobalUpdateResource>) {
-    this.metadata = new GlobalMeta(partial.metadata);
-    this.spec = partial.spec;
-    this.status = partial.status;
-    this.state = partial.state;
-    this.history = { id: partial.history.id };
+  constructor(obj: NonMethodFields<GlobalUpdateResource>) {
+    this.metadata = new GlobalMeta(obj.metadata);
+    this.spec = obj.spec;
+    this.status = obj.status;
+    this.state = obj.state;
+    this.history = { id: obj.history.id };
   }
 
   static fromAPIRequest(
@@ -271,12 +271,12 @@ export class NamespacedUpdateResource {
   state: string;
   history: Pick<History, 'id'>;
 
-  constructor(partial: NonMethodFields<NamespacedUpdateResource>) {
-    this.metadata = new NamespacedMeta(partial.metadata);
-    this.spec = partial.spec;
-    this.status = partial.status;
-    this.state = partial.state;
-    this.history = { id: partial.history.id };
+  constructor(obj: NonMethodFields<NamespacedUpdateResource>) {
+    this.metadata = new NamespacedMeta(obj.metadata);
+    this.spec = obj.spec;
+    this.status = obj.status;
+    this.state = obj.state;
+    this.history = { id: obj.history.id };
   }
 
   static fromAPIRequest(

@@ -13,8 +13,8 @@ import { SubjectDBRecord } from './subjects.types.record';
 export class SubjectSpec {
   passwordHash?: string;
 
-  constructor(partial: SubjectSpec) {
-    this.passwordHash = partial.passwordHash;
+  constructor(obj: SubjectSpec) {
+    this.passwordHash = obj.passwordHash;
   }
 }
 

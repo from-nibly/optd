@@ -16,8 +16,8 @@ export class KindHookSpec {
   preDelete?: string;
   postDelete?: string;
 
-  constructor(partial: KindHookSpec) {
-    Object.assign(this, partial);
+  constructor(obj: KindHookSpec) {
+    Object.assign(this, obj);
   }
 }
 
@@ -46,9 +46,9 @@ export class Kind extends GlobalResource {
 export class CreateKind extends GlobalCreateResource {
   spec: KindSpec;
 
-  constructor(partial: NonMethodFields<CreateKind>) {
-    super(partial);
-    this.spec = new KindSpec(partial.spec ?? {});
+  constructor(obj: NonMethodFields<CreateKind>) {
+    super(obj);
+    this.spec = new KindSpec(obj.spec ?? {});
   }
 
   static fromAPIRequest(request: CreateKindAPIBody, name: string): CreateKind {
