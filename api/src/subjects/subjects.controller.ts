@@ -10,13 +10,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { SubjectService } from './subjects.service';
+import { CreateSubject, UpdateSubject } from './subjects.types';
 import {
-  SubjectAPIResponse,
   CreateSubjectAPIBody,
+  SubjectAPIResponse,
   UpdateSubjectAPIBody,
 } from './subjects.types.api';
-import { CreateSubject, UpdateSubject } from './subjects.types';
-import { Request } from 'express';
+import { ACTOR_CONTEXT } from 'src/authentication/authentication.guard';
 
 @Controller('/meta/subjects')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -36,7 +36,6 @@ export class SubjectController {
   async getSubject(@Param('name') name: string): Promise<SubjectAPIResponse> {
     const record = await this.subjectService.getSubject(name);
     const resp = SubjectAPIResponse.fromRecord(record);
-    this.logger.debug('got subject', { record, resp });
     return resp;
   }
 
@@ -46,7 +45,7 @@ export class SubjectController {
     @Body() body: CreateSubjectAPIBody | UpdateSubjectAPIBody,
     @Req() req: any,
   ): Promise<SubjectAPIResponse> {
-    const actor = req['subject'];
+    const actor = req[ACTOR_CONTEXT];
     let response: SubjectAPIResponse | undefined = undefined;
 
     if (UpdateSubjectAPIBody.isUpdateSubjectAPIBody(body)) {

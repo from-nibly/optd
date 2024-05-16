@@ -4,7 +4,7 @@ import * as knex from 'knex';
 
 @Injectable()
 export class DatabaseService {
-  private knex: knex.Knex;
+  private knex: knex.Knex<any, any> | undefined;
 
   constructor() {}
 

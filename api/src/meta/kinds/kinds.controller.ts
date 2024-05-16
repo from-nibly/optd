@@ -16,6 +16,7 @@ import {
   KindAPIResponse,
   UpdateKindAPIBody,
 } from './kinds.types.api';
+import { ACTOR_CONTEXT } from 'src/authentication/authentication.guard';
 
 @Controller('/meta/kinds')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -43,7 +44,7 @@ export class KindController {
     @Body() body: CreateKindAPIBody | UpdateKindAPIBody,
     @Req() req: any,
   ): Promise<KindAPIResponse> {
-    const actor = req['subject'];
+    const actor = req[ACTOR_CONTEXT];
     //TODO: be loose with what you accept
 
     let response: KindAPIResponse | undefined = undefined;

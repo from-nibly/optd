@@ -8,6 +8,9 @@ import { ResourcesModule } from './resources/resources.module';
 import { SubjectsModule } from './subjects/subjects.module';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
+import { RolesModule } from './roles/roles.module';
+import { GroupsModule } from './groups/groups.module';
+import { AuthorizationModule } from './authorization/authorization.module';
 
 @Module({
   imports: [
@@ -16,7 +19,10 @@ import configuration from './config/configuration';
     ResourcesModule,
     HooksModule,
     AuthenticationModule,
+    AuthorizationModule,
     SubjectsModule,
+    RolesModule,
+    GroupsModule,
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
   ],
   controllers: [],

@@ -1,3 +1,6 @@
+import { Role } from 'src/roles/roles.types';
+import { Subject } from 'src/subjects/subjects.types';
+
 type NonMethodKeys<T> = {
   [K in keyof T]: T[K] extends Function ? never : K;
 }[keyof T];
@@ -127,10 +130,11 @@ export class NamespacedRecord {
   }
 }
 
-export class UserContext {
-  username: string;
+export class ActorContext {
+  subject: Subject;
+  roles: Role[];
 
-  constructor(username: string) {
-    this.username = username;
+  constructor(subject: Subject) {
+    this.subject = subject;
   }
 }

@@ -10,6 +10,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { SubjectService } from 'src/subjects/subjects.service';
+import { ActorContext } from 'src/types/types';
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
@@ -44,7 +45,7 @@ export class AuthenticationGuard implements CanActivate {
 
       const subject = await this.subjectService.getSubject(payload.sub);
 
-      request['subject'] = subject;
+      request[ACTOR_CONTEXT] = new ActorContext(subject);
     } catch (e) {
       throw new UnauthorizedException(e);
     }
@@ -60,3 +61,4 @@ export class AuthenticationGuard implements CanActivate {
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+export const ACTOR_CONTEXT = Symbol('Actor Context');

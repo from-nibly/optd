@@ -5,6 +5,7 @@ import {
   History,
   NamespacedMeta,
   NonMethodFields,
+  ActorContext,
 } from 'src/types/types';
 import {
   GlobalResourceDBRecord,
@@ -145,7 +146,7 @@ export class GlobalCreateResource {
     });
   }
 
-  toDBRecord(actor: Subject, message?: string): GlobalResourceDBRecord {
+  toDBRecord(actor: ActorContext, message?: string): GlobalResourceDBRecord {
     return {
       name: this.metadata.name,
       metadata_annotations: this.metadata.annotations ?? {},
@@ -155,7 +156,7 @@ export class GlobalCreateResource {
       spec: this.spec,
       revision_id: uuid(),
       revision_at: new Date().toISOString(),
-      revision_by: actor.metadata.name,
+      revision_by: actor.subject.metadata.name,
       revision_message: message,
       revision_parent: null,
     };
@@ -191,7 +192,10 @@ export class NamespacedCreateResource {
     });
   }
 
-  toDBRecord(actor: Subject, message?: string): NamespacedResourceDBRecord {
+  toDBRecord(
+    actor: ActorContext,
+    message?: string,
+  ): NamespacedResourceDBRecord {
     return {
       name: this.metadata.name,
       namespace: this.metadata.namespace,
@@ -202,7 +206,7 @@ export class NamespacedCreateResource {
       spec: this.spec,
       revision_id: uuid(),
       revision_at: new Date().toISOString(),
-      revision_by: actor.metadata.name,
+      revision_by: actor.subject.metadata.name,
       revision_message: message,
       revision_parent: null,
     };
@@ -244,7 +248,7 @@ export class GlobalUpdateResource {
   }
 
   toDBRecord(
-    actor: Subject,
+    actor: ActorContext,
     parent_revision: string,
     message?: string,
   ): GlobalResourceDBRecord {
@@ -257,7 +261,7 @@ export class GlobalUpdateResource {
       spec: this.spec,
       revision_id: uuid(),
       revision_at: new Date().toISOString(),
-      revision_by: actor.metadata.name,
+      revision_by: actor.subject.metadata.name,
       revision_message: message,
       revision_parent: parent_revision,
     };
@@ -299,7 +303,7 @@ export class NamespacedUpdateResource {
   }
 
   toDBRecord(
-    actor: Subject,
+    actor: ActorContext,
     parent_revision: string,
     message?: string,
   ): NamespacedResourceDBRecord {
@@ -313,7 +317,7 @@ export class NamespacedUpdateResource {
       spec: this.spec,
       revision_id: uuid(),
       revision_at: new Date().toISOString(),
-      revision_by: actor.metadata.name,
+      revision_by: actor.subject.metadata.name,
       revision_message: message,
       revision_parent: parent_revision,
     };

@@ -7,7 +7,8 @@ import {
   NamespacedUpdateResource,
 } from './resources.types';
 import { NamespacedResourceDBRecord } from './resources.types.record';
-import { Subject } from 'src/subjects/subjects.types';
+import { ActorContext } from 'src/types/types';
+import knex from 'knex';
 
 @Injectable()
 export class ResourceService {
@@ -19,14 +20,50 @@ export class ResourceService {
   ) {}
 
   async listResources(
+    actorContext: ActorContext,
     namespace: string,
     kind: string,
   ): Promise<NamespacedResource[]> {
+    this.logger.debug(`listing resources for ${namespace}/${kind}`, {
+      actorContext,
+    });
+    const client = this.dbService.client;
     //TODO: pagination...
-    const resp = await this.dbService
-      .client(this.dbService.getResourceTableName(kind))
-      .select('*')
+    const authzPathExpression = client.raw(
+      `CONCAT('/', r.namespace, '/${kind}/', r.name)`,
+    );
+    //TODO optimize by removing irrelevant regex expressions?
+    const permissions = actorContext.roles
+      .map((r) => r.spec.permissions)
+      .flat()
+      .filter((p) => p.actions.includes('list'));
+
+    //shortcut when there are no permissions
+    if (permissions.length === 0) {
+      this.logger.debug('no permissions, returning empty list');
+      return [];
+    }
+
+    this.logger.debug('got permissions', { permissions });
+
+    const query = client(`${this.dbService.getResourceTableName(kind)} as r`)
+      .select(authzPathExpression, '*')
       .where('namespace', namespace);
+
+    for (let i = 0; i < permissions.length; i++) {
+      if (i === 0) {
+        query.andWhereRaw(`${authzPathExpression} ~ '${permissions[i].path}'`);
+      } else {
+        query.orWhereRaw(`${authzPathExpression} ~ '${permissions[i].path}'`);
+      }
+    }
+
+    this.logger.debug('running query', { query: query.toQuery() });
+
+    const resp = await query;
+
+    this.logger.debug('got query resp', { resp: resp[0] });
+
     return resp.map((r) => NamespacedResource.fromDBRecord(kind, r));
   }
 
@@ -46,12 +83,11 @@ export class ResourceService {
   async updateResource(
     record: NamespacedUpdateResource,
     kind: string,
-    actor: Subject,
+    actor: ActorContext,
     message: string,
   ): Promise<NamespacedResource> {
     const tableName = this.dbService.getResourceTableName(kind);
     const historyTableName = this.dbService.getResourceHistoryTableName(kind);
-    this.logger.debug('');
 
     return this.dbService.client.transaction(async (trx) => {
       const [existing, ...extra] = await trx(tableName)
@@ -106,7 +142,7 @@ export class ResourceService {
   async createResource(
     record: NamespacedCreateResource,
     resourceKind: string,
-    actor: Subject,
+    actor: ActorContext,
     message: string,
   ): Promise<NamespacedResource> {
     this.logger.debug('creating resource record', record);

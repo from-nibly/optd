@@ -4,6 +4,7 @@ import { KindDBRecord } from './kinds.types.record';
 import { CreateKind, Kind, UpdateKind } from './kinds.types';
 import { Knex } from 'knex';
 import { Subject } from 'src/subjects/subjects.types';
+import { ActorContext } from 'src/types/types';
 
 @Injectable()
 export class KindService {
@@ -37,7 +38,7 @@ export class KindService {
 
   async updateKind(
     kind: UpdateKind,
-    actor: Subject,
+    actor: ActorContext,
     message: string,
   ): Promise<Kind> {
     //history etc
@@ -86,7 +87,7 @@ export class KindService {
 
   async createKind(
     kind: CreateKind,
-    actor: Subject,
+    actor: ActorContext,
     message?: string,
   ): Promise<Kind> {
     this.logger.debug('creating kind record', kind);

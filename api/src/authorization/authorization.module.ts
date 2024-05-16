@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import { AuthenticationController } from 'src/authentication/authentication.controller';
-import { AuthenticationService } from 'src/authentication/authentication.service';
+import { APP_GUARD } from '@nestjs/core';
+import { GroupsModule } from 'src/groups/groups.module';
+import { RolesModule } from 'src/roles/roles.module';
 import { SubjectsModule } from 'src/subjects/subjects.module';
+import { AuthorizationGuard } from './authorization.guard';
 
 @Module({
-  imports: [SubjectsModule],
-  controllers: [AuthenticationController],
-  providers: [AuthenticationService],
+  imports: [SubjectsModule, RolesModule, GroupsModule],
+  controllers: [],
+  providers: [{ provide: APP_GUARD, useClass: AuthorizationGuard }],
 
-  exports: [AuthenticationService],
+  exports: [],
 })
 export class AuthorizationModule {}

@@ -3,6 +3,7 @@ import { DatabaseService } from 'src/database/databases.service';
 import { Knex } from 'knex';
 import { CreateSubject, Subject, UpdateSubject } from './subjects.types';
 import { SubjectDBRecord } from './subjects.types.record';
+import { ActorContext } from 'src/types/types';
 
 @Injectable()
 export class SubjectService {
@@ -79,13 +80,12 @@ export class SubjectService {
     if (resp.length > 1) {
       throw new Error('multiple subjects with same id');
     }
-    this.logger.debug('got subject', { resp: resp[0] });
     return Subject.fromDBRecord(resp[0]);
   }
 
   async createSubject(
     subject: CreateSubject,
-    actor: Subject,
+    actor: ActorContext,
     message?: string,
   ): Promise<Subject> {
     this.logger.debug('creating subject record', subject);
@@ -103,7 +103,7 @@ export class SubjectService {
 
   async updateSubject(
     subject: UpdateSubject,
-    actor: Subject,
+    actor: ActorContext,
     message?: string,
   ): Promise<Subject> {
     return this.databaseService.client.transaction(async (trx) => {

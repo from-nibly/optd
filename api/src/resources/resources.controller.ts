@@ -20,6 +20,8 @@ import {
   NamespacedCreateResource,
   NamespacedUpdateResource,
 } from './resources.types';
+import { ACTOR_CONTEXT } from 'src/authentication/authentication.guard';
+import { Request } from 'express';
 
 @Controller('/namespaces/:namespace/:resourceKind/')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -34,9 +36,14 @@ export class ResourceController {
   async listResources(
     @Param('namespace') namespace: string,
     @Param('resourceKind') resourceKind: string,
+    @Req() req: any,
   ): Promise<NamespacedResourceAPIResponse[]> {
-    this.logger.debug(`getting resources for ${namespace}/${resourceKind}`);
+    const actor = req[ACTOR_CONTEXT];
+    this.logger.debug(`getting resources for ${namespace}/${resourceKind}`, {
+      actor,
+    });
     const resources = await this.resourceService.listResources(
+      actor,
       namespace,
       resourceKind,
     );
@@ -69,7 +76,7 @@ export class ResourceController {
     body: NamespacedCreateResourceAPIBody | NamespacedUpdateResourceAPIBody,
     @Req() req: any,
   ): Promise<NamespacedResourceAPIResponse> {
-    const actor = req['subject'];
+    const actor = req[ACTOR_CONTEXT];
     this.logger.debug('putting resource', body);
     if (NamespacedUpdateResourceAPIBody.isUpdateResourceAPIBody(body)) {
       const record = NamespacedUpdateResource.fromAPIRequest(

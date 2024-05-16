@@ -29,11 +29,11 @@ export class AuthenticationService {
 
     //TODO: bcrypt
     if (subject?.spec.passwordHash !== password) {
-      this.logger.log('password check failed');
+      this.logger.debug('password check failed');
       return null;
     }
 
-    this.logger.log('password check failed');
+    this.logger.debug('password check succeeded');
 
     const payload = { sub: subjectName, role: 'user' };
 

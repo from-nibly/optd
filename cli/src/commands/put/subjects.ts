@@ -5,7 +5,7 @@ import { autoInjectable } from 'tsyringe';
 import { ClientService } from '../../client';
 
 @autoInjectable()
-export class PutsubjectCommand extends PutCommand {
+export class PutSubjectCommand extends PutCommand {
   static paths = [
     ['put', 'subject'],
     ['p', 'subject'],
