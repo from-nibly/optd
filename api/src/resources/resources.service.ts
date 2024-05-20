@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -151,10 +152,17 @@ export class ResourceService {
         this.logger.error(
           `found multiple resources with name ${record.metadata.name}`,
         );
-        throw new Error('multiple resources with same name');
+        throw new BadRequestException('multiple resources with same name');
       }
       if (!existing) {
         throw new NotFoundException('resource not found');
+      }
+
+      //ensure no edits have been made since the record was fetched
+      //if the history is null the intention is to overwrite no matter what
+      if (record.history.id && existing.revision_id !== record.history.id) {
+        this.logger.error('resource history id mismatch');
+        throw new BadRequestException('resource history id mismatch');
       }
 
       await this.hookService.executeHook('preUpdate', kind, record);

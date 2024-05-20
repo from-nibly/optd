@@ -5,9 +5,11 @@ export abstract class EditCommand extends Command {
   //TODO: what type is this? PutResource?
   async obtainData(existing: any): Promise<any> {
     const editor = process.env['EDITOR'] ?? 'vi';
+    console.log('existing', existing);
 
-    //TODO: there's no way this is gonna work universally
-    const bufferFileName = '/tmp/optdctl-buffer.yaml';
+    const bufferFileName = `/tmp/optdctl-buffer-${
+      existing.metadata.name
+    }-${new Date().toISOString()}.yaml`;
     const bufferFile = Bun.file(bufferFileName);
 
     await Bun.write(bufferFileName, stringify(existing));
