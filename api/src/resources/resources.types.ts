@@ -1,24 +1,23 @@
 import {
+  ActorContext,
   GlobalCreateMeta,
-  NamespacedCreateMeta,
   GlobalMeta,
   History,
+  NamespacedCreateMeta,
   NamespacedMeta,
   NonMethodFields,
-  ActorContext,
 } from 'src/types/types';
-import {
-  GlobalResourceDBRecord,
-  NamespacedResourceDBRecord,
-} from './resources.types.record';
+import { v4 as uuid } from 'uuid';
 import {
   GlobalCreateResourceAPIBody,
   GlobalUpdateResourceAPIBody,
   NamespacedCreateResourceAPIBody,
   NamespacedUpdateResourceAPIBody,
 } from './resources.types.api';
-import { v4 as uuid } from 'uuid';
-import { Subject } from 'src/subjects/subjects.types';
+import {
+  GlobalResourceDBRecord,
+  NamespacedResourceDBRecord,
+} from './resources.types.record';
 
 export class HookableResource {
   metadata: NamespacedMeta;
@@ -44,7 +43,7 @@ export class GlobalResource {
   history: History;
   state: string;
 
-  constructor(obj: GlobalResource) {
+  constructor(obj: NonMethodFields<GlobalResource>) {
     this.metadata = new GlobalMeta(obj.metadata);
     this.spec = obj.spec;
     this.status = obj.status;
@@ -52,8 +51,12 @@ export class GlobalResource {
     this.state = obj.state;
   }
 
+  toPath(): string {
+    return `/global/${this.metadata.kind}/${this.metadata.name}`;
+  }
+
   static fromDBRecord(
-    record: GlobalResourceDBRecord,
+    record: NonMethodFields<GlobalResourceDBRecord>,
     kind: string,
     ctor: typeof GlobalResource = GlobalResource,
   ): GlobalResource {
@@ -85,7 +88,7 @@ export class NamespacedResource {
   history: History;
   state: string;
 
-  constructor(obj: NamespacedResource) {
+  constructor(obj: NonMethodFields<NamespacedResource>) {
     this.metadata = new NamespacedMeta(obj.metadata);
     this.spec = obj.spec;
     this.status = obj.status;
@@ -93,9 +96,13 @@ export class NamespacedResource {
     this.state = obj.state;
   }
 
+  toPath(): string {
+    return `/global/${this.metadata.kind}/${this.metadata.name}`;
+  }
+
   static fromDBRecord(
     kind: string,
-    record: NamespacedResourceDBRecord,
+    record: NonMethodFields<NamespacedResourceDBRecord>,
     ctor: typeof NamespacedResource = NamespacedResource,
   ): NamespacedResource {
     return new ctor({

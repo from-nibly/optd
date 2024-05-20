@@ -1,4 +1,4 @@
-import { Role } from 'src/roles/roles.types';
+import { Action, Permission, Role } from 'src/roles/roles.types';
 import { Subject } from 'src/subjects/subjects.types';
 
 type NonMethodKeys<T> = {
@@ -136,5 +136,12 @@ export class ActorContext {
 
   constructor(subject: Subject) {
     this.subject = subject;
+  }
+
+  getPermissions(action: Action): Permission[] {
+    return this.roles
+      .map((r) => r.spec.permissions)
+      .flat()
+      .filter((p) => p.actions.includes(action));
   }
 }

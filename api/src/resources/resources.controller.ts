@@ -57,9 +57,12 @@ export class ResourceController {
     @Param('namespace') namespace: string,
     @Param('resourceKind') resourceKind: string,
     @Param('name') name: string,
+    @Req() req: any,
   ): Promise<NamespacedResourceAPIResponse> {
     this.logger.debug(`getting resource ${namespace}/${resourceKind}/${name}`);
+    const actor = req[ACTOR_CONTEXT];
     const resource = await this.resourceService.getResource(
+      actor,
       namespace,
       resourceKind,
       name,
@@ -86,9 +89,9 @@ export class ResourceController {
       );
       await this.hookService.executeHook('validate', resourceKind, record);
       const updated = await this.resourceService.updateResource(
+        actor,
         record,
         resourceKind,
-        actor,
         'test message',
       );
       return NamespacedResourceAPIResponse.fromRecord(updated, resourceKind);
@@ -102,6 +105,7 @@ export class ResourceController {
     );
     await this.hookService.executeHook('validate', resourceKind, record);
     const created = await this.resourceService.createResource(
+      actor,
       record,
       resourceKind,
       actor,
