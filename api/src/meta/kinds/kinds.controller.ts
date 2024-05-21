@@ -26,15 +26,20 @@ export class KindController {
   constructor(private readonly kindService: KindService) {}
 
   @Get('/')
-  async listKinds(): Promise<KindAPIResponse[]> {
-    const kinds = await this.kindService.listKinds();
+  async listKinds(@Req() req: any): Promise<KindAPIResponse[]> {
+    const actor = req[ACTOR_CONTEXT];
+    const kinds = await this.kindService.listKinds(actor);
 
     return kinds.map((r) => KindAPIResponse.fromRecord(r));
   }
 
   @Get('/:name')
-  async getKind(@Param('name') name: string): Promise<KindAPIResponse> {
-    const record = await this.kindService.getKind(name);
+  async getKind(
+    @Param('name') name: string,
+    @Req() req: any,
+  ): Promise<KindAPIResponse> {
+    const actor = req[ACTOR_CONTEXT];
+    const record = await this.kindService.getKind(actor, name);
     return KindAPIResponse.fromRecord(record);
   }
 

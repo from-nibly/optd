@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { GroupsModule } from 'src/groups/groups.module';
-import { RolesModule } from 'src/roles/roles.module';
-import { SubjectsModule } from 'src/subjects/subjects.module';
+import { GroupsModule } from 'src/meta/groups/groups.module';
+import { RolesModule } from 'src/meta/roles/roles.module';
+import { SubjectsModule } from 'src/meta/subjects/subjects.module';
 import { AuthorizationGuard } from './authorization.guard';
 
 @Module({

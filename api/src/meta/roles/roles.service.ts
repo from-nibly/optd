@@ -3,7 +3,7 @@ import { DatabaseService } from 'src/database/databases.service';
 import { Knex } from 'knex';
 import { CreateRole, Role, UpdateRole } from './roles.types';
 import { RoleDBRecord } from './roles.types.record';
-import { Subject } from 'src/subjects/subjects.types';
+import { Subject } from 'src/meta/subjects/subjects.types';
 import { Group } from 'src/groups/groups.types';
 import { ActorContext } from 'src/types/types';
 

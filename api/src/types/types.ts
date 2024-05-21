@@ -1,5 +1,5 @@
-import { Action, Permission, Role } from 'src/roles/roles.types';
-import { Subject } from 'src/subjects/subjects.types';
+import { Action, Permission, Role } from 'src/meta/roles/roles.types';
+import { Subject } from 'src/meta/subjects/subjects.types';
 
 type NonMethodKeys<T> = {
   [K in keyof T]: T[K] extends Function ? never : K;

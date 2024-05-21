@@ -9,9 +9,8 @@ import {
   ACTOR_CONTEXT,
   IS_PUBLIC_KEY,
 } from 'src/authentication/authentication.guard';
-import { GroupService } from 'src/groups/groups.service';
-import { RoleService } from 'src/roles/roles.service';
-import { Subject } from 'src/subjects/subjects.types';
+import { GroupService } from 'src/meta/groups/groups.service';
+import { RoleService } from 'src/meta/roles/roles.service';
 import { ActorContext } from 'src/types/types';
 
 @Injectable()

@@ -3,7 +3,7 @@ import { DatabaseService } from 'src/database/databases.service';
 import { Knex } from 'knex';
 import { CreateGroup, Group, UpdateGroup } from './groups.types';
 import { GroupDBRecord } from './groups.types.record';
-import { Subject } from 'src/subjects/subjects.types';
+import { Subject } from 'src/meta/subjects/subjects.types';
 import { ActorContext } from 'src/types/types';
 
 @Injectable()

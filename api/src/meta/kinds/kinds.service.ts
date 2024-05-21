@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Knex } from 'knex';
 import { DatabaseService } from 'src/database/databases.service';
-import { Permission } from 'src/roles/roles.types';
+import { Permission } from 'src/meta/roles/roles.types';
 import { ActorContext } from 'src/types/types';
 import { CreateKind, Kind, UpdateKind } from './kinds.types';
 import { KindDBRecord } from './kinds.types.record';
@@ -76,7 +76,7 @@ export class KindService {
     }
 
     let query = this.dbService
-      .client('meta_kind')
+      .client(tableName)
       .select<KindDBRecord[]>('*')
       .where('name', name);
 

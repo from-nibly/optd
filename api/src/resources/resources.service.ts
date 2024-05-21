@@ -8,7 +8,7 @@ import {
 import { Knex } from 'knex';
 import { DatabaseService } from 'src/database/databases.service';
 import { HooksService } from 'src/hooks/hooks.service';
-import { Permission } from 'src/roles/roles.types';
+import { Permission } from 'src/meta/roles/roles.types';
 import { ActorContext } from 'src/types/types';
 import {
   NamespacedCreateResource,
