@@ -60,8 +60,6 @@ export class ResourceService {
       actorContext,
     });
     const client = this.dbService.client;
-    //TODO: should this be done in the db?
-    //TODO: it could tie us to postgres in a weird way...
     //TODO: pagination...
     const permissions = actorContext.getPermissions('list');
 

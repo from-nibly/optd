@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { Knex } from 'knex';
 import { DatabaseService } from 'src/database/databases.service';
 import { Permission } from 'src/roles/roles.types';
@@ -48,9 +53,9 @@ export class KindService {
       return [];
     }
 
-    const authzPathExpression = this.createAuthzPathExpression(client, 'kind');
     let query = client(tableName).select<KindDBRecord[]>('*');
 
+    const authzPathExpression = this.createAuthzPathExpression(client, 'kind');
     query = this.addPermissionClauses(query, authzPathExpression, permissions);
 
     const resp = await query;
@@ -58,18 +63,34 @@ export class KindService {
     return resp.map((r) => Kind.fromDBRecord(r));
   }
 
-  async getKind(name: string): Promise<Kind> {
-    const resp = await this.dbService
+  async getKind(actorContext: ActorContext, name: string): Promise<Kind> {
+    const tableName = 'meta_kind';
+    const client = this.dbService.client;
+
+    const permissions = actorContext.getPermissions('list');
+
+    //shortcut when there are no permissions
+    if (permissions.length === 0) {
+      this.logger.debug('no permissions, returning 404');
+      throw new NotFoundException(`Kind with name ${name} not found`);
+    }
+
+    let query = this.dbService
       .client('meta_kind')
       .select<KindDBRecord[]>('*')
       .where('name', name);
+
+    const authzPathExpression = this.createAuthzPathExpression(client, 'kind');
+    query = this.addPermissionClauses(query, authzPathExpression, permissions);
+
+    const resp = await query;
     //error handling
     if (resp.length === 0) {
       throw new NotFoundException(`Kind with name ${name} not found`);
     }
     if (resp.length > 1) {
       this.logger.error(`found multiple kinds with name ${name}, using first`);
-      throw new Error('multiple kinds with same name');
+      throw new InternalServerErrorException('multiple kinds with same name');
     }
     return Kind.fromDBRecord(resp[0]);
   }
