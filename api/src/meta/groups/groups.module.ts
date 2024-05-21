@@ -5,7 +5,7 @@ import { GroupController } from './groups.controller';
 
 @Module({
   imports: [DatabaseModule],
-  controllers: [GroupController],
+  controllers: [],
   providers: [GroupService],
   exports: [GroupService],
 })

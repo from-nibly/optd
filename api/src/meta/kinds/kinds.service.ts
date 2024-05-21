@@ -193,12 +193,12 @@ export class KindService {
       table.uuid('revision_parent').nullable();
     };
 
-    await trx.schema.createTable(`resource_${name}`, (table) => {
+    await trx.schema.createTable(`meta_${name}`, (table) => {
       commonFields(table);
       table.primary(['name', 'namespace']);
     });
 
-    await trx.schema.createTable(`resource_${name}_history`, (table) => {
+    await trx.schema.createTable(`meta_${name}_history`, (table) => {
       commonFields(table);
       table.primary(['name', 'namespace', 'revision_id']);
       //make sure bugs can't update history?

@@ -3,8 +3,6 @@ import { DatabaseService } from 'src/database/databases.service';
 import { Knex } from 'knex';
 import { CreateRole, Role, UpdateRole } from './roles.types';
 import { RoleDBRecord } from './roles.types.record';
-import { Subject } from 'src/meta/subjects/subjects.types';
-import { Group } from 'src/groups/groups.types';
 import { ActorContext } from 'src/types/types';
 
 @Injectable()
@@ -18,7 +16,10 @@ export class RoleService {
     this.databaseService.client.transaction(async (trx) => {
       //check if table exists
       //TODO: do proper migrations here
-      const tableExists = await trx.schema.hasTable('meta_role');
+      const tableName = this.databaseService.getMetaResourceTableName('roles');
+      const historyTableName =
+        this.databaseService.getMetaResourceHistoryTableName('roles');
+      const tableExists = await trx.schema.hasTable(tableName);
       if (tableExists) {
         return;
       }
@@ -48,32 +49,32 @@ export class RoleService {
         table.uuid('revision_parent').nullable();
       };
 
-      await trx.schema.createTable('meta_role', (table) => {
+      await trx.schema.createTable(tableName, (table) => {
         commonFields(table);
         table.primary(['name']);
       });
 
-      await trx.schema.createTable('meta_role_history', (table) => {
+      await trx.schema.createTable(historyTableName, (table) => {
         commonFields(table);
         table.primary(['name', 'revision_id']);
         //make sure bugs can't update history?
         //might need to be able to delete history?
-        trx.raw('REVOKE UPDATE ON meta_role_history FROM optd');
-        trx.raw('REVOKE UPDATE ON meta_role_history FROM optd');
+        trx.raw('REVOKE UPDATE ON meta_roles_history FROM optd');
+        trx.raw('REVOKE UPDATE ON meta_roles_history FROM optd');
       });
     });
   }
 
   async listRoles(): Promise<Role[]> {
     const resp = await this.databaseService
-      .client('meta_role')
+      .client('meta_roles')
       .select<RoleDBRecord[]>('*');
     return resp.map((record) => Role.fromDBRecord(record));
   }
 
   async getAllRoles(names: string[]): Promise<Role[]> {
     const resp = await this.databaseService
-      .client('meta_role')
+      .client('meta_roles')
       .whereIn('name', names)
       .select<RoleDBRecord[]>('*');
     return resp.map((record) => Role.fromDBRecord(record));
@@ -81,7 +82,7 @@ export class RoleService {
 
   async getRole(name: string): Promise<Role> {
     const resp = await this.databaseService
-      .client('meta_role')
+      .client('meta_roles')
       .where('name', name)
       .select<RoleDBRecord[]>('*');
     if (resp.length === 0) {
@@ -104,7 +105,7 @@ export class RoleService {
     const dbRecord = role.toDBRecord(actor, message);
 
     return this.databaseService.client.transaction(async (trx) => {
-      const resp = await trx('meta_role')
+      const resp = await trx('meta_roles')
         .insert<RoleDBRecord>(dbRecord)
         .returning('*');
 
@@ -118,7 +119,7 @@ export class RoleService {
     message?: string,
   ): Promise<Role> {
     return this.databaseService.client.transaction(async (trx) => {
-      const [existing, ...extra] = await trx('meta_role')
+      const [existing, ...extra] = await trx('meta_roles')
         .select('*')
         .where('name', role.metadata.name);
       if (extra.length > 0) {
@@ -131,9 +132,9 @@ export class RoleService {
         throw new Error('role not found');
       }
 
-      await trx('meta_role_history').insert(existing);
-      await trx('meta_role').where('name', role.metadata.name).del();
-      const [updated, ...extraUpdate] = await trx('meta_role')
+      await trx('meta_roles_history').insert(existing);
+      await trx('meta_roles').where('name', role.metadata.name).del();
+      const [updated, ...extraUpdate] = await trx('meta_roles')
         .insert<RoleDBRecord>(
           role.toDBRecord(actor, existing.revision_id, message),
         )

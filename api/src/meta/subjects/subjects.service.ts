@@ -16,7 +16,11 @@ export class SubjectService {
     this.databaseService.client.transaction(async (trx) => {
       //check if table exists
       //TODO: do proper migrations here
-      const tableExists = await trx.schema.hasTable('meta_subject');
+      const tableName =
+        this.databaseService.getMetaResourceTableName('subjects');
+      const historyTableName =
+        this.databaseService.getMetaResourceHistoryTableName('subjects');
+      const tableExists = await trx.schema.hasTable(tableName);
       if (tableExists) {
         return;
       }
@@ -46,32 +50,32 @@ export class SubjectService {
         table.uuid('revision_parent').nullable();
       };
 
-      await trx.schema.createTable('meta_subject', (table) => {
+      await trx.schema.createTable(tableName, (table) => {
         commonFields(table);
         table.primary(['name']);
       });
 
-      await trx.schema.createTable('meta_subject_history', (table) => {
+      await trx.schema.createTable(historyTableName, (table) => {
         commonFields(table);
         table.primary(['name', 'revision_id']);
         //make sure bugs can't update history?
         //might need to be able to delete history?
-        trx.raw('REVOKE UPDATE ON meta_subject_history FROM optd');
-        trx.raw('REVOKE UPDATE ON meta_subject_history FROM optd');
+        trx.raw('REVOKE UPDATE ON meta_subjects_history FROM optd');
+        trx.raw('REVOKE UPDATE ON meta_subjects_history FROM optd');
       });
     });
   }
 
   async listSubjects(): Promise<Subject[]> {
     const resp = await this.databaseService
-      .client('meta_subject')
+      .client('meta_subjects')
       .select<SubjectDBRecord[]>('*');
     return resp.map((record) => Subject.fromDBRecord(record));
   }
 
   async getSubject(id: string): Promise<Subject> {
     const resp = await this.databaseService
-      .client('meta_subject')
+      .client('meta_subjects')
       .where('name', id)
       .select<SubjectDBRecord[]>('*');
     if (resp.length === 0) {
@@ -93,7 +97,7 @@ export class SubjectService {
     const dbRecord = subject.toDBRecord(actor, message);
 
     return this.databaseService.client.transaction(async (trx) => {
-      const resp = await trx('meta_subject')
+      const resp = await trx('meta_subjects')
         .insert<SubjectDBRecord>(dbRecord)
         .returning('*');
 
@@ -107,7 +111,7 @@ export class SubjectService {
     message?: string,
   ): Promise<Subject> {
     return this.databaseService.client.transaction(async (trx) => {
-      const [existing, ...extra] = await trx('meta_subject')
+      const [existing, ...extra] = await trx('meta_subjects')
         .select('*')
         .where('name', subject.metadata.name);
       if (extra.length > 0) {
@@ -121,8 +125,8 @@ export class SubjectService {
       }
 
       await trx('meta_subject_history').insert(existing);
-      await trx('meta_subject').where('name', subject.metadata.name).del();
-      const [updated, ...extraUpdate] = await trx('meta_subject')
+      await trx('meta_subjects').where('name', subject.metadata.name).del();
+      const [updated, ...extraUpdate] = await trx('meta_subjects')
         .insert<SubjectDBRecord>(
           subject.toDBRecord(actor, existing.revision_id, message),
         )

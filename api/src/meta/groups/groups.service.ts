@@ -17,7 +17,10 @@ export class GroupService {
     this.databaseService.client.transaction(async (trx) => {
       //check if table exists
       //TODO: do proper migrations here
-      const tableExists = await trx.schema.hasTable('meta_group');
+      const tableName = this.databaseService.getMetaResourceTableName('groups');
+      const historyTableName =
+        this.databaseService.getMetaResourceHistoryTableName('groups');
+      const tableExists = await trx.schema.hasTable(tableName);
       if (tableExists) {
         return;
       }
@@ -47,12 +50,12 @@ export class GroupService {
         table.uuid('revision_parent').nullable();
       };
 
-      await trx.schema.createTable('meta_group', (table) => {
+      await trx.schema.createTable(tableName, (table) => {
         commonFields(table);
         table.primary(['name']);
       });
 
-      await trx.schema.createTable('meta_group_history', (table) => {
+      await trx.schema.createTable(historyTableName, (table) => {
         commonFields(table);
         table.primary(['name', 'revision_id']);
         //make sure bugs can't update history?
@@ -65,14 +68,14 @@ export class GroupService {
 
   async listGroups(): Promise<Group[]> {
     const resp = await this.databaseService
-      .client('meta_group')
+      .client('meta_groups')
       .select<GroupDBRecord[]>('*');
     return resp.map((record) => Group.fromDBRecord(record));
   }
 
   async listGroupsForSubject(subject: Subject): Promise<Group[]> {
     const resp = await this.databaseService
-      .client('meta_group')
+      .client('meta_groups')
       .select<GroupDBRecord[]>('*')
       .whereJsonSupersetOf('spec', { subjects: [subject.metadata.name] });
     return resp.map((record) => Group.fromDBRecord(record));
@@ -80,7 +83,7 @@ export class GroupService {
 
   async getGroup(id: string): Promise<Group> {
     const resp = await this.databaseService
-      .client('meta_group')
+      .client('meta_groups')
       .where('name', id)
       .select<GroupDBRecord[]>('*');
     if (resp.length === 0) {
@@ -103,7 +106,7 @@ export class GroupService {
     const dbRecord = group.toDBRecord(actor, message);
 
     return this.databaseService.client.transaction(async (trx) => {
-      const resp = await trx('meta_group')
+      const resp = await trx('meta_groups')
         .insert<GroupDBRecord>(dbRecord)
         .returning('*');
 
@@ -117,7 +120,7 @@ export class GroupService {
     message?: string,
   ): Promise<Group> {
     return this.databaseService.client.transaction(async (trx) => {
-      const [existing, ...extra] = await trx('meta_group')
+      const [existing, ...extra] = await trx('meta_groups')
         .select('*')
         .where('name', group.metadata.name);
       if (extra.length > 0) {
@@ -131,8 +134,8 @@ export class GroupService {
       }
 
       await trx('meta_group_history').insert(existing);
-      await trx('meta_group').where('name', group.metadata.name).del();
-      const [updated, ...extraUpdate] = await trx('meta_group')
+      await trx('meta_groups').where('name', group.metadata.name).del();
+      const [updated, ...extraUpdate] = await trx('meta_groups')
         .insert<GroupDBRecord>(
           group.toDBRecord(actor, existing.revision_id, message),
         )

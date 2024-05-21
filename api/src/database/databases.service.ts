@@ -23,11 +23,19 @@ export class DatabaseService {
     return this.knex;
   }
 
-  getResourceTableName(resourceName: string) {
-    return `resource_${resourceName}`;
+  getMetaResourceTableName(resourceKind: string): string {
+    return `meta_${resourceKind}`;
   }
 
-  getResourceHistoryTableName(resourceName: string) {
-    return `resource_${resourceName}_history`;
+  getMetaResourceHistoryTableName(resourceKind: string): string {
+    return `meta_${resourceKind}_history`;
+  }
+
+  getResourceTableName(resourceKind: string) {
+    return `resource_${resourceKind}`;
+  }
+
+  getResourceHistoryTableName(resourceKind: string) {
+    return `resource_${resourceKind}_history`;
   }
 }
