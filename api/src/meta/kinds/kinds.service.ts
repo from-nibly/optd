@@ -1,10 +1,10 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from 'src/database/databases.service';
-import { KindDBRecord } from './kinds.types.record';
-import { CreateKind, Kind, UpdateKind } from './kinds.types';
 import { Knex } from 'knex';
-import { Subject } from 'src/subjects/subjects.types';
+import { DatabaseService } from 'src/database/databases.service';
+import { Permission } from 'src/roles/roles.types';
 import { ActorContext } from 'src/types/types';
+import { CreateKind, Kind, UpdateKind } from './kinds.types';
+import { KindDBRecord } from './kinds.types.record';
 
 @Injectable()
 export class KindService {
@@ -12,12 +12,50 @@ export class KindService {
 
   constructor(private readonly dbService: DatabaseService) {}
 
-  async listKinds(): Promise<Kind[]> {
-    const resp = await this.dbService
-      .client('meta_kind')
-      .select<KindDBRecord[]>('*');
-    const results = resp.map((r) => Kind.fromDBRecord(r));
-    return results;
+  private createAuthzPathExpression(client: Knex, kind: string) {
+    return client.raw(`CONCAT('/global/${kind}/', r.name)`);
+  }
+
+  private addPermissionClauses(
+    query: Knex.QueryBuilder,
+    authzPathExpression: Knex.Raw,
+    permissions: Permission[],
+  ): Knex.QueryBuilder {
+    let rtn = query;
+    for (let i = 0; i < permissions.length; i++) {
+      if (i === 0) {
+        rtn = query.andWhereRaw(
+          `${authzPathExpression} ~ '${permissions[i].path}'`,
+        );
+      } else {
+        rtn = query.orWhereRaw(
+          `${authzPathExpression} ~ '${permissions[i].path}'`,
+        );
+      }
+    }
+    return rtn;
+  }
+
+  async listKinds(actorContext: ActorContext): Promise<Kind[]> {
+    const tableName = 'meta_kind';
+    const client = this.dbService.client;
+
+    const permissions = actorContext.getPermissions('list');
+
+    //shortcut when there are no permissions
+    if (permissions.length === 0) {
+      this.logger.debug('no permissions, returning empty list');
+      return [];
+    }
+
+    const authzPathExpression = this.createAuthzPathExpression(client, 'kind');
+    let query = client(tableName).select<KindDBRecord[]>('*');
+
+    query = this.addPermissionClauses(query, authzPathExpression, permissions);
+
+    const resp = await query;
+
+    return resp.map((r) => Kind.fromDBRecord(r));
   }
 
   async getKind(name: string): Promise<Kind> {
