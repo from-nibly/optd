@@ -3,11 +3,11 @@ import {
   GlobalResource,
   GlobalUpdateResource,
 } from 'src/resources/resources.types';
+import { ActorContext, NonMethodFields } from 'src/types/types';
 import {
   CreateSubjectAPIBody,
   UpdateSubjectAPIBody,
 } from './subjects.types.api';
-import { NonMethodFields } from 'src/types/types';
 import { SubjectDBRecord } from './subjects.types.record';
 
 export class SubjectSpec {
@@ -26,8 +26,12 @@ export class Subject extends GlobalResource {
     this.spec = new SubjectSpec(obj.spec);
   }
 
-  static fromDBRecord(record: SubjectDBRecord) {
-    return GlobalResource.fromDBRecord(record, 'subject', Subject);
+  static get kind(): 'subjects' {
+    return 'subjects';
+  }
+
+  static fromDBRecord(record: SubjectDBRecord): Subject {
+    return GlobalResource.fromDBRecord(record, Subject.kind, Subject);
   }
 }
 
@@ -46,7 +50,7 @@ export class CreateSubject extends GlobalCreateResource {
     return GlobalCreateResource.fromAPIRequest<CreateSubjectAPIBody>(
       request,
       name,
-      'subject',
+      Subject.kind,
       CreateSubject,
     );
   }
@@ -67,7 +71,7 @@ export class UpdateSubject extends GlobalUpdateResource {
     return GlobalUpdateResource.fromAPIRequest(
       request,
       name,
-      'subject',
+      Subject.kind,
       UpdateSubject,
     );
   }

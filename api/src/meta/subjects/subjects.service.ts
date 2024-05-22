@@ -1,24 +1,33 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { DatabaseService } from 'src/database/databases.service';
 import { Knex } from 'knex';
 import { CreateSubject, Subject, UpdateSubject } from './subjects.types';
 import { SubjectDBRecord } from './subjects.types.record';
 import { ActorContext } from 'src/types/types';
+import { HooksService } from 'src/hooks/hooks.service';
 
 @Injectable()
 export class SubjectService {
   private readonly logger = new Logger(SubjectService.name);
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly dbService: DatabaseService,
+    private readonly hookService: HooksService,
+  ) {}
 
   async onModuleInit(): Promise<void> {
     //migrations
-    this.databaseService.client.transaction(async (trx) => {
-      //check if table exists
+    this.dbService.client.transaction(async (trx) => {
       //TODO: do proper migrations here
-      const tableName = this.databaseService.getTableName('subjects');
-      const historyTableName =
-        this.databaseService.getHistoryTableName('subjects');
+      const tableName = this.dbService.getTableName(Subject.kind);
+      const historyTableName = this.dbService.getHistoryTableName(Subject.kind);
+
       const tableExists = await trx.schema.hasTable(tableName);
       if (tableExists) {
         return;
@@ -65,81 +74,128 @@ export class SubjectService {
     });
   }
 
-  async listSubjects(): Promise<Subject[]> {
-    const resp = await this.databaseService
-      .client('meta_subjects')
-      .select<SubjectDBRecord[]>('*');
-    return resp.map((record) => Subject.fromDBRecord(record));
+  async listSubjects(actorContext: ActorContext): Promise<Subject[]> {
+    const permissions = actorContext.getPermissionPaths('list');
+
+    //shortcut when there are no permissions
+    if (permissions.length === 0) {
+      this.logger.debug('no permissions, returning empty list');
+      return [];
+    }
+
+    const resp = await this.dbService.listResources<SubjectDBRecord>(
+      Subject.kind,
+      permissions,
+    );
+
+    return resp.map((r) => Subject.fromDBRecord(r));
   }
 
-  async getSubject(id: string): Promise<Subject> {
-    const resp = await this.databaseService
-      .client('meta_subjects')
-      .where('name', id)
-      .select<SubjectDBRecord[]>('*');
+  async getSubjectInternal(name: string): Promise<Subject> {
+    const resp = await this.dbService.getResource<SubjectDBRecord>(
+      Subject.kind,
+      ['.*'],
+      name,
+    );
+    //error handling
     if (resp.length === 0) {
-      throw new Error('subject not found');
+      throw new NotFoundException(`Subject with name ${name} not found`);
     }
     if (resp.length > 1) {
-      throw new Error('multiple subjects with same id');
+      this.logger.error(
+        `found multiple Subjects with name ${name}, using first`,
+      );
+      throw new InternalServerErrorException(
+        'multiple Subjects with same name',
+      );
+    }
+    return Subject.fromDBRecord(resp[0]);
+  }
+
+  async getSubject(actorContext: ActorContext, name: string): Promise<Subject> {
+    const permissions = actorContext.getPermissionPaths('list');
+
+    //shortcut when there are no permissions
+    if (permissions.length === 0) {
+      this.logger.debug('no permissions, returning 404');
+      throw new NotFoundException(`Subject with name ${name} not found`);
+    }
+
+    const resp = await this.dbService.getResource<SubjectDBRecord>(
+      Subject.kind,
+      permissions,
+      name,
+    );
+    //error handling
+    if (resp.length === 0) {
+      throw new NotFoundException(`Subject with name ${name} not found`);
+    }
+    if (resp.length > 1) {
+      this.logger.error(
+        `found multiple Subjects with name ${name}, using first`,
+      );
+      throw new InternalServerErrorException(
+        'multiple Subjects with same name',
+      );
     }
     return Subject.fromDBRecord(resp[0]);
   }
 
   async createSubject(
-    subject: CreateSubject,
     actor: ActorContext,
-    message?: string,
+    record: CreateSubject,
+    message: string,
   ): Promise<Subject> {
-    this.logger.debug('creating subject record', subject);
+    const permissions = actor.getPermissionPaths('create');
 
-    const dbRecord = subject.toDBRecord(actor, message);
+    if (permissions.length === 0) {
+      throw new ForbiddenException('No create permissions found');
+    }
 
-    return this.databaseService.client.transaction(async (trx) => {
-      const resp = await trx('meta_subjects')
-        .insert<SubjectDBRecord>(dbRecord)
-        .returning('*');
+    const created = await this.dbService.createResource<SubjectDBRecord>(
+      Subject.kind,
+      record.toDBRecord(actor, message),
+      permissions,
+      async (result) => {
+        const newRecord = Subject.fromDBRecord(result);
+        this.hookService.executeHook('preCreate', Subject.kind, newRecord);
+      },
+      async (result) => {
+        const newRecord = Subject.fromDBRecord(result);
+        this.hookService.executeHook('postCreate', Subject.kind, newRecord);
+      },
+    );
 
-      return Subject.fromDBRecord(resp[0]);
-    });
+    return Subject.fromDBRecord(created);
   }
 
   async updateSubject(
-    subject: UpdateSubject,
-    actor: ActorContext,
-    message?: string,
+    actorContext: ActorContext,
+    record: UpdateSubject,
+    message: string,
   ): Promise<Subject> {
-    return this.databaseService.client.transaction(async (trx) => {
-      const [existing, ...extra] = await trx('meta_subjects')
-        .select('*')
-        .where('name', subject.metadata.name);
-      if (extra.length > 0) {
-        this.logger.error(
-          `found multiple subjects with name ${subject.metadata.name}`,
-        );
-        throw new Error('multiple subjects with same name');
-      }
-      if (!existing) {
-        throw new Error('subject not found');
-      }
+    const permissions = actorContext.getPermissionPaths('update');
 
-      await trx('meta_subject_history').insert(existing);
-      await trx('meta_subjects').where('name', subject.metadata.name).del();
-      const [updated, ...extraUpdate] = await trx('meta_subjects')
-        .insert<SubjectDBRecord>(
-          subject.toDBRecord(actor, existing.revision_id, message),
-        )
-        .returning('*');
-      if (extraUpdate.length > 0) {
-        this.logger.error('multiple subject updates returned');
-        throw new Error('multiple subject updates returned');
-      }
-      if (!updated) {
-        this.logger.error('no subject update returned');
-        throw new Error('no subject update returned');
-      }
+    if (permissions.length === 0) {
+      throw new ForbiddenException('No update permissions found');
+    }
 
-      return Subject.fromDBRecord(updated);
-    });
+    const resource = record.toDBRecord(actorContext, message);
+
+    const updated = await this.dbService.updateResource<SubjectDBRecord>(
+      Subject.kind,
+      resource,
+      permissions,
+      async (result) => {
+        const newRecord = Subject.fromDBRecord(result);
+        this.hookService.executeHook('preUpdate', Subject.kind, newRecord);
+      },
+      async (result) => {
+        const newRecord = Subject.fromDBRecord(result);
+        this.hookService.executeHook('postUpdate', Subject.kind, newRecord);
+      },
+    );
+
+    return Subject.fromDBRecord(updated);
   }
 }

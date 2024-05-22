@@ -106,13 +106,12 @@ export class ResourceService {
   }
 
   async createResource(
-    actorContext: ActorContext,
+    actor: ActorContext,
     record: NamespacedCreateResource,
     kind: string,
-    actor: ActorContext,
     message: string,
   ): Promise<NamespacedResource> {
-    const permissions = actorContext.getPermissionPaths('create');
+    const permissions = actor.getPermissionPaths('create');
 
     if (permissions.length === 0) {
       throw new ForbiddenException('No create permissions found');

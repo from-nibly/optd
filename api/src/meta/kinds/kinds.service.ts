@@ -27,7 +27,7 @@ export class KindService {
     }
 
     const resp = await this.dbService.listResources<KindDBRecord>(
-      'kind',
+      Kind.kind,
       permissions,
     );
 
@@ -43,7 +43,7 @@ export class KindService {
       throw new NotFoundException(`Kind with name ${name} not found`);
     }
 
-    const resp = await this.dbService.getResource('kind', permissions, name);
+    const resp = await this.dbService.getResource(Kind.kind, permissions, name);
     //error handling
     if (resp.length === 0) {
       throw new NotFoundException(`Kind with name ${name} not found`);
@@ -71,7 +71,7 @@ export class KindService {
     const resource = kind.toDBRecord(actor, message);
 
     const resp = await this.dbService.updateResource<KindDBRecord>(
-      'kind',
+      Kind.kind,
       resource,
       permissions,
       async () => {},
@@ -97,7 +97,7 @@ export class KindService {
     }
 
     const record = await this.dbService.createResource(
-      'kind',
+      Kind.kind,
       dbRecord,
       permissions,
       async () => {},

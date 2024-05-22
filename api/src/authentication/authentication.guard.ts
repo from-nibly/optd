@@ -43,7 +43,7 @@ export class AuthenticationGuard implements CanActivate {
         secret: this.configService.get<string>('auth.jwtSecret'),
       });
 
-      const subject = await this.subjectService.getSubject(payload.sub);
+      const subject = await this.subjectService.getSubjectInternal(payload.sub);
 
       request[ACTOR_CONTEXT] = new ActorContext(subject);
     } catch (e) {

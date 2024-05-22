@@ -25,7 +25,7 @@ export class AuthenticationService {
   // }
 
   async signIn(subjectName: any, password: string) {
-    const subject = await this.subjectService.getSubject(subjectName);
+    const subject = await this.subjectService.getSubjectInternal(subjectName);
 
     //TODO: bcrypt
     if (subject?.spec.passwordHash !== password) {

@@ -108,7 +108,6 @@ export class ResourceController {
       actor,
       record,
       resourceKind,
-      actor,
       'test message',
     );
     return NamespacedResourceAPIResponse.fromRecord(created, resourceKind);

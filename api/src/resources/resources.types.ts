@@ -79,6 +79,10 @@ export class GlobalResource {
       state: record.state,
     });
   }
+
+  static get kind(): string {
+    throw new Error('kind getter not implemented');
+  }
 }
 
 export class NamespacedResource {
@@ -254,11 +258,11 @@ export class GlobalUpdateResource {
     });
   }
 
-  toDBRecord(
+  toDBRecord<T extends GlobalResourceDBRecord>(
     actor: ActorContext,
     parent_revision: string,
     message?: string,
-  ): GlobalResourceDBRecord {
+  ): T {
     return {
       name: this.metadata.name,
       metadata_annotations: this.metadata.annotations ?? {},
@@ -271,7 +275,7 @@ export class GlobalUpdateResource {
       revision_by: actor.subject.metadata.name,
       revision_message: message,
       revision_parent: parent_revision,
-    };
+    } as T;
   }
 }
 

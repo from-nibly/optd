@@ -24,7 +24,7 @@ export class SubjectAPIResponse extends GlobalResourceAPIResponse {
 
   static fromRecord(
     record: Subject,
-    kind: string = 'subject',
+    kind: string = Subject.kind,
   ): SubjectAPIResponse {
     return new SubjectAPIResponse({
       metadata: GlobalMetaAPIResponse.fromRecord(record.metadata, kind),

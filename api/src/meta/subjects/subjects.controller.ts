@@ -26,15 +26,20 @@ export class SubjectController {
   constructor(private readonly subjectService: SubjectService) {}
 
   @Get('/')
-  async listSubjects(): Promise<SubjectAPIResponse[]> {
-    const subjects = await this.subjectService.listSubjects();
+  async listSubjects(@Req() req: any): Promise<SubjectAPIResponse[]> {
+    const actor = req[ACTOR_CONTEXT];
+    const subjects = await this.subjectService.listSubjects(actor);
 
     return subjects.map((r) => SubjectAPIResponse.fromRecord(r));
   }
 
   @Get('/:name')
-  async getSubject(@Param('name') name: string): Promise<SubjectAPIResponse> {
-    const record = await this.subjectService.getSubject(name);
+  async getSubject(
+    @Param('name') name: string,
+    @Req() req: any,
+  ): Promise<SubjectAPIResponse> {
+    const actor = req[ACTOR_CONTEXT];
+    const record = await this.subjectService.getSubject(actor, name);
     const resp = SubjectAPIResponse.fromRecord(record);
     return resp;
   }
@@ -57,8 +62,8 @@ export class SubjectController {
       this.logger.log('got record', { record });
 
       const updated = await this.subjectService.updateSubject(
-        record,
         actor,
+        record,
         'test message',
       );
 
@@ -69,8 +74,8 @@ export class SubjectController {
         body.metadata.name ?? subjectName,
       );
       const created = await this.subjectService.createSubject(
-        record,
         actor,
+        record,
         'test message',
       );
       response = SubjectAPIResponse.fromRecord(created);

@@ -1,6 +1,6 @@
-import { NamespacedResourceDBRecord } from 'src/resources/resources.types.record';
+import { GlobalResourceDBRecord } from 'src/resources/resources.types.record';
 import { GroupSpec } from './groups.types';
 
-export interface GroupDBRecord extends NamespacedResourceDBRecord {
+export interface GroupDBRecord extends GlobalResourceDBRecord {
   spec: GroupSpec;
 }

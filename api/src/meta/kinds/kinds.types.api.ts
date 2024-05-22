@@ -12,7 +12,7 @@ import {
 import { Kind, KindSpec } from './kinds.types';
 
 export class KindAPIResponse extends GlobalResourceAPIResponse {
-  metadata: GlobalMetaAPIResponse<'Kind'>;
+  metadata: GlobalMetaAPIResponse<typeof Kind.kind>;
   spec: KindSpec;
   status: any;
   history: History;
@@ -25,7 +25,7 @@ export class KindAPIResponse extends GlobalResourceAPIResponse {
 
   static fromRecord(record: Kind): KindAPIResponse {
     return new KindAPIResponse({
-      metadata: GlobalMetaAPIResponse.fromRecord(record.metadata, 'Kind'),
+      metadata: GlobalMetaAPIResponse.fromRecord(record.metadata, Kind.kind),
       spec: record.spec,
       status: record.status,
       history: new History(record.history),

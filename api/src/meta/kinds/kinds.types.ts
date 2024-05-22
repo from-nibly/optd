@@ -39,7 +39,11 @@ export class Kind extends GlobalResource {
   }
 
   static fromDBRecord(record: KindDBRecord): Kind {
-    return GlobalResource.fromDBRecord(record, 'kind', Kind);
+    return GlobalResource.fromDBRecord(record, Kind.kind, Kind);
+  }
+
+  static get kind(): 'kind' {
+    return 'kind';
   }
 }
 
@@ -55,7 +59,7 @@ export class CreateKind extends GlobalCreateResource {
     return GlobalCreateResource.fromAPIRequest<CreateKindAPIBody>(
       request,
       name,
-      'kind',
+      Kind.kind,
       CreateKind,
     );
   }
@@ -73,7 +77,7 @@ export class UpdateKind extends GlobalUpdateResource {
     return GlobalUpdateResource.fromAPIRequest(
       request,
       name,
-      'kind',
+      Kind.kind,
       UpdateKind,
     );
   }
