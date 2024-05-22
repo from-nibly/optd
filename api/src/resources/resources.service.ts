@@ -73,18 +73,18 @@ export class ResourceService {
   }
 
   async updateResource(
-    actor: ActorContext,
+    actorContext: ActorContext,
     record: NamespacedUpdateResource,
     kind: string,
     message: string,
   ): Promise<NamespacedResource> {
-    const permissions = actor.getPermissionPaths('update');
+    const permissions = actorContext.getPermissionPaths('update');
 
     if (permissions.length === 0) {
       throw new ForbiddenException('No update permissions found');
     }
 
-    const resource = record.toDBRecord(actor, message);
+    const resource = record.toDBRecord(actorContext, message);
 
     const updated =
       await this.dbService.updateResource<NamespacedResourceDBRecord>(
@@ -119,7 +119,6 @@ export class ResourceService {
     }
 
     const namespace = record.metadata.namespace;
-    const name = record.metadata.name;
 
     const created =
       await this.dbService.createResource<NamespacedResourceDBRecord>(

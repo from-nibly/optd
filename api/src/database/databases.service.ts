@@ -65,7 +65,7 @@ export class DatabaseService {
     authzPathExpression: Knex.Raw,
     permissionRegexList: string[],
   ): Knex.QueryBuilder<T> {
-    //TODO: nested select query?
+    //TODO: nested select query for performance?
     return query.where((builder) => {
       permissionRegexList.forEach((permissionRegex) => {
         builder.orWhereRaw(`${authzPathExpression} ~ '${permissionRegex}'`);
