@@ -34,6 +34,10 @@ export class Role extends GlobalResource {
     this.spec = new RoleSpec(obj.spec);
   }
 
+  static get kind(): 'roles' {
+    return 'roles';
+  }
+
   static fromDBRecord(record: RoleDBRecord) {
     return GlobalResource.fromDBRecord(record, 'role', Role);
   }

@@ -8,13 +8,18 @@ import {
 
 import * as knex from 'knex';
 import { Knex } from 'knex';
+import { Group } from 'src/meta/groups/groups.types';
+import { Kind } from 'src/meta/kinds/kinds.types';
+import { Role } from 'src/meta/roles/roles.types';
+import { Subject } from 'src/meta/subjects/subjects.types';
 import { GlobalDBRecord } from 'src/types/types.record';
+
+const metaKinds: string[] = [Kind.kind, Role.kind, Group.kind, Subject.kind];
 
 @Injectable()
 export class DatabaseService {
   private knex: knex.Knex<any, any> | undefined;
   private logger = new Logger(DatabaseService.name);
-  private readonly metaKinds = ['kind', 'roles', 'groups', 'subjects'];
 
   constructor() {}
 
@@ -34,14 +39,14 @@ export class DatabaseService {
   }
 
   getTableName(resourceKind: string) {
-    if (this.metaKinds.includes(resourceKind)) {
+    if (metaKinds.includes(resourceKind)) {
       return `meta_${resourceKind}`;
     }
     return `resource_${resourceKind}`;
   }
 
   getHistoryTableName(resourceKind: string) {
-    if (this.metaKinds.includes(resourceKind)) {
+    if (metaKinds.includes(resourceKind)) {
       return `meta_${resourceKind}_history`;
     }
     return `resource_${resourceKind}_history`;
@@ -51,7 +56,7 @@ export class DatabaseService {
     kind: string,
     namespace: string | undefined,
   ) {
-    if (this.metaKinds.includes(kind)) {
+    if (metaKinds.includes(kind)) {
       return this.client.raw(`CONCAT('/meta/${kind}/', r.name)`);
     }
     if (namespace) {

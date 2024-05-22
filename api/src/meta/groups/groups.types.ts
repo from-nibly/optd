@@ -24,6 +24,10 @@ export class Group extends GlobalResource {
     this.spec = new GroupSpec(obj.spec);
   }
 
+  static get kind(): 'groups' {
+    return 'groups';
+  }
+
   static fromDBRecord(record: GroupDBRecord) {
     return GlobalResource.fromDBRecord(record, 'group', Group);
   }

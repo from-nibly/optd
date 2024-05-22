@@ -46,7 +46,7 @@ export class AuthorizationGuard implements CanActivate {
     const roleNames = [...new Set(groups.map((g) => g.spec.roles).flat())];
     this.logger.debug('got role names for group', { roleNames });
 
-    const roles = await this.roleService.getAllRoles(roleNames);
+    const roles = await this.roleService.getAllRolesInternal(roleNames);
     this.logger.debug('got roles', { roles });
 
     actor.roles = roles;

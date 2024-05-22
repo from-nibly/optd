@@ -26,15 +26,20 @@ export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
   @Get('/')
-  async listRoles(): Promise<RoleAPIResponse[]> {
-    const roles = await this.roleService.listRoles();
+  async listRoles(@Req() req: any): Promise<RoleAPIResponse[]> {
+    const actor = req[ACTOR_CONTEXT];
+    const roles = await this.roleService.listRoles(actor);
 
     return roles.map((r) => RoleAPIResponse.fromRecord(r));
   }
 
   @Get('/:name')
-  async getRole(@Param('name') name: string): Promise<RoleAPIResponse> {
-    const record = await this.roleService.getRole(name);
+  async getRole(
+    @Param('name') name: string,
+    @Req() req: any,
+  ): Promise<RoleAPIResponse> {
+    const actor = req[ACTOR_CONTEXT];
+    const record = await this.roleService.getRole(actor, name);
     const resp = RoleAPIResponse.fromRecord(record);
     this.logger.debug('got role', { record, resp });
     return resp;
@@ -58,8 +63,8 @@ export class RoleController {
       this.logger.log('got record', { record });
 
       const updated = await this.roleService.updateRole(
-        record,
         actor,
+        record,
         'test message',
       );
 
@@ -70,8 +75,8 @@ export class RoleController {
         body.metadata.name ?? roleName,
       );
       const created = await this.roleService.createRole(
-        record,
         actor,
+        record,
         'test message',
       );
       response = RoleAPIResponse.fromRecord(created);
