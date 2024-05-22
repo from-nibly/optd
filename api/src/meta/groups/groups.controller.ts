@@ -26,15 +26,20 @@ export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
   @Get('/')
-  async listGroups(): Promise<GroupAPIResponse[]> {
-    const groups = await this.groupService.listGroups();
+  async listGroups(@Req() req: any): Promise<GroupAPIResponse[]> {
+    const actor = req[ACTOR_CONTEXT];
+    const groups = await this.groupService.listGroups(actor);
 
     return groups.map((r) => GroupAPIResponse.fromRecord(r));
   }
 
   @Get('/:name')
-  async getGroup(@Param('name') name: string): Promise<GroupAPIResponse> {
-    const record = await this.groupService.getGroup(name);
+  async getGroup(
+    @Param('name') name: string,
+    @Req() req: any,
+  ): Promise<GroupAPIResponse> {
+    const actor = req[ACTOR_CONTEXT];
+    const record = await this.groupService.getGroup(actor, name);
     const resp = GroupAPIResponse.fromRecord(record);
     this.logger.debug('got group', { record, resp });
     return resp;
@@ -58,8 +63,8 @@ export class GroupController {
       this.logger.log('got record', { record });
 
       const updated = await this.groupService.updateGroup(
-        record,
         actor,
+        record,
         'test message',
       );
 
@@ -70,8 +75,8 @@ export class GroupController {
         body.metadata.name ?? groupName,
       );
       const created = await this.groupService.createGroup(
-        record,
         actor,
+        record,
         'test message',
       );
       response = GroupAPIResponse.fromRecord(created);

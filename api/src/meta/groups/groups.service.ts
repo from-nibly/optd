@@ -1,25 +1,34 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { DatabaseService } from 'src/database/databases.service';
 import { Knex } from 'knex';
 import { CreateGroup, Group, UpdateGroup } from './groups.types';
 import { GroupDBRecord } from './groups.types.record';
-import { Subject } from 'src/meta/subjects/subjects.types';
 import { ActorContext } from 'src/types/types';
+import { HooksService } from 'src/hooks/hooks.service';
+import { Subject } from '../subjects/subjects.types';
 
 @Injectable()
 export class GroupService {
   private readonly logger = new Logger(GroupService.name);
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly dbService: DatabaseService,
+    private readonly hookService: HooksService,
+  ) {}
 
   async onModuleInit(): Promise<void> {
     //migrations
-    this.databaseService.client.transaction(async (trx) => {
+    this.dbService.client.transaction(async (trx) => {
       //check if table exists
       //TODO: do proper migrations here
-      const tableName = this.databaseService.getTableName('groups');
-      const historyTableName =
-        this.databaseService.getHistoryTableName('groups');
+      const tableName = this.dbService.getTableName('groups');
+      const historyTableName = this.dbService.getHistoryTableName('groups');
       const tableExists = await trx.schema.hasTable(tableName);
       if (tableExists) {
         return;
@@ -66,90 +75,114 @@ export class GroupService {
     });
   }
 
-  async listGroups(): Promise<Group[]> {
-    const resp = await this.databaseService
-      .client('meta_groups')
-      .select<GroupDBRecord[]>('*');
-    return resp.map((record) => Group.fromDBRecord(record));
+  async listGroups(actorContext: ActorContext): Promise<Group[]> {
+    const permissions = actorContext.getPermissionPaths('list');
+
+    //shortcut when there are no permissions
+    if (permissions.length === 0) {
+      this.logger.debug('no permissions, returning empty list');
+      return [];
+    }
+
+    const resp = await this.dbService.listResources<GroupDBRecord>(
+      Group.kind,
+      permissions,
+    );
+
+    return resp.map((r) => Group.fromDBRecord(r));
   }
 
   async listGroupsForSubject(subject: Subject): Promise<Group[]> {
-    const resp = await this.databaseService
-      .client('meta_groups')
+    const query = this.dbService
+      .client(this.dbService.getTableName(Group.kind))
       .select<GroupDBRecord[]>('*')
       .whereJsonSupersetOf('spec', { subjects: [subject.metadata.name] });
+    this.logger.debug('querying groups for perms', query.toQuery());
+    const resp = await query;
+
     return resp.map((record) => Group.fromDBRecord(record));
   }
 
-  async getGroup(id: string): Promise<Group> {
-    const resp = await this.databaseService
-      .client('meta_groups')
-      .where('name', id)
-      .select<GroupDBRecord[]>('*');
+  async getGroup(actorContext: ActorContext, name: string): Promise<Group> {
+    const permissions = actorContext.getPermissionPaths('list');
+
+    //shortcut when there are no permissions
+    if (permissions.length === 0) {
+      this.logger.debug('no permissions, returning 404');
+      throw new NotFoundException(`Group with name ${name} not found`);
+    }
+
+    const resp = await this.dbService.getResource<GroupDBRecord>(
+      Group.kind,
+      permissions,
+      name,
+    );
+    //error handling
     if (resp.length === 0) {
-      throw new Error('group not found');
+      throw new NotFoundException(`Group with name ${name} not found`);
     }
     if (resp.length > 1) {
-      throw new Error('multiple groups with same id');
+      this.logger.error(`found multiple Groups with name ${name}, using first`);
+      throw new InternalServerErrorException('multiple Groups with same name');
     }
-    this.logger.debug('got group', { resp: resp[0] });
     return Group.fromDBRecord(resp[0]);
   }
 
   async createGroup(
-    group: CreateGroup,
     actor: ActorContext,
-    message?: string,
+    record: CreateGroup,
+    message: string,
   ): Promise<Group> {
-    this.logger.debug('creating group record', group);
+    const permissions = actor.getPermissionPaths('create');
 
-    const dbRecord = group.toDBRecord(actor, message);
+    if (permissions.length === 0) {
+      throw new ForbiddenException('No create permissions found');
+    }
 
-    return this.databaseService.client.transaction(async (trx) => {
-      const resp = await trx('meta_groups')
-        .insert<GroupDBRecord>(dbRecord)
-        .returning('*');
+    const created = await this.dbService.createResource<GroupDBRecord>(
+      Group.kind,
+      record.toDBRecord(actor, message),
+      permissions,
+      async (result) => {
+        const newRecord = Group.fromDBRecord(result);
+        this.hookService.executeHook('preCreate', Group.kind, newRecord);
+      },
+      async (result) => {
+        const newRecord = Group.fromDBRecord(result);
+        this.hookService.executeHook('postCreate', Group.kind, newRecord);
+      },
+    );
 
-      return Group.fromDBRecord(resp[0]);
-    });
+    return Group.fromDBRecord(created);
   }
 
   async updateGroup(
-    group: UpdateGroup,
-    actor: ActorContext,
-    message?: string,
+    actorContext: ActorContext,
+    record: UpdateGroup,
+    message: string,
   ): Promise<Group> {
-    return this.databaseService.client.transaction(async (trx) => {
-      const [existing, ...extra] = await trx('meta_groups')
-        .select('*')
-        .where('name', group.metadata.name);
-      if (extra.length > 0) {
-        this.logger.error(
-          `found multiple groups with name ${group.metadata.name}`,
-        );
-        throw new Error('multiple groups with same name');
-      }
-      if (!existing) {
-        throw new Error('group not found');
-      }
+    const permissions = actorContext.getPermissionPaths('update');
 
-      await trx('meta_group_history').insert(existing);
-      await trx('meta_groups').where('name', group.metadata.name).del();
-      const [updated, ...extraUpdate] = await trx('meta_groups')
-        .insert<GroupDBRecord>(
-          group.toDBRecord(actor, existing.revision_id, message),
-        )
-        .returning('*');
-      if (extraUpdate.length > 0) {
-        this.logger.error('multiple group updates returned');
-        throw new Error('multiple group updates returned');
-      }
-      if (!updated) {
-        this.logger.error('no group update returned');
-        throw new Error('no group update returned');
-      }
+    if (permissions.length === 0) {
+      throw new ForbiddenException('No update permissions found');
+    }
 
-      return Group.fromDBRecord(updated);
-    });
+    const resource = record.toDBRecord(actorContext, message);
+
+    const updated = await this.dbService.updateResource<GroupDBRecord>(
+      Group.kind,
+      resource,
+      permissions,
+      async (result) => {
+        const newRecord = Group.fromDBRecord(result);
+        this.hookService.executeHook('preUpdate', Group.kind, newRecord);
+      },
+      async (result) => {
+        const newRecord = Group.fromDBRecord(result);
+        this.hookService.executeHook('postUpdate', Group.kind, newRecord);
+      },
+    );
+
+    return Group.fromDBRecord(updated);
   }
 }
