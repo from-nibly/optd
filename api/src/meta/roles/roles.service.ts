@@ -5,13 +5,12 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { DatabaseService } from 'src/database/databases.service';
 import { Knex } from 'knex';
+import { DatabaseService } from 'src/database/databases.service';
+import { HooksService } from 'src/hooks/hooks.service';
+import { ActorContext } from 'src/types/types';
 import { CreateRole, Role, UpdateRole } from './roles.types';
 import { RoleDBRecord } from './roles.types.record';
-import { ActorContext } from 'src/types/types';
-import { Subject } from 'rxjs';
-import { HooksService } from 'src/hooks/hooks.service';
 
 @Injectable()
 export class RoleService {

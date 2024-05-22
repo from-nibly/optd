@@ -3,7 +3,7 @@ import {
   GlobalResource,
   GlobalUpdateResource,
 } from 'src/resources/resources.types';
-import { ActorContext, NonMethodFields } from 'src/types/types';
+import { NonMethodFields } from 'src/types/types';
 import {
   CreateSubjectAPIBody,
   UpdateSubjectAPIBody,
