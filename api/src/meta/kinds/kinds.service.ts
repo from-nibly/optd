@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -6,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { Knex } from 'knex';
 import { DatabaseService } from 'src/database/databases.service';
-import { Permission } from 'src/meta/roles/roles.types';
 import { ActorContext } from 'src/types/types';
 import { CreateKind, Kind, UpdateKind } from './kinds.types';
 import { KindDBRecord } from './kinds.types.record';
@@ -17,35 +17,8 @@ export class KindService {
 
   constructor(private readonly dbService: DatabaseService) {}
 
-  private createAuthzPathExpression(client: Knex, kind: string) {
-    return client.raw(`CONCAT('/global/${kind}/', r.name)`);
-  }
-
-  private addPermissionClauses(
-    query: Knex.QueryBuilder,
-    authzPathExpression: Knex.Raw,
-    permissions: Permission[],
-  ): Knex.QueryBuilder {
-    let rtn = query;
-    for (let i = 0; i < permissions.length; i++) {
-      if (i === 0) {
-        rtn = query.andWhereRaw(
-          `${authzPathExpression} ~ '${permissions[i].path}'`,
-        );
-      } else {
-        rtn = query.orWhereRaw(
-          `${authzPathExpression} ~ '${permissions[i].path}'`,
-        );
-      }
-    }
-    return rtn;
-  }
-
   async listKinds(actorContext: ActorContext): Promise<Kind[]> {
-    const tableName = 'meta_kind';
-    const client = this.dbService.client;
-
-    const permissions = actorContext.getPermissions('list');
+    const permissions = actorContext.getPermissionPaths('list');
 
     //shortcut when there are no permissions
     if (permissions.length === 0) {
@@ -53,21 +26,16 @@ export class KindService {
       return [];
     }
 
-    let query = client(tableName).select<KindDBRecord[]>('*');
-
-    const authzPathExpression = this.createAuthzPathExpression(client, 'kind');
-    query = this.addPermissionClauses(query, authzPathExpression, permissions);
-
-    const resp = await query;
+    const resp = await this.dbService.listResources<KindDBRecord>(
+      'kind',
+      permissions,
+    );
 
     return resp.map((r) => Kind.fromDBRecord(r));
   }
 
   async getKind(actorContext: ActorContext, name: string): Promise<Kind> {
-    const tableName = 'meta_kind';
-    const client = this.dbService.client;
-
-    const permissions = actorContext.getPermissions('list');
+    const permissions = actorContext.getPermissionPaths('list');
 
     //shortcut when there are no permissions
     if (permissions.length === 0) {
@@ -75,15 +43,7 @@ export class KindService {
       throw new NotFoundException(`Kind with name ${name} not found`);
     }
 
-    let query = this.dbService
-      .client(tableName)
-      .select<KindDBRecord[]>('*')
-      .where('name', name);
-
-    const authzPathExpression = this.createAuthzPathExpression(client, 'kind');
-    query = this.addPermissionClauses(query, authzPathExpression, permissions);
-
-    const resp = await query;
+    const resp = await this.dbService.getResource('kind', permissions, name);
     //error handling
     if (resp.length === 0) {
       throw new NotFoundException(`Kind with name ${name} not found`);
@@ -101,47 +61,24 @@ export class KindService {
     message: string,
   ): Promise<Kind> {
     //history etc
-    return this.dbService.client.transaction(async (trx) => {
-      const [existing, ...extra] = await trx('meta_kind')
-        .select<KindDBRecord[]>('*')
-        .where('name', kind.metadata.name);
 
-      if (extra.length > 0) {
-        this.logger.error(
-          `found multiple kinds with name ${kind.metadata.name}`,
-        );
-        throw new Error('multiple kinds with same name');
-      }
+    const permissions = actor.getPermissionPaths('update');
 
-      if (!existing) {
-        throw new NotFoundException(
-          `Kind with name ${kind.metadata.name} not found`,
-        );
-      }
+    if (permissions.length === 0) {
+      throw new ForbiddenException('No update permissions found');
+    }
 
-      await trx('meta_kind_history').insert(existing);
-      await trx('meta_kind').where('name', kind.metadata.name).del();
-      const [updated, ...extraUpdate] = await trx('meta_kind')
-        .insert<KindDBRecord>(
-          kind.toDBRecord(
-            actor,
-            //this must come from the request (and not the current db state) otherwise the database optimistic locking wont work
-            kind.history.id,
-            message,
-          ),
-        )
-        .returning('*');
-      if (extraUpdate.length > 0) {
-        this.logger.error('multiple kind updates returned');
-        throw new Error('multiple kind updates returned');
-      }
-      if (!updated) {
-        this.logger.error('no kind update returned');
-        throw new Error('no kind update returned');
-      }
+    const resource = kind.toDBRecord(actor, message);
 
-      return Kind.fromDBRecord(updated);
-    });
+    const resp = await this.dbService.updateResource<KindDBRecord>(
+      'kind',
+      resource,
+      permissions,
+      async () => {},
+      async () => {},
+    );
+
+    return Kind.fromDBRecord(resp);
   }
 
   async createKind(
@@ -152,15 +89,23 @@ export class KindService {
     this.logger.debug('creating kind record', kind);
 
     const dbRecord = kind.toDBRecord(actor, message);
-    return this.dbService.client.transaction(async (trx) => {
-      const resp = await trx('meta_kind')
-        .insert<KindDBRecord>(dbRecord)
-        .returning('*');
 
-      await this.createNamespacedKindTables(kind.metadata.name, trx);
+    const permissions = actor.getPermissionPaths('create');
 
-      return Kind.fromDBRecord(resp[0]);
-    });
+    if (permissions.length === 0) {
+      throw new ForbiddenException('No create permissions found');
+    }
+
+    const record = await this.dbService.createResource(
+      'kind',
+      dbRecord,
+      permissions,
+      async () => {},
+      async (result, trx) =>
+        this.createNamespacedKindTables(kind.metadata.name, trx),
+    );
+
+    return Kind.fromDBRecord(record);
   }
 
   private async createNamespacedKindTables(

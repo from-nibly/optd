@@ -7,8 +7,10 @@ import configuration from './config/configuration';
 import { DatabaseModule } from './database/databases.module';
 import { HooksModule } from './hooks/hooks.module';
 import { KindModule } from './meta/kinds/kinds.module';
-import { MetaModule } from './meta/meta.module';
 import { ResourcesModule } from './resources/resources.module';
+import { SubjectsModule } from './meta/subjects/subjects.module';
+import { GroupsModule } from './meta/groups/groups.module';
+import { RolesModule } from './meta/roles/roles.module';
 
 @Module({
   imports: [
@@ -18,7 +20,9 @@ import { ResourcesModule } from './resources/resources.module';
     HooksModule,
     AuthenticationModule,
     AuthorizationModule,
-    MetaModule,
+    SubjectsModule,
+    GroupsModule,
+    RolesModule,
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
   ],
   controllers: [],

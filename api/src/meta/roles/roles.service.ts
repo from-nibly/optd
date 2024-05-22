@@ -16,9 +16,9 @@ export class RoleService {
     this.databaseService.client.transaction(async (trx) => {
       //check if table exists
       //TODO: do proper migrations here
-      const tableName = this.databaseService.getMetaResourceTableName('roles');
+      const tableName = this.databaseService.getTableName('roles');
       const historyTableName =
-        this.databaseService.getMetaResourceHistoryTableName('roles');
+        this.databaseService.getHistoryTableName('roles');
       const tableExists = await trx.schema.hasTable(tableName);
       if (tableExists) {
         return;

@@ -138,10 +138,11 @@ export class ActorContext {
     this.subject = subject;
   }
 
-  getPermissions(action: Action): Permission[] {
+  getPermissionPaths(action: Action): string[] {
     return this.roles
       .map((r) => r.spec.permissions)
       .flat()
-      .filter((p) => p.actions.includes(action));
+      .filter((p) => p.actions.includes(action))
+      .map((p) => p.path);
   }
 }

@@ -17,9 +17,9 @@ export class GroupService {
     this.databaseService.client.transaction(async (trx) => {
       //check if table exists
       //TODO: do proper migrations here
-      const tableName = this.databaseService.getMetaResourceTableName('groups');
+      const tableName = this.databaseService.getTableName('groups');
       const historyTableName =
-        this.databaseService.getMetaResourceHistoryTableName('groups');
+        this.databaseService.getHistoryTableName('groups');
       const tableExists = await trx.schema.hasTable(tableName);
       if (tableExists) {
         return;

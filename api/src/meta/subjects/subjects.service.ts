@@ -16,10 +16,9 @@ export class SubjectService {
     this.databaseService.client.transaction(async (trx) => {
       //check if table exists
       //TODO: do proper migrations here
-      const tableName =
-        this.databaseService.getMetaResourceTableName('subjects');
+      const tableName = this.databaseService.getTableName('subjects');
       const historyTableName =
-        this.databaseService.getMetaResourceHistoryTableName('subjects');
+        this.databaseService.getHistoryTableName('subjects');
       const tableExists = await trx.schema.hasTable(tableName);
       if (tableExists) {
         return;
