@@ -14,7 +14,7 @@ export class CronSpec {
   //TODO: retry policy
   constructor(obj: CronSpec) {
     this.schedule = obj.schedule;
-    this.schedule = obj.schedule;
+    this.script = obj.script;
     this.tz = obj.tz;
   }
 }

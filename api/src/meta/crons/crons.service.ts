@@ -11,7 +11,9 @@ import { HooksService } from 'src/hooks/hooks.service';
 import { ActorContext } from 'src/types/types';
 import { CreateCron, Cron, UpdateCron } from './crons.types';
 import { CronDBRecord } from './crons.types.record';
+import { JobsService } from 'src/jobs/jobs.service';
 
+//TODO: should crons be global or namespaced?
 @Injectable()
 export class CronService {
   private readonly logger = new Logger(CronService.name);
@@ -19,6 +21,7 @@ export class CronService {
   constructor(
     private readonly dbService: DatabaseService,
     private readonly hookService: HooksService,
+    private readonly jobService: JobsService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -180,6 +183,12 @@ export class CronService {
       },
     );
 
-    return Cron.fromDBRecord(updated);
+    const rtn = Cron.fromDBRecord(updated);
+
+    this.jobService.unscheduleCron(rtn);
+
+    this.jobService.scheduleCron(rtn);
+
+    return rtn;
   }
 }

@@ -260,7 +260,6 @@ export class GlobalUpdateResource {
 
   toDBRecord<T extends GlobalResourceDBRecord>(
     actor: ActorContext,
-    parent_revision: string,
     message?: string,
   ): T {
     return {
@@ -274,7 +273,7 @@ export class GlobalUpdateResource {
       revision_at: new Date().toISOString(),
       revision_by: actor.subject.metadata.name,
       revision_message: message,
-      revision_parent: parent_revision,
+      revision_parent: this.history.id,
     } as T;
   }
 }
@@ -315,7 +314,6 @@ export class NamespacedUpdateResource {
 
   toDBRecord(
     actor: ActorContext,
-    parent_revision: string,
     message?: string,
   ): NamespacedResourceDBRecord {
     return {
@@ -330,7 +328,7 @@ export class NamespacedUpdateResource {
       revision_at: new Date().toISOString(),
       revision_by: actor.subject.metadata.name,
       revision_message: message,
-      revision_parent: parent_revision,
+      revision_parent: this.history.id,
     };
   }
 }

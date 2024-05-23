@@ -33,6 +33,7 @@
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "pg": "^8.11.3",
+    "pg-boss": "^9.0.3",
     "pouchdb": "^8.0.1",
     "pouchdb-server": "^4.2.0",
     "reflect-metadata": "^0.1.13",

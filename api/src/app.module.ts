@@ -12,6 +12,7 @@ import { SubjectsModule } from './meta/subjects/subjects.module';
 import { GroupsModule } from './meta/groups/groups.module';
 import { RolesModule } from './meta/roles/roles.module';
 import { CronsModule } from './meta/crons/crons.module';
+import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CronsModule } from './meta/crons/crons.module';
     GroupsModule,
     RolesModule,
     CronsModule,
+    JobsModule,
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
   ],
   controllers: [],

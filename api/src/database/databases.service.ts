@@ -30,7 +30,7 @@ export class DatabaseService {
 
   constructor() {}
 
-  get client() {
+  get client(): knex.Knex<any, any> {
     if (!this.knex) {
       this.knex = knex({
         client: 'pg',
@@ -144,7 +144,9 @@ export class DatabaseService {
     const historyTableName = this.getHistoryTableName(kind);
     //history etc
     return this.client.transaction(async (trx) => {
-      let query = trx().select<T[]>('*').where('name', resource.name);
+      let query = trx(`${tableName} as r`)
+        .select<T[]>('*')
+        .where('name', resource.name);
 
       if (namespace) {
         query = query.andWhere('namespace', namespace);
@@ -175,10 +177,13 @@ export class DatabaseService {
       //ensure no edits have been made since the record was fetched
       //if the history is null the intention is to overwrite no matter what
       if (
-        resource.revision_id &&
-        existing.revision_id !== resource.revision_id
+        resource.revision_parent &&
+        existing.revision_id !== resource.revision_parent
       ) {
-        this.logger.error('resource history id mismatch');
+        this.logger.error('resource history id mismatch', {
+          old: existing.revision_id,
+          new: resource.revision_parent,
+        });
         throw new BadRequestException('resource history id mismatch');
       }
 

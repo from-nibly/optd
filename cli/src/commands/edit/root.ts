@@ -5,7 +5,6 @@ export abstract class EditCommand extends Command {
   //TODO: what type is this? PutResource?
   async obtainData(existing: any): Promise<any> {
     const editor = process.env['EDITOR'] ?? 'vi';
-    console.log('existing', existing);
 
     const bufferFileName = `/tmp/optdctl-buffer-${
       existing.metadata.name

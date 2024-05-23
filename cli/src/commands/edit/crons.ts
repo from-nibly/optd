@@ -45,6 +45,8 @@ export class EditCronCommand extends EditCommand {
 
     delete outputObj.metadata.cron;
 
-    await client.url(`/meta/crons/${cron}`).json(outputObj).put();
+    const resp = await client.url(`/meta/crons/${cron}`).json(outputObj).put();
+
+    this.context.stdout.write(stringify(await resp.json()) + '\n');
   }
 }
