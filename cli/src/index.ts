@@ -19,6 +19,9 @@ import { EditRoleCommand } from './commands/edit/roles';
 import { PutGroupCommand } from './commands/put/groups';
 import { EditGroupCommand } from './commands/edit/groups';
 import { GetGroupCommand } from './commands/get/groups';
+import { PutCronCommand } from './commands/put/crons';
+import { EditCronCommand } from './commands/edit/crons';
+import { GetCronCommand } from './commands/get/crons';
 
 const [node, app, ...args] = process.argv;
 
@@ -49,6 +52,9 @@ cli.register(EditRoleCommand);
 cli.register(PutGroupCommand);
 cli.register(EditGroupCommand);
 cli.register(GetGroupCommand);
+cli.register(PutCronCommand);
+cli.register(EditCronCommand);
+cli.register(GetCronCommand);
 
 cli.register(Builtins.HelpCommand);
 cli.register(Builtins.VersionCommand);

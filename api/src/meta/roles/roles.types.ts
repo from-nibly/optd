@@ -55,7 +55,7 @@ export class CreateRole extends GlobalCreateResource {
     return GlobalCreateResource.fromAPIRequest<CreateRoleAPIBody>(
       request,
       name,
-      'role',
+      Role.kind,
       CreateRole,
     );
   }
@@ -73,7 +73,7 @@ export class UpdateRole extends GlobalUpdateResource {
     return GlobalUpdateResource.fromAPIRequest(
       request,
       name,
-      'role',
+      Role.kind,
       UpdateRole,
     );
   }

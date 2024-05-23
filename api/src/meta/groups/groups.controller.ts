@@ -41,7 +41,6 @@ export class GroupController {
     const actor = req[ACTOR_CONTEXT];
     const record = await this.groupService.getGroup(actor, name);
     const resp = GroupAPIResponse.fromRecord(record);
-    this.logger.debug('got group', { record, resp });
     return resp;
   }
 

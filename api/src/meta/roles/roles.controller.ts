@@ -41,7 +41,6 @@ export class RoleController {
     const actor = req[ACTOR_CONTEXT];
     const record = await this.roleService.getRole(actor, name);
     const resp = RoleAPIResponse.fromRecord(record);
-    this.logger.debug('got role', { record, resp });
     return resp;
   }
 

@@ -32,7 +32,7 @@ export class HooksService {
     }
 
     if (!spec) {
-      throw new Error(`kind ${kind} not found`);
+      return undefined;
     }
     this.logger.debug('got spec', { spec });
 

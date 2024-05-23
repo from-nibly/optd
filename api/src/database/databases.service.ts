@@ -8,13 +8,20 @@ import {
 
 import * as knex from 'knex';
 import { Knex } from 'knex';
+import { Cron } from 'src/meta/crons/crons.types';
 import { Group } from 'src/meta/groups/groups.types';
 import { Kind } from 'src/meta/kinds/kinds.types';
 import { Role } from 'src/meta/roles/roles.types';
 import { Subject } from 'src/meta/subjects/subjects.types';
 import { GlobalDBRecord } from 'src/types/types.record';
 
-const metaKinds: string[] = [Kind.kind, Role.kind, Group.kind, Subject.kind];
+const metaKinds: string[] = [
+  Kind.kind,
+  Role.kind,
+  Group.kind,
+  Subject.kind,
+  Cron.kind,
+];
 
 @Injectable()
 export class DatabaseService {
