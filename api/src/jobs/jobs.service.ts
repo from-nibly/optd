@@ -22,7 +22,7 @@ export class JobsService {
 
   async scheduleCron(cron: Cron) {
     const jobName = `/cron/${cron.metadata.name}`;
-    const result = await this.boss.schedule(jobName, cron.spec.schedule, cron, {
+    await this.boss.schedule(jobName, cron.spec.schedule, cron, {
       tz: cron.spec.tz,
       singletonKey: jobName,
       retryBackoff: true,
