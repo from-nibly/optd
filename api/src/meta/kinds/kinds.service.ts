@@ -10,12 +10,47 @@ import { DatabaseService } from 'src/database/databases.service';
 import { ActorContext } from 'src/types/types';
 import { CreateKind, Kind, UpdateKind } from './kinds.types';
 import { KindDBRecord } from './kinds.types.record';
+import { HooksService } from 'src/hooks/hooks.service';
+import { MigrationService } from 'src/database/migrations/migrations.service';
 
 @Injectable()
 export class KindService {
   private readonly logger = new Logger(KindService.name);
 
-  constructor(private readonly dbService: DatabaseService) {}
+  constructor(
+    private readonly dbService: DatabaseService,
+    private readonly hookService: HooksService,
+    private readonly migrationService: MigrationService,
+  ) {}
+
+  async onModuleInit(): Promise<void> {
+    //migrations
+    this.migrationService.addMetaTablesMigration(Kind.kind, Kind.kind);
+
+    const tableName = this.dbService.getTableName(Kind.kind);
+    const tableExists = await this.dbService.client.schema.hasTable(tableName);
+    if (!tableExists) {
+      return;
+    }
+
+    const kinds = await this.listKindsInternal();
+
+    for (const kind of kinds) {
+      this.logger.debug('creating table for kind', kind.metadata.name);
+      this.migrationService.addResourceTablesMigration(
+        kind.metadata.name,
+        kind.metadata.name,
+      );
+    }
+  }
+
+  async listKindsInternal(): Promise<Kind[]> {
+    const resp = await this.dbService.listResourcesInternal<KindDBRecord>(
+      Kind.kind,
+    );
+
+    return resp.map((r) => Kind.fromDBRecord(r));
+  }
 
   async listKinds(actorContext: ActorContext): Promise<Kind[]> {
     const permissions = actorContext.getPermissionPaths('list');

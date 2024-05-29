@@ -11,6 +11,7 @@ import { CreateSubject, Subject, UpdateSubject } from './subjects.types';
 import { SubjectDBRecord } from './subjects.types.record';
 import { ActorContext } from 'src/types/types';
 import { HooksService } from 'src/hooks/hooks.service';
+import { MigrationService } from 'src/database/migrations/migrations.service';
 
 @Injectable()
 export class SubjectService {
@@ -19,59 +20,12 @@ export class SubjectService {
   constructor(
     private readonly dbService: DatabaseService,
     private readonly hookService: HooksService,
+    private readonly migrationService: MigrationService,
   ) {}
 
   async onModuleInit(): Promise<void> {
     //migrations
-    this.dbService.client.transaction(async (trx) => {
-      //TODO: do proper migrations here
-      const tableName = this.dbService.getTableName(Subject.kind);
-      const historyTableName = this.dbService.getHistoryTableName(Subject.kind);
-
-      const tableExists = await trx.schema.hasTable(tableName);
-      if (tableExists) {
-        return;
-      }
-
-      const commonFields = (table: Knex.CreateTableBuilder) => {
-        table.string('name', 255).checkRegex('^[a-z][a-z0-9-]*$').notNullable();
-
-        // unstructured in database
-        table.jsonb('metadata_annotations').notNullable();
-        table.jsonb('metadata_labels').notNullable();
-        table.jsonb('status').notNullable();
-
-        //single string to represent current state
-        table
-          .string('state', 255)
-          .checkRegex('^[a-z][a-z0-9-]*$')
-          .notNullable();
-
-        //spec is unstructured
-        table.jsonb('spec').notNullable();
-
-        //history
-        table.uuid('revision_id').notNullable();
-        table.datetime('revision_at', { useTz: true }).notNullable();
-        table.string('revision_by', 255).notNullable();
-        table.text('revision_message').nullable();
-        table.uuid('revision_parent').nullable();
-      };
-
-      await trx.schema.createTable(tableName, (table) => {
-        commonFields(table);
-        table.primary(['name']);
-      });
-
-      await trx.schema.createTable(historyTableName, (table) => {
-        commonFields(table);
-        table.primary(['name', 'revision_id']);
-        //make sure bugs can't update history?
-        //might need to be able to delete history?
-        trx.raw('REVOKE UPDATE ON meta_subjects_history FROM optd');
-        trx.raw('REVOKE UPDATE ON meta_subjects_history FROM optd');
-      });
-    });
+    this.migrationService.addMetaTablesMigration(Subject.kind, Subject.kind);
   }
 
   async listSubjects(actorContext: ActorContext): Promise<Subject[]> {

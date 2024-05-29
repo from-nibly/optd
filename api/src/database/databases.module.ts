@@ -1,5 +1,6 @@
 import { Logger, Module } from '@nestjs/common';
 import { DatabaseService } from './databases.service';
+import { Kind } from 'src/meta/kinds/kinds.types';
 
 @Module({
   imports: [],
@@ -11,10 +12,4 @@ export class DatabaseModule {
   private readonly logger = new Logger(DatabaseModule.name);
 
   constructor(private readonly db: DatabaseService) {}
-
-  async onModuleInit() {
-    const results = await this.db.client('meta_kind').select('*');
-
-    this.logger.debug('DatabaseModule initialized', { results });
-  }
 }

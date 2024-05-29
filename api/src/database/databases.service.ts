@@ -85,6 +85,20 @@ export class DatabaseService {
     });
   }
 
+  async listResourcesInternal<T extends GlobalDBRecord>(
+    kind: string,
+    namespace?: string,
+  ): Promise<T[]> {
+    const tableName = this.getTableName(kind);
+
+    let query = this.client(`${tableName} as r`).select<T[]>('*');
+    if (namespace) {
+      query = query.where('namespace', namespace);
+    }
+
+    return query as any;
+  }
+
   async listResources<T extends GlobalDBRecord>(
     kind: string,
     permissionRegexList: string[],

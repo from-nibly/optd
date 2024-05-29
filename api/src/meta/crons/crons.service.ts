@@ -5,13 +5,13 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { Knex } from 'knex';
 import { DatabaseService } from 'src/database/databases.service';
+import { MigrationService } from 'src/database/migrations/migrations.service';
 import { HooksService } from 'src/hooks/hooks.service';
+import { JobsService } from 'src/jobs/jobs.service';
 import { ActorContext } from 'src/types/types';
 import { CreateCron, Cron, UpdateCron } from './crons.types';
 import { CronDBRecord } from './crons.types.record';
-import { JobsService } from 'src/jobs/jobs.service';
 
 //TODO: should crons be global or namespaced?
 @Injectable()
@@ -22,60 +22,12 @@ export class CronService {
     private readonly dbService: DatabaseService,
     private readonly hookService: HooksService,
     private readonly jobService: JobsService,
+    private readonly migrationService: MigrationService,
   ) {}
 
   async onModuleInit(): Promise<void> {
     //migrations
-    this.dbService.client.transaction(async (trx) => {
-      //check if table exists
-      //TODO: do proper migrations here
-      const tableName = this.dbService.getTableName(Cron.kind);
-      const historyTableName = this.dbService.getHistoryTableName('crons');
-      const tableExists = await trx.schema.hasTable(tableName);
-      this.logger.debug('tableExists', tableExists);
-      if (tableExists) {
-        return;
-      }
-
-      const commonFields = (table: Knex.CreateTableBuilder) => {
-        table.string('name', 255).checkRegex('^[a-z][a-z0-9-]*$').notNullable();
-
-        // unstructured in database
-        table.jsonb('metadata_annotations').notNullable();
-        table.jsonb('metadata_labels').notNullable();
-        table.jsonb('status').notNullable();
-
-        //single string to represent current state
-        table
-          .string('state', 255)
-          .checkRegex('^[a-z][a-z0-9-]*$')
-          .notNullable();
-
-        //spec is unstructured
-        table.jsonb('spec').notNullable();
-
-        //history
-        table.uuid('revision_id').notNullable();
-        table.datetime('revision_at', { useTz: true }).notNullable();
-        table.string('revision_by', 255).notNullable();
-        table.text('revision_message').nullable();
-        table.uuid('revision_parent').nullable();
-      };
-
-      await trx.schema.createTable(tableName, (table) => {
-        commonFields(table);
-        table.primary(['name']);
-      });
-
-      await trx.schema.createTable(historyTableName, (table) => {
-        commonFields(table);
-        table.primary(['name', 'revision_id']);
-        //make sure bugs can't update history?
-        //might need to be able to delete history?
-        trx.raw(`REVOKE UPDATE ON ${historyTableName} FROM optd`);
-        trx.raw(`REVOKE UPDATE ON ${historyTableName} FROM optd`);
-      });
-    });
+    this.migrationService.addMetaTablesMigration(Cron.kind, Cron.kind);
   }
 
   async listCrons(actorContext: ActorContext): Promise<Cron[]> {
@@ -185,9 +137,9 @@ export class CronService {
 
     const rtn = Cron.fromDBRecord(updated);
 
-    this.jobService.unscheduleCron(rtn);
+    await this.jobService.unscheduleCron(rtn);
 
-    this.jobService.scheduleCron(rtn);
+    await this.jobService.scheduleCron(rtn);
 
     return rtn;
   }
