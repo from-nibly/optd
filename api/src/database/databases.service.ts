@@ -58,6 +58,12 @@ export class DatabaseService {
     }
     return `resource_${resourceKind}_history`;
   }
+  getExecutionHistoryTableName(resourceKind: string) {
+    if (metaKinds.includes(resourceKind)) {
+      return `meta_${resourceKind}_execution_history`;
+    }
+    return `resource_${resourceKind}_execution_history`;
+  }
 
   private createAuthzPathExpression(
     kind: string,

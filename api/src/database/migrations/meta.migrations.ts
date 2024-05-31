@@ -48,4 +48,74 @@ export const generateMetaMigrations = (resourceName: string): Migration[] => [
       await knex.schema.dropTable(`meta_${resourceName}`);
     },
   },
+  {
+    name: `create_${resourceName}_execution_history`,
+    async up(knex: Knex) {
+      await knex.schema.alterTable(`meta_${resourceName}_history`, (table) => {
+        table.unique('revision_id');
+      });
+      await knex.schema.createTable(
+        `meta_${resourceName}_execution_history`,
+        (table) => {
+          table.uuid('id').primary();
+          table.datetime('started_at', { useTz: true }).notNullable();
+          table.datetime('ended_at', { useTz: true }).notNullable();
+          table.jsonb('stdout').notNullable();
+          table.jsonb('stderr').notNullable();
+          table.smallint('exit_code').notNullable();
+          table
+            .uuid('script_revision')
+            .references(`meta_${resourceName}_history.revision_id`)
+            .notNullable();
+          table.string('event_name', 255).notNullable();
+        },
+      );
+    },
+    async down(knex: Knex) {
+      return knex.schema.dropTable(`meta_${resourceName}_execution_history`);
+    },
+  },
+  {
+    name: `add_payload_column_${resourceName}`,
+    async up(knex: Knex) {
+      await knex.schema.alterTable(
+        `meta_${resourceName}_execution_history`,
+        (table) => {
+          table.jsonb('payload').notNullable();
+        },
+      );
+    },
+    async down(knex: Knex) {
+      await knex.schema.alterTable(
+        `meta_${resourceName}_execution_history`,
+        (table) => {
+          table.dropColumn('payload');
+        },
+      );
+    },
+  },
+  {
+    //TODO: should we house the current version in the history table so we can reference it with a foreign key?
+    name: `drop_fk_revision_${resourceName}`,
+    async up(knex: Knex) {
+      await knex.schema.alterTable(
+        `meta_${resourceName}_execution_history`,
+        (table) => {
+          table.dropForeign('script_revision');
+        },
+      );
+    },
+    async down(knex: Knex) {
+      await knex.schema.alterTable(
+        `meta_${resourceName}_execution_history`,
+        (table) => {
+          table
+            .uuid('script_revision')
+            .references(`meta_${resourceName}_history.revision_id`)
+            .notNullable()
+            .alter();
+        },
+      );
+    },
+  },
 ];

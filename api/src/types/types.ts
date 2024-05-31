@@ -55,7 +55,7 @@ export class NamespacedCreateMeta extends GlobalCreateMeta {
 export class History {
   id: string;
   by: string;
-  at: string;
+  at: Date;
   message?: string;
   parent: string | null;
 

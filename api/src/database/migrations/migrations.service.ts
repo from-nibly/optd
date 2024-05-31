@@ -13,9 +13,7 @@ export class MigrationService {
 
   async onApplicationBootstrap() {
     //run gathered migrations
-    this.databaseService.client.migrate.latest({
-      migrationSource: this.migrationSource,
-    });
+    await this.triggerMigrations();
   }
 
   async addMetaTablesMigration(batchName: string, resourceName: string) {
@@ -26,5 +24,11 @@ export class MigrationService {
   async addResourceTablesMigration(batchName: string, resourceName: string) {
     const migrations = generateResourceMigrations(resourceName);
     this.migrationSource.addMigrations(batchName, migrations);
+  }
+
+  async triggerMigrations() {
+    return this.databaseService.client.migrate.latest({
+      migrationSource: this.migrationSource,
+    });
   }
 }

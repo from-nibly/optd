@@ -70,7 +70,7 @@ export class GlobalResource {
       history: new History({
         id: record.revision_id,
         by: record.revision_by,
-        at: record.revision_at,
+        at: new Date(record.revision_at),
         message: record.revision_message,
         parent: record.revision_parent,
       }),
@@ -120,7 +120,7 @@ export class NamespacedResource {
       history: new History({
         id: record.revision_id,
         by: record.revision_by,
-        at: record.revision_at,
+        at: new Date(record.revision_at),
         message: record.revision_message,
         parent: record.revision_parent,
       }),

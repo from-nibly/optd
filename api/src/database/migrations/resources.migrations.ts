@@ -47,8 +47,8 @@ export const generateResourceMigrations = (
         (table) => {
           commonFields(table);
           table.primary(['name', 'namespace', 'revision_id']);
-          //make sure bugs can't update history?
-          //might need to be able to delete history?
+          //make sure bugs can't update history
+          //might need to be able to delete history
           knex.raw(
             `REVOKE UPDATE ON resource_${resourceName}_history FROM optd`,
           );
@@ -61,6 +61,38 @@ export const generateResourceMigrations = (
     async down(knex: Knex) {
       await knex.schema.dropTable(`resource_${resourceName}_history`);
       await knex.schema.dropTable(`resource_${resourceName}`);
+    },
+  },
+  {
+    name: `create_${resourceName}_execution_history`,
+    async up(knex: Knex) {
+      await knex.schema.alterTable(
+        `resource_${resourceName}_history`,
+        (table) => {
+          table.unique('revision_id');
+        },
+      );
+      await knex.schema.createTable(
+        `resource_${resourceName}_execution_history`,
+        (table) => {
+          table.uuid('id').primary();
+          table.datetime('started_at', { useTz: true }).notNullable();
+          table.datetime('ended_at', { useTz: true }).notNullable();
+          table.jsonb('stdout').notNullable();
+          table.jsonb('stderr').notNullable();
+          table.smallint('exit_code').notNullable();
+          table
+            .uuid('script_revision')
+            .references(`resource_${resourceName}_history.revision_id`)
+            .notNullable();
+          table.string('event_name', 255).notNullable();
+        },
+      );
+    },
+    async down(knex: Knex) {
+      return knex.schema.dropTable(
+        `resource_${resourceName}_execution_history`,
+      );
     },
   },
 ];

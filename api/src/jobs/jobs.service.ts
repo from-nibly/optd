@@ -22,6 +22,7 @@ export class JobsService {
 
       const result = await this.executorService.executeScript(
         cron.spec.script,
+        cron.history.id,
         'cron',
         Cron.kind,
         cron,
@@ -38,6 +39,7 @@ export class JobsService {
     private readonly executorService: ExecutorService,
   ) {}
 
+  //TODO: somehow this needs to become resilient to restarts
   async scheduleCron(cron: Cron) {
     const jobName = `/cron/${cron.metadata.name}`;
     await this.boss.schedule(jobName, cron.spec.schedule, cron, {

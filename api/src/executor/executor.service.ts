@@ -1,33 +1,24 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { spawn } from 'child_process';
 import * as fs from 'fs/promises';
+import { DatabaseService } from 'src/database/databases.service';
+import { v4 as uuid } from 'uuid';
 
 //TODO: maybe save the environment and the script in the database?
+interface OutputLine {
+  t: string;
+  v: string;
+}
 interface ExecutionResult {
-  stdout: string;
-  stderr: string;
+  stdout: OutputLine[];
+  stderr: OutputLine[];
   code: number;
 }
 
 @Injectable()
 export class ExecutorService {
   private logger = new Logger(ExecutorService.name);
-  constructor() {}
-
-  private async materializeScript(
-    kind: string,
-    event: string,
-    script: string,
-  ): Promise<string> {
-    const dir = `/tmp/optdctl/scripts/${kind}`;
-    await fs.mkdir(dir, { recursive: true });
-    const filename = `${dir}/${event}`;
-
-    await fs.writeFile(filename, script);
-    await fs.chmod(filename, 0o700);
-
-    return filename;
-  }
+  constructor(private readonly dbService: DatabaseService) {}
 
   private async materializeContext(
     kind: string,
@@ -52,6 +43,7 @@ export class ExecutorService {
 
   async executeScript(
     script: string,
+    script_revision: string,
     event: string,
     kind: string,
     payload: any,
@@ -63,21 +55,65 @@ export class ExecutorService {
 
     return new Promise<ExecutionResult>((resolve, reject) => {
       const proc = spawn(`${dir}/script`, { stdio: 'pipe', cwd: dir });
-      let stdout = '';
-      let stderr = '';
+      const stdout: OutputLine[] = [];
+      const stderr: OutputLine[] = [];
+      let stdoutText = '';
+      let stderrText = '';
 
       proc.stdout.on('data', (data) => {
-        stdout += data;
+        stdoutText += data;
+        if (stdoutText.includes('\n')) {
+          const lines = stdoutText.split('\n');
+          stdoutText = lines.pop()!;
+          for (const line of lines) {
+            stdout.push({ t: new Date().toISOString(), v: line });
+          }
+        }
       });
       proc.stderr.on('data', (data) => {
-        stderr += data;
+        stderrText += data;
+        if (stderrText.includes('\n')) {
+          const lines = stderrText.split('\n');
+          stderrText = lines.pop()!;
+          for (const line of lines) {
+            stderr.push({ t: new Date().toISOString(), v: line });
+          }
+        }
       });
 
       proc.on('exit', (code) => {
-        if (code === 0) {
-          resolve({ stdout, stderr, code });
-        } else {
-          resolve({ stdout, stderr, code: code! });
+        try {
+          const resp = { stdout, stderr, code: code! };
+
+          const dbRecord = {
+            id: uuid(),
+            started_at: new Date().toISOString(),
+            ended_at: new Date().toISOString(),
+            stdout: { entries: stdout },
+            stderr: { entries: stderr },
+            exit_code: code,
+            script_revision: script_revision,
+            event_name: event,
+            payload,
+          };
+
+          const query = this.dbService
+            .client(this.dbService.getExecutionHistoryTableName(kind))
+            .insert(dbRecord);
+
+          query
+            .then(() => {
+              resolve(resp);
+            })
+            .catch((err) => {
+              this.logger.error('failed to insert execution history', {
+                err,
+                query: query.toQuery(),
+              });
+              reject(err);
+            });
+        } catch (err) {
+          reject(err);
         }
       });
     });
