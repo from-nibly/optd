@@ -9,8 +9,10 @@ export class EditRoleCommand extends EditCommand {
   static paths = [
     ['edit', 'role'],
     ['e', 'role'],
-    ['edit', 'k'],
-    ['e', 'k'],
+    ['edit', 'roles'],
+    ['e', 'roles'],
+    ['edit', 'r'],
+    ['e', 'r'],
   ];
   static usage = Command.Usage({
     category: 'Configuration',

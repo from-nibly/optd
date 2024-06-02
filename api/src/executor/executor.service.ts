@@ -9,7 +9,7 @@ interface OutputLine {
   t: string;
   v: string;
 }
-interface ExecutionResult {
+export interface ExecutionResult {
   stdout: OutputLine[];
   stderr: OutputLine[];
   code: number;

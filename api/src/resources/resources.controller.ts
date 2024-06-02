@@ -87,7 +87,13 @@ export class ResourceController {
         namespace,
         name,
       );
-      await this.hookService.executeHook('validate', resourceKind, record);
+      await this.hookService.executeHook(
+        actor,
+        resourceKind,
+        'validate',
+        record,
+        record.metadata.name,
+      );
       const updated = await this.resourceService.updateResource(
         actor,
         record,
@@ -103,7 +109,13 @@ export class ResourceController {
       body.metadata.namespace ?? namespace,
       body.metadata.name ?? name,
     );
-    await this.hookService.executeHook('validate', resourceKind, record);
+    await this.hookService.executeHook(
+      actor,
+      resourceKind,
+      'validate',
+      record,
+      record.metadata.name,
+    );
     const created = await this.resourceService.createResource(
       actor,
       record,

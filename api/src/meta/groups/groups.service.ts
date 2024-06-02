@@ -82,11 +82,11 @@ export class GroupService {
   }
 
   async createGroup(
-    actor: ActorContext,
+    actorContext: ActorContext,
     record: CreateGroup,
     message: string,
   ): Promise<Group> {
-    const permissions = actor.getPermissionPaths('create');
+    const permissions = actorContext.getPermissionPaths('create');
 
     if (permissions.length === 0) {
       throw new ForbiddenException('No create permissions found');
@@ -94,15 +94,28 @@ export class GroupService {
 
     const created = await this.dbService.createResource<GroupDBRecord>(
       Group.kind,
-      record.toDBRecord(actor, message),
+      record.toDBRecord(actorContext, message),
       permissions,
       async (result) => {
         const newRecord = Group.fromDBRecord(result);
-        this.hookService.executeHook('preCreate', Group.kind, newRecord);
+        this.hookService.executeHook(
+          actorContext,
+          Group.kind,
+          'preCreate',
+          newRecord,
+          newRecord.metadata.name,
+        );
       },
       async (result) => {
         const newRecord = Group.fromDBRecord(result);
-        this.hookService.executeHook('postCreate', Group.kind, newRecord);
+
+        this.hookService.executeHook(
+          actorContext,
+          Group.kind,
+          'postCreate',
+          newRecord,
+          newRecord.metadata.name,
+        );
       },
     );
 
@@ -128,11 +141,23 @@ export class GroupService {
       permissions,
       async (result) => {
         const newRecord = Group.fromDBRecord(result);
-        this.hookService.executeHook('preUpdate', Group.kind, newRecord);
+        this.hookService.executeHook(
+          actorContext,
+          Group.kind,
+          'preUpdate',
+          newRecord,
+          newRecord.metadata.name,
+        );
       },
       async (result) => {
         const newRecord = Group.fromDBRecord(result);
-        this.hookService.executeHook('postUpdate', Group.kind, newRecord);
+        this.hookService.executeHook(
+          actorContext,
+          Group.kind,
+          'postUpdate',
+          newRecord,
+          newRecord.metadata.name,
+        );
       },
     );
 

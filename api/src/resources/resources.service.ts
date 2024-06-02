@@ -93,11 +93,23 @@ export class ResourceService {
         permissions,
         async (result) => {
           const newRecord = NamespacedResource.fromDBRecord(kind, result);
-          this.hookService.executeHook('preUpdate', kind, newRecord);
+          this.hookService.executeHook(
+            actorContext,
+            kind,
+            'preUpdate',
+            newRecord,
+            newRecord.metadata.name,
+          );
         },
         async (result) => {
           const newRecord = NamespacedResource.fromDBRecord(kind, result);
-          this.hookService.executeHook('postUpdate', kind, newRecord);
+          this.hookService.executeHook(
+            actorContext,
+            kind,
+            'postUpdate',
+            newRecord,
+            newRecord.metadata.name,
+          );
         },
         record.metadata.namespace,
       );
@@ -106,12 +118,12 @@ export class ResourceService {
   }
 
   async createResource(
-    actor: ActorContext,
+    actorContext: ActorContext,
     record: NamespacedCreateResource,
     kind: string,
     message: string,
   ): Promise<NamespacedResource> {
-    const permissions = actor.getPermissionPaths('create');
+    const permissions = actorContext.getPermissionPaths('create');
 
     if (permissions.length === 0) {
       throw new ForbiddenException('No create permissions found');
@@ -122,16 +134,29 @@ export class ResourceService {
     const created =
       await this.dbService.createResource<NamespacedResourceDBRecord>(
         kind,
-        record.toDBRecord(actor, message),
+        record.toDBRecord(actorContext, message),
         permissions,
         async (result) => {
           const newRecord = NamespacedResource.fromDBRecord(kind, result);
-          this.hookService.executeHook('preCreate', kind, newRecord);
+          this.hookService.executeHook(
+            actorContext,
+            kind,
+            'preCreate',
+            newRecord,
+            newRecord.metadata.name,
+          );
         },
         async (result) => {
           const newRecord = NamespacedResource.fromDBRecord(kind, result);
-          this.hookService.executeHook('postCreate', kind, newRecord);
+          this.hookService.executeHook(
+            actorContext,
+            kind,
+            'postCreate',
+            newRecord,
+            newRecord.metadata.name,
+          );
         },
+
         namespace,
       );
 

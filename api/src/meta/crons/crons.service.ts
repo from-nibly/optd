@@ -81,11 +81,11 @@ export class CronService {
   }
 
   async createCron(
-    actor: ActorContext,
+    actorContext: ActorContext,
     record: CreateCron,
     message: string,
   ): Promise<Cron> {
-    const permissions = actor.getPermissionPaths('create');
+    const permissions = actorContext.getPermissionPaths('create');
 
     if (permissions.length === 0) {
       throw new ForbiddenException('No create permissions found');
@@ -93,15 +93,28 @@ export class CronService {
 
     const created = await this.dbService.createResource<CronDBRecord>(
       Cron.kind,
-      record.toDBRecord(actor, message),
+      record.toDBRecord(actorContext, message),
       permissions,
       async (result) => {
         const newRecord = Cron.fromDBRecord(result);
-        this.hookService.executeHook('preCreate', Cron.kind, newRecord);
+        this.hookService.executeHook(
+          actorContext,
+          Cron.kind,
+          'preCreate',
+          newRecord,
+          newRecord.metadata.name,
+        );
       },
       async (result) => {
         const newRecord = Cron.fromDBRecord(result);
-        this.hookService.executeHook('postCreate', Cron.kind, newRecord);
+
+        this.hookService.executeHook(
+          actorContext,
+          Cron.kind,
+          'postCreate',
+          newRecord,
+          newRecord.metadata.name,
+        );
       },
     );
 
@@ -127,11 +140,23 @@ export class CronService {
       permissions,
       async (result) => {
         const newRecord = Cron.fromDBRecord(result);
-        this.hookService.executeHook('preUpdate', Cron.kind, newRecord);
+        this.hookService.executeHook(
+          actorContext,
+          Cron.kind,
+          'preUpdate',
+          newRecord,
+          newRecord.metadata.name,
+        );
       },
       async (result) => {
         const newRecord = Cron.fromDBRecord(result);
-        this.hookService.executeHook('postUpdate', Cron.kind, newRecord);
+        this.hookService.executeHook(
+          actorContext,
+          Cron.kind,
+          'postUpdate',
+          newRecord,
+          newRecord.metadata.name,
+        );
       },
     );
 

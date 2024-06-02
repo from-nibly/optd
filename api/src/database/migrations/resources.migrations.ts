@@ -95,4 +95,48 @@ export const generateResourceMigrations = (
       );
     },
   },
+
+  {
+    name: `add_payload_column_${resourceName}`,
+    async up(knex: Knex) {
+      await knex.schema.alterTable(
+        `resource_${resourceName}_execution_history`,
+        (table) => {
+          table.jsonb('payload').notNullable();
+        },
+      );
+    },
+    async down(knex: Knex) {
+      await knex.schema.alterTable(
+        `resource_${resourceName}_execution_history`,
+        (table) => {
+          table.dropColumn('payload');
+        },
+      );
+    },
+  },
+  {
+    //TODO: should we house the current version in the history table so we can reference it with a foreign key?
+    name: `drop_fk_revision_${resourceName}`,
+    async up(knex: Knex) {
+      await knex.schema.alterTable(
+        `resource_${resourceName}_execution_history`,
+        (table) => {
+          table.dropForeign('script_revision');
+        },
+      );
+    },
+    async down(knex: Knex) {
+      await knex.schema.alterTable(
+        `resource_${resourceName}_execution_history`,
+        (table) => {
+          table
+            .uuid('script_revision')
+            .references(`resource_${resourceName}_history.revision_id`)
+            .notNullable()
+            .alter();
+        },
+      );
+    },
+  },
 ];

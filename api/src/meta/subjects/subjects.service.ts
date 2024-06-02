@@ -96,11 +96,11 @@ export class SubjectService {
   }
 
   async createSubject(
-    actor: ActorContext,
+    actorContext: ActorContext,
     record: CreateSubject,
     message: string,
   ): Promise<Subject> {
-    const permissions = actor.getPermissionPaths('create');
+    const permissions = actorContext.getPermissionPaths('create');
 
     if (permissions.length === 0) {
       throw new ForbiddenException('No create permissions found');
@@ -108,15 +108,28 @@ export class SubjectService {
 
     const created = await this.dbService.createResource<SubjectDBRecord>(
       Subject.kind,
-      record.toDBRecord(actor, message),
+      record.toDBRecord(actorContext, message),
       permissions,
       async (result) => {
         const newRecord = Subject.fromDBRecord(result);
-        this.hookService.executeHook('preCreate', Subject.kind, newRecord);
+        this.hookService.executeHook(
+          actorContext,
+          Subject.kind,
+          'preCreate',
+          newRecord,
+          newRecord.metadata.name,
+        );
       },
       async (result) => {
         const newRecord = Subject.fromDBRecord(result);
-        this.hookService.executeHook('postCreate', Subject.kind, newRecord);
+
+        this.hookService.executeHook(
+          actorContext,
+          Subject.kind,
+          'postCreate',
+          newRecord,
+          newRecord.metadata.name,
+        );
       },
     );
 
@@ -142,11 +155,23 @@ export class SubjectService {
       permissions,
       async (result) => {
         const newRecord = Subject.fromDBRecord(result);
-        this.hookService.executeHook('preUpdate', Subject.kind, newRecord);
+        this.hookService.executeHook(
+          actorContext,
+          Subject.kind,
+          'preUpdate',
+          newRecord,
+          newRecord.metadata.name,
+        );
       },
       async (result) => {
         const newRecord = Subject.fromDBRecord(result);
-        this.hookService.executeHook('postUpdate', Subject.kind, newRecord);
+        this.hookService.executeHook(
+          actorContext,
+          Subject.kind,
+          'postUpdate',
+          newRecord,
+          newRecord.metadata.name,
+        );
       },
     );
 
