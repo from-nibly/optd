@@ -24,7 +24,7 @@
 					></label
 				>
 				<div class="flex-1">
-					<a class="btn btn-ghost text-xl text-white" href="/">OptD</a>
+					<a class="btn btn-ghost text-xl text-white" href="/">Home</a>
 				</div>
 				<div class="flex-none gap-2">
 					<div class="form-control">
@@ -78,7 +78,7 @@
 						></path></svg
 					></button
 				>
-				<li class="mb-2 font-semibold text-xl">foobar</li>
+				<li class="mb-2 font-semibold text-xl">OptD</li>
 			</ul>
 		</div>
 	</div>

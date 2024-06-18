@@ -100,7 +100,7 @@ export class AuthLoginCommand extends Command {
     //TODO: ping the server to see if it exists
 
     const resp: any = await wretch(serverURL)
-      .url('/auth/login')
+      .url('/api/auth/login')
       .post({
         username,
         password,

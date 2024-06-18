@@ -13,6 +13,7 @@ import { GroupsModule } from './meta/groups/groups.module';
 import { RolesModule } from './meta/roles/roles.module';
 import { CronsModule } from './meta/crons/crons.module';
 import { JobsModule } from './jobs/jobs.module';
+import { RouterModule } from '@nestjs/core';
 
 @Module({
   imports: [

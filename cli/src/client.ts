@@ -11,6 +11,8 @@ export class ClientService {
     if (!server) {
       throw new Error('No current server');
     }
-    return wretch(server.url).auth(`Bearer ${server.auth.access_token}`);
+    const url = new URL('./api', server.url);
+    console.log('url', url.toString(), url);
+    return wretch(url.toString()).auth(`Bearer ${server.auth.access_token}`);
   }
 }
