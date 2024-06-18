@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import * as knex from 'knex';
+import knex = require('knex');
 import { Knex } from 'knex';
 import { Cron } from 'src/meta/crons/crons.types';
 import { Group } from 'src/meta/groups/groups.types';

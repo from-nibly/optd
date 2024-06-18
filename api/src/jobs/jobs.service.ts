@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as PgBoss from 'pg-boss';
+import PgBoss = require('pg-boss');
 import { DatabaseService } from 'src/database/databases.service';
 import { ExecutorService } from 'src/executor/executor.service';
 import { Cron } from 'src/meta/crons/crons.types';

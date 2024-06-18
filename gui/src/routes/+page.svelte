@@ -13,6 +13,7 @@
 
 <section>
 	<button class="btn btn-primary">Hello daisyUI</button>
+	<svelte:component this={Thing} />
 </section>
 
 <style>
