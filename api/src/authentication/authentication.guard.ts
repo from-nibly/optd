@@ -32,7 +32,10 @@ export class AuthenticationGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    let token = this.extractTokenFromHeader(request);
+    if (!token) {
+      token = this.extractTokenFromCookie(request);
+    }
     if (!token) {
       throw new UnauthorizedException({ message: 'No token provided' });
     }
@@ -56,6 +59,11 @@ export class AuthenticationGuard implements CanActivate {
   private extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
+  }
+
+  private extractTokenFromCookie(request: Request): string | undefined {
+    console.log('testing', request);
+    return request.cookies['access_token'];
   }
 }
 
