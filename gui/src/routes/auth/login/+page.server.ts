@@ -1,26 +1,30 @@
+import { fail, redirect } from '@sveltejs/kit';
+
 export const actions = {
 	default: async ({ request, cookies }) => {
 		const form = await request.formData();
 
-		const paylod = {
+		const payload = {
 			username: form.get('username'),
 			password: form.get('password')
 		};
 
 		const resp = await fetch('http://localhost:3000/api/auth/login', {
-			body: JSON.stringify(paylod),
+			body: JSON.stringify(payload),
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			method: 'POST'
 		});
-		console.log('got stuff', resp);
+
+		if (!resp.ok) {
+			return fail(401, { error: 'Invalid username or password' });
+		}
+
 		const { access_token } = await resp.json();
-		const payload = access_token.split('.')[1];
-		const data = JSON.parse(atob(payload));
-		console.log('data', data);
+		const contents = access_token.split('.')[1];
+		const data = JSON.parse(atob(contents));
 		const expires = new Date(data.exp * 1000);
-		console.log('expires', expires);
 
 		cookies.set('access_token', access_token, {
 			path: '/',
@@ -31,11 +35,10 @@ export const actions = {
 			expires
 		});
 
+		redirect(303, '/app');
+
 		return {
-			status: 307,
-			body: {
-				message: 'Hello, world!'
-			}
+			success: true
 		};
 	}
 };

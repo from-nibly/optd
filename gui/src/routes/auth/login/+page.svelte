@@ -1,27 +1,4 @@
 <script lang="ts">
-	const submit = async (event: { currentTarget: EventTarget & HTMLFormElement }) => {
-		const resp = await fetch(event.currentTarget.action, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(Object.fromEntries(new FormData(event.currentTarget)))
-		});
-		const { access_token } = await resp.json();
-		const payload = access_token.split('.')[1];
-		console.log('testing', atob(payload));
-		const data = JSON.parse(atob(payload));
-		console.log('data', data);
-		const expires = new Date(data.exp * 1000).toUTCString();
-		document.cookie = `access_token=${access_token}; HttpOnly; SameSite=Strict; path=/; Domain=optd.localhost; Expires=${expires};`;
-		const resp2 = await fetch('http://optd.localhost:3000/api/meta/kinds', {
-			credentials: 'include'
-		});
-		// fetch('http://optd.localhost:3000/api/meta/kinds', { credentials: 'include' }).then(
-		// 	console.log
-		// );
-		console.log('resp', resp2);
-	};
 </script>
 
 <div class="card bg-base-200 shadow-xl">
