@@ -32,6 +32,7 @@ export const generateMetaMigrations = (resourceName: string): Migration[] => [
 
       await knex.schema.createTable(`meta_${resourceName}`, (table) => {
         commonFields(table);
+        table.primary(['name']);
       });
 
       await knex.schema.createTable(`meta_${resourceName}_history`, (table) => {
