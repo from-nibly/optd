@@ -19,7 +19,7 @@
 		></label
 	>
 	<div class="flex-1">
-		<a class="btn btn-ghost text-xl text-white" href="/">Home</a>
+		<a class="btn btn-ghost text-xl text-white" href="/app">Home</a>
 	</div>
 	<div class="flex-none gap-2">
 		<div class="form-control">

@@ -190,7 +190,6 @@ export class NamespacedCreateResource {
     name: string,
     ctor: typeof NamespacedCreateResource = NamespacedCreateResource,
   ): NamespacedCreateResource {
-    console.log('request', request, kind);
     return new ctor({
       metadata: {
         labels: request.metadata.labels,

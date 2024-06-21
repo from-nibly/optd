@@ -1,4 +1,4 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail, redirect, type Actions } from '@sveltejs/kit';
 
 export const actions = {
 	default: async ({ request, cookies }) => {
@@ -36,9 +36,5 @@ export const actions = {
 		});
 
 		redirect(303, '/app');
-
-		return {
-			success: true
-		};
 	}
-};
+} satisfies Actions;
