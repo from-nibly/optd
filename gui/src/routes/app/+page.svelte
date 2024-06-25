@@ -8,7 +8,7 @@
 
 <svelte:head>
 	<title>Home</title>
-	<meta name="description" />
+	<meta name="OptD Homepage" />
 </svelte:head>
 
 <section>

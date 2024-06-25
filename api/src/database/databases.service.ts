@@ -253,6 +253,47 @@ export class DatabaseService {
       return updated;
     });
   }
+
+  async createResourceInternal<T extends GlobalDBRecord>(
+    kind: string,
+    resource: T,
+    preCreate: (result: T) => Promise<void>,
+    postCreate: (result: T, trx: Knex.Transaction) => Promise<void>,
+    namespace?: string,
+  ): Promise<T> {
+    this.logger.debug('creating resource record', resource);
+    const tableName = this.getTableName(kind);
+    const name = resource.name;
+
+    return this.client.transaction(async (trx) => {
+      await preCreate(resource);
+
+      const [created, ...extraCreated] = await trx(tableName)
+        .insert<T>(resource)
+        .returning('*');
+
+      if (extraCreated.length > 0) {
+        this.logger.error('multiple resource creations returned');
+        throw new Error('multiple resource creations returned');
+      }
+
+      if (!created) {
+        this.logger.error('no resource creation returned');
+        throw new Error('no resource creation returned');
+      }
+
+      let query = trx(`${tableName} as r`)
+        .select<T[]>('*')
+        .andWhere('name', name);
+      if (namespace) {
+        query = query.andWhere('namespace', namespace);
+      }
+
+      //TODO should post create block a creation?
+      await postCreate(created, trx);
+      return created;
+    });
+  }
   async createResource<T extends GlobalDBRecord>(
     kind: string,
     resource: T,

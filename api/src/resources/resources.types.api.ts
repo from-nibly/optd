@@ -6,7 +6,7 @@ import {
   NamespacedMetaAPIResponse,
   NamespacedUpdateMetaApiBody,
 } from 'src/types/types.api';
-import { NamespacedResource } from './resources.types';
+import { GlobalResource, NamespacedResource } from './resources.types';
 
 export class GlobalResourceAPIResponse {
   metadata: GlobalMetaAPIResponse;
@@ -24,7 +24,7 @@ export class GlobalResourceAPIResponse {
   }
 
   static fromRecord(
-    record: NamespacedResource,
+    record: GlobalResource,
     kind: string,
   ): GlobalResourceAPIResponse {
     return new GlobalResourceAPIResponse({

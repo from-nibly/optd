@@ -10,10 +10,10 @@
 		<input id="my-drawer" type="checkbox" class="drawer-toggle" />
 		<div class="drawer-content">
 			<Navbar />
-			<main>
+			<main class="p-10">
+				<!-- Page content here -->
 				<slot />
 			</main>
-			<!-- Page content here -->
 		</div>
 		<div class="drawer-side">
 			<label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"> </label>

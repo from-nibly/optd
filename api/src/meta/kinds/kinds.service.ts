@@ -12,6 +12,7 @@ import { CreateKind, Kind, UpdateKind } from './kinds.types';
 import { KindDBRecord } from './kinds.types.record';
 import { HooksService } from 'src/hooks/hooks.service';
 import { MigrationService } from 'src/database/migrations/migrations.service';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class KindService {
@@ -27,6 +28,28 @@ export class KindService {
     //migrations
     this.migrationService.addMetaTablesMigration(Kind.kind, Kind.kind);
 
+    this.migrationService.migrationSource.addMigrations(`${Kind.kind}-custom`, [
+      {
+        name: 'add_kind_is_meta_column',
+        async up(knex: Knex) {
+          await knex.schema.alterTable(Kind.tableName, (table) => {
+            table.boolean('is_meta').notNullable().defaultTo(false);
+          });
+          await knex.schema.alterTable(Kind.historyTableName, (table) => {
+            table.boolean('is_meta').notNullable().defaultTo(false);
+          });
+        },
+        async down(knex: Knex) {
+          await knex.schema.alterTable(Kind.tableName, (table) => {
+            table.dropColumn('is_meta');
+          });
+          await knex.schema.alterTable(Kind.historyTableName, (table) => {
+            table.dropColumn('is_meta');
+          });
+        },
+      },
+    ]);
+
     const tableName = this.dbService.getTableName(Kind.kind);
     const tableExists = await this.dbService.client.schema.hasTable(tableName);
     if (!tableExists) {
@@ -40,6 +63,31 @@ export class KindService {
       this.migrationService.addResourceTablesMigration(
         kind.metadata.name,
         kind.metadata.name,
+      );
+    }
+  }
+
+  async onApplicationBootstrap(): Promise<void> {
+    const result = await this.dbService.getResourceInternal(Kind.kind, 'kind');
+    if (!result) {
+      await this.dbService.createResourceInternal(
+        Kind.kind,
+        {
+          name: 'kind',
+          metadata_annotations: {},
+          metadata_labels: {},
+          status: {},
+          state: 'ready',
+          spec: {},
+          revision_id: uuid(),
+          revision_at: new Date().toISOString(),
+          revision_by: 'system',
+          revision_parent: null,
+          revision_message: 'System Created',
+          is_meta: true,
+        },
+        async () => {},
+        async () => {},
       );
     }
   }
@@ -78,7 +126,11 @@ export class KindService {
       throw new NotFoundException(`Kind with name ${name} not found`);
     }
 
-    const resp = await this.dbService.getResource(Kind.kind, permissions, name);
+    const resp = await this.dbService.getResource<KindDBRecord>(
+      Kind.kind,
+      permissions,
+      name,
+    );
     //error handling
     if (resp.length === 0) {
       throw new NotFoundException(`Kind with name ${name} not found`);
@@ -131,7 +183,7 @@ export class KindService {
       throw new ForbiddenException('No create permissions found');
     }
 
-    const record = await this.dbService.createResource(
+    const record = await this.dbService.createResource<KindDBRecord>(
       Kind.kind,
       dbRecord,
       permissions,

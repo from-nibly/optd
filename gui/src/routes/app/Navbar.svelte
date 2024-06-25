@@ -1,7 +1,7 @@
 <script>
 </script>
 
-<div class="navbar bg-base-100 mb-32 shadow-xl text-neutral-content bg-primary">
+<div class="navbar bg-base-100 shadow-xl text-neutral-content bg-primary">
 	<label for="my-drawer" class="btn btn-primary drawer-button lg:hidden"
 		><svg
 			xmlns="http://www.w3.org/2000/svg"

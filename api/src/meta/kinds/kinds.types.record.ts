@@ -3,4 +3,5 @@ import { KindSpec } from './kinds.types';
 
 export interface KindDBRecord extends GlobalDBRecord {
   spec: KindSpec;
+  is_meta: boolean;
 }

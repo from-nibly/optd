@@ -1,9 +1,11 @@
 <script lang="ts">
-	const metaItems: string[] = [];
-
 	export let resources: any;
-	console.log('sidebarcontent', resources);
-	const resourceItems: string[] = resources.map((resource: any) => resource.metadata.name);
+	const resourceItems: string[] = resources
+		.filter((resource: any) => !resource.is_meta)
+		.map((resource: any) => resource.metadata.name);
+	const metaItems: string[] = resources
+		.filter((resource: any) => resource.is_meta)
+		.map((resource: any) => resource.metadata.name);
 </script>
 
 <!-- Sidebar content here -->

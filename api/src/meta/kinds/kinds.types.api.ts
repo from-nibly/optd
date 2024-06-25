@@ -17,10 +17,12 @@ export class KindAPIResponse extends GlobalResourceAPIResponse {
   status: any;
   history: History;
   state: string;
+  is_meta: boolean;
 
   constructor(obj: KindAPIResponse) {
     super(obj);
     this.spec = new KindSpec(obj.spec);
+    this.is_meta = obj.is_meta;
   }
 
   static fromRecord(record: Kind): KindAPIResponse {
@@ -30,13 +32,14 @@ export class KindAPIResponse extends GlobalResourceAPIResponse {
       status: record.status,
       history: new History(record.history),
       state: record.state,
+      is_meta: record.is_meta,
     });
   }
 }
 
 export class CreateKindAPIBody extends GlobalCreateResourceAPIBody {
   metadata: GlobalCreateMetaApiBody;
-  spec: Partial<KindSpec>;
+  spec: KindSpec;
 
   constructor(object: NonMethodFields<CreateKindAPIBody>) {
     super(object);
