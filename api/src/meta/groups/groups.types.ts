@@ -29,7 +29,7 @@ export class Group extends GlobalResource {
   }
 
   static fromDBRecord(record: GroupDBRecord) {
-    return GlobalResource.fromDBRecord(record, 'group', Group);
+    return GlobalResource.fromDBRecord(record, Group.kind, Group);
   }
 }
 
@@ -48,7 +48,7 @@ export class CreateGroup extends GlobalCreateResource {
     return GlobalCreateResource.fromAPIRequest<CreateGroupAPIBody>(
       request,
       name,
-      'group',
+      Group.kind,
       CreateGroup,
     );
   }
@@ -69,7 +69,7 @@ export class UpdateGroup extends GlobalUpdateResource {
     return GlobalUpdateResource.fromAPIRequest(
       request,
       name,
-      'group',
+      Group.kind,
       UpdateGroup,
     );
   }

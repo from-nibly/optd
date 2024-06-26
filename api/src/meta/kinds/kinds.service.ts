@@ -28,28 +28,6 @@ export class KindService {
     //migrations
     this.migrationService.addMetaTablesMigration(Kind.kind, Kind.kind);
 
-    this.migrationService.migrationSource.addMigrations(`${Kind.kind}-custom`, [
-      {
-        name: 'add_kind_is_meta_column',
-        async up(knex: Knex) {
-          await knex.schema.alterTable(Kind.tableName, (table) => {
-            table.boolean('is_meta').notNullable().defaultTo(false);
-          });
-          await knex.schema.alterTable(Kind.historyTableName, (table) => {
-            table.boolean('is_meta').notNullable().defaultTo(false);
-          });
-        },
-        async down(knex: Knex) {
-          await knex.schema.alterTable(Kind.tableName, (table) => {
-            table.dropColumn('is_meta');
-          });
-          await knex.schema.alterTable(Kind.historyTableName, (table) => {
-            table.dropColumn('is_meta');
-          });
-        },
-      },
-    ]);
-
     const tableName = this.dbService.getTableName(Kind.kind);
     const tableExists = await this.dbService.client.schema.hasTable(tableName);
     if (!tableExists) {
@@ -68,23 +46,27 @@ export class KindService {
   }
 
   async onApplicationBootstrap(): Promise<void> {
-    const result = await this.dbService.getResourceInternal(Kind.kind, 'kind');
-    if (!result) {
+    const result = await this.dbService.getResourceInternal(
+      Kind.kind,
+      Kind.kind,
+    );
+    if (!result || result.length == 0) {
       await this.dbService.createResourceInternal(
         Kind.kind,
         {
-          name: 'kind',
+          name: Kind.kind,
           metadata_annotations: {},
           metadata_labels: {},
           status: {},
           state: 'ready',
-          spec: {},
+          spec: {
+            is_meta: true,
+          },
           revision_id: uuid(),
           revision_at: new Date().toISOString(),
           revision_by: 'system',
           revision_parent: null,
           revision_message: 'System Created',
-          is_meta: true,
         },
         async () => {},
         async () => {},

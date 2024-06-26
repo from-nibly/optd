@@ -12,6 +12,8 @@ import { SubjectDBRecord } from './subjects.types.record';
 import { ActorContext } from 'src/types/types';
 import { HooksService } from 'src/hooks/hooks.service';
 import { MigrationService } from 'src/database/migrations/migrations.service';
+import { Kind } from '../kinds/kinds.types';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class SubjectService {
@@ -26,6 +28,35 @@ export class SubjectService {
   async onModuleInit(): Promise<void> {
     //migrations
     this.migrationService.addMetaTablesMigration(Subject.kind, Subject.kind);
+  }
+
+  async onApplicationBootstrap(): Promise<void> {
+    const result = await this.dbService.getResourceInternal(
+      Kind.kind,
+      Subject.kind,
+    );
+    if (!result || result.length == 0) {
+      await this.dbService.createResourceInternal(
+        Kind.kind,
+        {
+          name: Subject.kind,
+          metadata_annotations: {},
+          metadata_labels: {},
+          status: {},
+          state: 'ready',
+          spec: {
+            is_meta: true,
+          },
+          revision_id: uuid(),
+          revision_at: new Date().toISOString(),
+          revision_by: 'system',
+          revision_parent: null,
+          revision_message: 'System Created',
+        },
+        async () => {},
+        async () => {},
+      );
+    }
   }
 
   async listSubjects(actorContext: ActorContext): Promise<Subject[]> {

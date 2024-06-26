@@ -12,6 +12,8 @@ import { ActorContext } from 'src/types/types';
 import { HooksService } from 'src/hooks/hooks.service';
 import { Subject } from '../subjects/subjects.types';
 import { MigrationService } from 'src/database/migrations/migrations.service';
+import { v4 as uuid } from 'uuid';
+import { Kind } from '../kinds/kinds.types';
 
 @Injectable()
 export class GroupService {
@@ -26,6 +28,35 @@ export class GroupService {
   async onModuleInit(): Promise<void> {
     //migrations
     this.migrationService.addMetaTablesMigration(Group.kind, Group.kind);
+  }
+
+  async onApplicationBootstrap(): Promise<void> {
+    const result = await this.dbService.getResourceInternal(
+      Kind.kind,
+      Group.kind,
+    );
+    if (!result || result.length == 0) {
+      await this.dbService.createResourceInternal(
+        Kind.kind,
+        {
+          name: Group.kind,
+          metadata_annotations: {},
+          metadata_labels: {},
+          status: {},
+          state: 'ready',
+          spec: {
+            is_meta: true,
+          },
+          revision_id: uuid(),
+          revision_at: new Date().toISOString(),
+          revision_by: 'system',
+          revision_parent: null,
+          revision_message: 'System Created',
+        },
+        async () => {},
+        async () => {},
+      );
+    }
   }
 
   async listGroups(actorContext: ActorContext): Promise<Group[]> {

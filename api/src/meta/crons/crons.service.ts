@@ -12,6 +12,8 @@ import { JobsService } from 'src/jobs/jobs.service';
 import { ActorContext } from 'src/types/types';
 import { CreateCron, Cron, UpdateCron } from './crons.types';
 import { CronDBRecord } from './crons.types.record';
+import { Kind } from '../kinds/kinds.types';
+import { v4 as uuid } from 'uuid';
 
 //TODO: should crons be global or namespaced?
 @Injectable()
@@ -28,6 +30,35 @@ export class CronService {
   async onModuleInit(): Promise<void> {
     //migrations
     this.migrationService.addMetaTablesMigration(Cron.kind, Cron.kind);
+  }
+
+  async onApplicationBootstrap(): Promise<void> {
+    const result = await this.dbService.getResourceInternal(
+      Kind.kind,
+      Cron.kind,
+    );
+    if (!result || result.length == 0) {
+      await this.dbService.createResourceInternal(
+        Kind.kind,
+        {
+          name: Cron.kind,
+          metadata_annotations: {},
+          metadata_labels: {},
+          status: {},
+          state: 'ready',
+          spec: {
+            is_meta: true,
+          },
+          revision_id: uuid(),
+          revision_at: new Date().toISOString(),
+          revision_by: 'system',
+          revision_parent: null,
+          revision_message: 'System Created',
+        },
+        async () => {},
+        async () => {},
+      );
+    }
   }
 
   async listCrons(actorContext: ActorContext): Promise<Cron[]> {

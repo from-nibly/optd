@@ -12,6 +12,7 @@ import { CreateRole, Role, UpdateRole } from './roles.types';
 import { RoleDBRecord } from './roles.types.record';
 import { MigrationService } from 'src/database/migrations/migrations.service';
 import { Kind } from '../kinds/kinds.types';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class RoleService {
@@ -26,6 +27,35 @@ export class RoleService {
   async onModuleInit(): Promise<void> {
     //migrations
     this.migrationService.addMetaTablesMigration(Role.kind, Role.kind);
+  }
+
+  async onApplicationBootstrap(): Promise<void> {
+    const result = await this.dbService.getResourceInternal(
+      Kind.kind,
+      Role.kind,
+    );
+    if (!result || result.length == 0) {
+      await this.dbService.createResourceInternal(
+        Kind.kind,
+        {
+          name: Role.kind,
+          metadata_annotations: {},
+          metadata_labels: {},
+          status: {},
+          state: 'ready',
+          spec: {
+            is_meta: true,
+          },
+          revision_id: uuid(),
+          revision_at: new Date().toISOString(),
+          revision_by: 'system',
+          revision_parent: null,
+          revision_message: 'System Created',
+        },
+        async () => {},
+        async () => {},
+      );
+    }
   }
 
   async listRoles(actorContext: ActorContext): Promise<Role[]> {

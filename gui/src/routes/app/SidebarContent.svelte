@@ -1,10 +1,11 @@
 <script lang="ts">
 	export let resources: any;
+	console.log('resources', resources);
 	const resourceItems: string[] = resources
-		.filter((resource: any) => !resource.is_meta)
+		.filter((resource: any) => !resource.spec.is_meta)
 		.map((resource: any) => resource.metadata.name);
 	const metaItems: string[] = resources
-		.filter((resource: any) => resource.is_meta)
+		.filter((resource: any) => resource.spec.is_meta)
 		.map((resource: any) => resource.metadata.name);
 </script>
 
