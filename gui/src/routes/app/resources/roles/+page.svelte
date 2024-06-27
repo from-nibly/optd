@@ -3,19 +3,15 @@
 	console.log('data', data);
 </script>
 
-<table class="table table-zebra">
+<table class="table table-pin-rows">
 	<thead>
 		<tr>
-			<th>namespace</th>
 			<th>name</th>
 			<th>labels</th>
 		</tr>
 	</thead>
 	{#each data.resources as resource}
 		<tr>
-			<td>
-				{resource.metadata.namespace}
-			</td>
 			<th>
 				<a href="/app/resources/{data.currentKind}/{resource.metadata.name}">
 					{resource.metadata.name}

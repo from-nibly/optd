@@ -4,6 +4,6 @@ module.exports = {
 	content: ['./src/routes/**/*.{svelte,js,ts}'],
 	plugins: [require('daisyui')],
 	daisyui: {
-		themes: ['dark', 'light']
+		themes: ['dark', 'light', 'retro']
 	}
 };
