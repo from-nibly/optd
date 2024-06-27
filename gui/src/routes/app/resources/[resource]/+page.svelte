@@ -3,7 +3,7 @@
 	console.log('data', data);
 </script>
 
-<table class="table">
+<table class="table table-pin-rows">
 	<thead>
 		<tr>
 			<th>namespace</th>

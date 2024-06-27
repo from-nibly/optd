@@ -22,10 +22,10 @@ import {
 } from './resources.types';
 import { ACTOR_CONTEXT } from 'src/authentication/authentication.guard';
 
-@Controller('/resources/:resourceKind/')
+@Controller('/namespaces/:namespace/resources/:resourceKind/')
 @UseInterceptors(ClassSerializerInterceptor)
-export class ResourceController {
-  private readonly logger = new Logger(ResourceController.name);
+export class ResourceNamespacedController {
+  private readonly logger = new Logger(ResourceNamespacedController.name);
   constructor(
     private readonly resourceService: ResourceService,
     private readonly hookService: HooksService,
@@ -33,16 +33,18 @@ export class ResourceController {
 
   @Get('/')
   async listResources(
+    @Param('namespace') namespace: string,
     @Param('resourceKind') resourceKind: string,
     @Req() req: any,
   ): Promise<NamespacedResourceAPIResponse[]> {
     const actor = req[ACTOR_CONTEXT];
-    this.logger.debug(`getting resources for ${resourceKind}`, {
+    this.logger.debug(`getting resources for ${namespace}/${resourceKind}`, {
       actor,
     });
     const resources = await this.resourceService.listResources(
       actor,
       resourceKind,
+      namespace,
     );
     return resources.map((r) =>
       NamespacedResourceAPIResponse.fromRecord(r, resourceKind),
@@ -51,22 +53,25 @@ export class ResourceController {
 
   @Get('/:name')
   async getResource(
+    @Param('namespace') namespace: string,
     @Param('resourceKind') resourceKind: string,
     @Param('name') name: string,
     @Req() req: any,
   ): Promise<NamespacedResourceAPIResponse> {
-    this.logger.debug(`getting resource ${resourceKind}/${name}`);
+    this.logger.debug(`getting resource ${namespace}/${resourceKind}/${name}`);
     const actor = req[ACTOR_CONTEXT];
     const resource = await this.resourceService.getResource(
       actor,
       resourceKind,
       name,
+      namespace,
     );
     return NamespacedResourceAPIResponse.fromRecord(resource, resourceKind);
   }
 
   @Put('/:name')
   async putResource(
+    @Param('namespace') namespace: string,
     @Param('resourceKind') resourceKind: string,
     @Param('name') name: string,
     @Body()

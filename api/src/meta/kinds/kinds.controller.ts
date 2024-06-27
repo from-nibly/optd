@@ -18,7 +18,7 @@ import {
 } from './kinds.types.api';
 import { ACTOR_CONTEXT } from 'src/authentication/authentication.guard';
 
-@Controller('/meta/kinds')
+@Controller('/meta/kind')
 @UseInterceptors(ClassSerializerInterceptor)
 export class KindController {
   private readonly logger = new Logger(KindController.name);

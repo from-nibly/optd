@@ -38,12 +38,15 @@ export class GetResourceCommand extends Command {
     }
 
     if (name === undefined) {
-      const resp = await client.url(`/namespaces/foo/${kind}`).get().json();
+      const resp = await client
+        .url(`/namespaces/foo/resources/${kind}`)
+        .get()
+        .json();
 
       this.context.stdout.write(stringify(resp) + '\n');
     } else {
       const resp = await client
-        .url(`/namespaces/foo/${kind}/${name}`)
+        .url(`/namespaces/foo/resources/${kind}/${name}`)
         .get()
         .json();
 

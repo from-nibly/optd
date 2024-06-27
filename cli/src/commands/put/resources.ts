@@ -53,7 +53,7 @@ export class PutResourceCommand extends PutCommand {
     const namespace = outputObj.metadata.namespace ?? 'foo';
 
     await client
-      .url(`/namespaces/${namespace}/${kind}/${name}`)
+      .url(`/namespaces/${namespace}/resources/${kind}/${name}`)
       .json(outputObj)
       .put()
       .badRequest((res) => {

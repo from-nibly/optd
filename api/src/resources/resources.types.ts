@@ -194,7 +194,6 @@ export class NamespacedCreateResource {
   static fromAPIRequest(
     request: NamespacedCreateResourceAPIBody,
     kind: string,
-    namespace: string,
     name: string,
     ctor: typeof NamespacedCreateResource = NamespacedCreateResource,
   ): NamespacedCreateResource {
@@ -202,7 +201,7 @@ export class NamespacedCreateResource {
       metadata: {
         labels: request.metadata.labels,
         annotations: request.metadata.annotations,
-        namespace,
+        namespace: request.metadata.namespace,
         name,
         kind,
       },
@@ -299,14 +298,12 @@ export class NamespacedUpdateResource {
 
   static fromAPIRequest(
     request: NamespacedUpdateResourceAPIBody,
-    namespace: string,
     name: string,
     ctor: typeof NamespacedUpdateResource = NamespacedUpdateResource,
   ): NamespacedUpdateResource {
     return new ctor({
       metadata: {
         ...request.metadata,
-        namespace,
         name,
       },
       spec: request.spec,

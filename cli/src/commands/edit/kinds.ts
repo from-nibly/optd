@@ -31,7 +31,7 @@ export class EditKindCommand extends EditCommand {
     const client = await this.clientService.getClient();
     let kind = this.kind;
 
-    const existing = await client.url(`/meta/kinds/${kind}`).get().json();
+    const existing = await client.url(`/meta/kind/${kind}`).get().json();
 
     //TODO: type checking?
     const outputObj = await this.obtainData(existing as any);
@@ -45,6 +45,6 @@ export class EditKindCommand extends EditCommand {
 
     delete outputObj.metadata.kind;
 
-    await client.url(`/meta/kinds/${kind}`).json(outputObj).put();
+    await client.url(`/meta/kind/${kind}`).json(outputObj).put();
   }
 }

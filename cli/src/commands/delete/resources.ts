@@ -35,6 +35,6 @@ export class DeleteResourceCommand extends DeleteCommand {
       return 0;
     }
 
-    await client.url(`/namespaces/foo/${kind}/${name}`).delete();
+    await client.url(`/namespaces/foo/resources/${kind}/${name}`).delete();
   }
 }

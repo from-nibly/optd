@@ -40,7 +40,7 @@ export class EditResourceCommand extends EditCommand {
     }
 
     const existing = await client
-      .url(`/namespaces/foo/${kind}/${name}`)
+      .url(`/namespaces/foo/resources/${kind}/${name}`)
       .get()
       .json();
 
@@ -57,7 +57,7 @@ export class EditResourceCommand extends EditCommand {
     const namespace = outputObj.metadata.namespace ?? 'foo';
 
     await client
-      .url(`/namespaces/${namespace}/${kind}/${name}`)
+      .url(`/namespaces/${namespace}/resources/${kind}/${name}`)
       .json(outputObj)
       .put()
       .badRequest((res) => {

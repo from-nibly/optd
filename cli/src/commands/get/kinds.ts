@@ -35,11 +35,11 @@ export class GetKindCommand extends Command {
   async execute(): Promise<number | void> {
     const client = await this.clientService.getClient();
     if (this.name) {
-      const resp = await client.url(`/meta/kinds/${this.name}`).get().json();
+      const resp = await client.url(`/meta/kind/${this.name}`).get().json();
       this.context.stdout.write(stringify(resp) + '\n');
       return;
     }
-    const resp = await client.url('/meta/kinds').get().json();
+    const resp = await client.url('/meta/kind').get().json();
     this.context.stdout.write(stringify(resp) + '\n');
   }
 }

@@ -26,8 +26,8 @@ export class ResourceService {
 
   async listResources(
     actorContext: ActorContext,
-    namespace: string,
     kind: string,
+    namespace?: string,
   ): Promise<NamespacedResource[]> {
     const permissions = actorContext.getPermissionPaths('list');
 
@@ -48,9 +48,9 @@ export class ResourceService {
 
   async getResource(
     actorContext: ActorContext,
-    namespace: string,
     kind: string,
     name: string,
+    namespace?: string,
   ): Promise<NamespacedResource> {
     const permissions = actorContext.getPermissionPaths('read');
 
