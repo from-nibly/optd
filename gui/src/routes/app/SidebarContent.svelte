@@ -28,12 +28,12 @@
 <li class="mb-2 font-semibold text-xl">Meta</li>
 {#each metaItems as metaItem}
 	<li class="ml-2 mb-2 font-semibold text-lg">
-		<a href="/resources/{metaItem.toLowerCase()}">{metaItem}</a>
+		<a href="/app/resources/{metaItem.toLowerCase()}">{metaItem}</a>
 	</li>
 {/each}
 <li class="mb-2 font-semibold text-xl">Resources</li>
 {#each resourceItems as resourceItem}
 	<li class="ml-2 mb-2 font-semibold text-lg">
-		<a href="/resources/{resourceItem.toLowerCase()}">{resourceItem}</a>
+		<a href="/app/resources/{resourceItem.toLowerCase()}">{resourceItem}</a>
 	</li>
 {/each}

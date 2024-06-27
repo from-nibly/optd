@@ -14,6 +14,6 @@ export const load: PageLoad = async ({ url, fetch, params }: LoadEvent) => {
 	const resp = await fetch('http://optd.localhost:3000/api/meta/kinds', { credentials: 'include' });
 	const body = await resp.json();
 	return {
-		resources: body
+		kinds: body
 	};
 };

@@ -33,8 +33,9 @@ export class KindService {
     if (!tableExists) {
       return;
     }
-
-    const kinds = await this.listKindsInternal();
+    const kinds = (await this.listKindsInternal()).filter(
+      (res) => !res.spec.is_meta,
+    );
 
     for (const kind of kinds) {
       this.logger.debug('creating table for kind', kind.metadata.name);
