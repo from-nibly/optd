@@ -40,4 +40,42 @@ export class ResourceNamespacedController {
       NamespacedResourceAPIResponse.fromRecord(r, resourceKind),
     );
   }
+
+  @Get('/:name')
+  async getResource(
+    @Param('namespace') namespace: string,
+    @Param('resourceKind') resourceKind: string,
+    @Param('name') name: string,
+    @Req() req: any,
+  ): Promise<NamespacedResourceAPIResponse> {
+    this.logger.debug(`getting resource ${resourceKind}/${name}`);
+    const actor = req[ACTOR_CONTEXT];
+    const resource = await this.resourceService.getResource(
+      actor,
+      resourceKind,
+      name,
+      namespace,
+    );
+    return NamespacedResourceAPIResponse.fromRecord(resource, resourceKind);
+  }
+
+  @Get('/:name/history')
+  async getHistory(
+    @Param('namespace') namespace: string,
+    @Param('resourceKind') resourceKind: string,
+    @Param('name') name: string,
+    @Req() req: any,
+  ): Promise<NamespacedResourceAPIResponse[]> {
+    this.logger.debug(`getting resource ${resourceKind}/${name}`);
+    const actor = req[ACTOR_CONTEXT];
+    const resources = await this.resourceService.listResourceHistory(
+      actor,
+      resourceKind,
+      name,
+      namespace,
+    );
+    return resources.map((r) =>
+      NamespacedResourceAPIResponse.fromRecord(r, resourceKind),
+    );
+  }
 }

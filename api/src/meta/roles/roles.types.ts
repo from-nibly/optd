@@ -7,7 +7,14 @@ import { CreateRoleAPIBody, UpdateRoleAPIBody } from './roles.types.api';
 import { NonMethodFields } from 'src/types/types';
 import { RoleDBRecord } from './roles.types.record';
 
-export type Action = 'create' | 'read' | 'update' | 'delete' | 'list' | 'patch';
+export type Action =
+  | 'create'
+  | 'read'
+  | 'update'
+  | 'delete'
+  | 'list'
+  | 'patch'
+  | 'history';
 
 export class Permission {
   actions: Action[];

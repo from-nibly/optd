@@ -72,6 +72,28 @@ export class ResourceService {
     return NamespacedResource.fromDBRecord(kind, resp[0]);
   }
 
+  async listResourceHistory(
+    actorContext: ActorContext,
+    kind: string,
+    name: string,
+    namespace?: string,
+  ): Promise<NamespacedResource[]> {
+    const permissions = actorContext.getPermissionPaths('history');
+
+    if (permissions.length === 0) {
+      throw new NotFoundException('resource not found');
+    }
+
+    const resp = await this.dbService.listResourceHistory<NamespacedDBRecord>(
+      kind,
+      permissions,
+      name,
+      namespace,
+    );
+
+    return resp.map((r) => NamespacedResource.fromDBRecord(kind, r));
+  }
+
   async updateResource(
     actorContext: ActorContext,
     record: NamespacedUpdateResource,

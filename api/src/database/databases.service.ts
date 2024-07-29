@@ -145,6 +145,31 @@ export class DatabaseService {
     return (await query) as any;
   }
 
+  async listResourceHistory<T extends GlobalDBRecord>(
+    kind: string,
+    permissionRegexList: string[],
+    name: string,
+    namespace?: string,
+  ): Promise<T[]> {
+    const tableName = this.getHistoryTableName(kind);
+
+    let query = this.client(`${tableName} as r`)
+      .select<T[]>('*')
+      .where('name', name);
+
+    if (namespace) {
+      query = query.andWhere('namespace', namespace);
+    }
+
+    const authzPathExpression = this.createAuthzPathExpression(kind, namespace);
+
+    return this.addPermissionClauses<T>(
+      query,
+      authzPathExpression,
+      permissionRegexList,
+    );
+  }
+
   async getResource<T extends GlobalDBRecord>(
     kind: string,
     permissionRegexList: string[],

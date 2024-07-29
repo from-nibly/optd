@@ -49,21 +49,6 @@ export class ResourceController {
     );
   }
 
-  @Get('/:name')
-  async getResource(
-    @Param('resourceKind') resourceKind: string,
-    @Param('name') name: string,
-    @Req() req: any,
-  ): Promise<NamespacedResourceAPIResponse> {
-    this.logger.debug(`getting resource ${resourceKind}/${name}`);
-    const actor = req[ACTOR_CONTEXT];
-    const resource = await this.resourceService.getResource(
-      actor,
-      resourceKind,
-      name,
-    );
-    return NamespacedResourceAPIResponse.fromRecord(resource, resourceKind);
-  }
 
   @Put('/:name')
   async putResource(

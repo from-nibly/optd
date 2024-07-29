@@ -22,6 +22,7 @@ import { GetGroupCommand } from './commands/get/groups';
 import { PutCronCommand } from './commands/put/crons';
 import { EditCronCommand } from './commands/edit/crons';
 import { GetCronCommand } from './commands/get/crons';
+import { GetResourceHistoryCommand } from './commands/history/resources';
 
 const [node, app, ...args] = process.argv;
 
@@ -55,6 +56,7 @@ cli.register(GetGroupCommand);
 cli.register(PutCronCommand);
 cli.register(EditCronCommand);
 cli.register(GetCronCommand);
+cli.register(GetResourceHistoryCommand);
 
 cli.register(Builtins.HelpCommand);
 cli.register(Builtins.VersionCommand);
