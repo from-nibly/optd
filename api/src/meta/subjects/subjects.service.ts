@@ -147,7 +147,7 @@ export class SubjectService {
           actorContext,
           Subject.kind,
           'preCreate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },
@@ -158,7 +158,7 @@ export class SubjectService {
           actorContext,
           Subject.kind,
           'postCreate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },
@@ -190,7 +190,7 @@ export class SubjectService {
           actorContext,
           Subject.kind,
           'preUpdate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },
@@ -200,7 +200,7 @@ export class SubjectService {
           actorContext,
           Subject.kind,
           'postUpdate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },

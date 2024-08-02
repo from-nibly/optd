@@ -1,0 +1,14 @@
+#!/usr/bin/env nu
+
+def main [old_file, new_file, key] {
+  let key_cell_path = ($key | split row "." | into cell-path)
+  let old_val = (cat $old_file | from json | get $key_cell_path)
+  let new_val = (cat $new_file | from json | get $key_cell_path)
+
+  if $old_val != $new_val {
+    print $"Key ($key) is immutable"
+    print $"Old value: ($old_val)"
+    print $"New value: ($new_val)"
+    exit 1
+  }
+}

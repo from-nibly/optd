@@ -198,7 +198,7 @@ export class DatabaseService {
     kind: string,
     resource: T,
     permissionRegexList: string[],
-    preUpdate: (result: T) => Promise<void>,
+    preUpdate: (existing: T, current: T) => Promise<void>,
     postUpdate: (result: T) => Promise<void>,
     namespace?: string,
   ): Promise<T> {
@@ -224,7 +224,7 @@ export class DatabaseService {
         permissionRegexList,
       );
 
-      const [existing, ...extra] = await query;
+      const [existing, ...extra]: any = await query;
 
       if (extra.length > 0) {
         this.logger.error(`found multiple kinds with name ${resource.name}`);
@@ -250,7 +250,7 @@ export class DatabaseService {
         throw new BadRequestException('resource history id mismatch');
       }
 
-      await preUpdate(resource);
+      await preUpdate(existing, resource);
 
       //move existing record to history
       await trx(historyTableName).insert(existing);

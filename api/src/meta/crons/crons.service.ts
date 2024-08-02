@@ -132,7 +132,7 @@ export class CronService {
           actorContext,
           Cron.kind,
           'preCreate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },
@@ -143,7 +143,7 @@ export class CronService {
           actorContext,
           Cron.kind,
           'postCreate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },
@@ -175,7 +175,7 @@ export class CronService {
           actorContext,
           Cron.kind,
           'preUpdate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },
@@ -185,7 +185,7 @@ export class CronService {
           actorContext,
           Cron.kind,
           'postUpdate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },

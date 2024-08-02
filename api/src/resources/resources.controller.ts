@@ -49,7 +49,6 @@ export class ResourceController {
     );
   }
 
-
   @Put('/:name')
   async putResource(
     @Param('resourceKind') resourceKind: string,
@@ -66,7 +65,7 @@ export class ResourceController {
         actor,
         resourceKind,
         'validate',
-        record,
+        { payload: record },
         record.metadata.name,
       );
       const updated = await this.resourceService.updateResource(
@@ -87,7 +86,7 @@ export class ResourceController {
       actor,
       resourceKind,
       'validate',
-      record,
+      { payload: record },
       record.metadata.name,
     );
     const created = await this.resourceService.createResource(

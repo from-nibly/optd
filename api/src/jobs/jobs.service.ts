@@ -25,7 +25,7 @@ export class JobsService {
         cron.history.id,
         'cron',
         Cron.kind,
-        cron,
+        { payload: cron },
       );
 
       this.logger.debug('cron result', result);

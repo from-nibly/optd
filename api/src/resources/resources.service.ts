@@ -113,14 +113,18 @@ export class ResourceService {
         kind,
         resource,
         permissions,
-        async (result) => {
-          const newRecord = NamespacedResource.fromDBRecord(kind, result);
+        async (existing, update) => {
+          const updateRecord = NamespacedResource.fromDBRecord(kind, update);
+          const existingRecord = NamespacedResource.fromDBRecord(
+            kind,
+            existing,
+          );
           this.hookService.executeHook(
             actorContext,
             kind,
             'preUpdate',
-            newRecord,
-            newRecord.metadata.name,
+            { update: updateRecord, existing: existingRecord },
+            updateRecord.metadata.name,
           );
         },
         async (result) => {
@@ -129,7 +133,7 @@ export class ResourceService {
             actorContext,
             kind,
             'postUpdate',
-            newRecord,
+            { payload: newRecord },
             newRecord.metadata.name,
           );
         },
@@ -164,7 +168,7 @@ export class ResourceService {
             actorContext,
             kind,
             'preCreate',
-            newRecord,
+            { payload: newRecord },
             newRecord.metadata.name,
           );
         },
@@ -174,7 +178,7 @@ export class ResourceService {
             actorContext,
             kind,
             'postCreate',
-            newRecord,
+            { payload: newRecord },
             newRecord.metadata.name,
           );
         },

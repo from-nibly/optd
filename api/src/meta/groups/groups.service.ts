@@ -133,7 +133,7 @@ export class GroupService {
           actorContext,
           Group.kind,
           'preCreate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },
@@ -144,7 +144,7 @@ export class GroupService {
           actorContext,
           Group.kind,
           'postCreate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },
@@ -176,7 +176,7 @@ export class GroupService {
           actorContext,
           Group.kind,
           'preUpdate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },
@@ -186,7 +186,7 @@ export class GroupService {
           actorContext,
           Group.kind,
           'postUpdate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },

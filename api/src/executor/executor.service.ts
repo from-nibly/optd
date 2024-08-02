@@ -24,7 +24,7 @@ export class ExecutorService {
     kind: string,
     event: string,
     script: string,
-    payload: string,
+    payload: Record<string, unknown>,
   ): Promise<string> {
     const dir = `/tmp/optdctl/scripts/${kind}/${event}`;
     await fs.mkdir(dir, { recursive: true });
@@ -36,7 +36,15 @@ export class ExecutorService {
 
     //payload
     const payloadFile = `${dir}/payload`;
-    await fs.writeFile(payloadFile, JSON.stringify(payload));
+    await Promise.all(
+      Object.entries(payload).reduce(
+        (prev: Promise<unknown>[], [key, value]) => {
+          prev.push(fs.writeFile(`${dir}/${key}`, JSON.stringify(value)));
+          return prev;
+        },
+        [] as Promise<unknown>[],
+      ),
+    );
 
     return dir;
   }
@@ -46,7 +54,7 @@ export class ExecutorService {
     script_revision: string,
     event: string,
     kind: string,
-    payload: any,
+    payload: Record<string, unknown>,
   ): Promise<ExecutionResult | undefined> {
     this.logger.debug('executing event', { event, kind });
     //TODO: do we need the old version?
@@ -54,7 +62,16 @@ export class ExecutorService {
     this.logger.debug('created script context', { dir });
 
     return new Promise<ExecutionResult>((resolve, reject) => {
-      const proc = spawn(`${dir}/script`, { stdio: 'pipe', cwd: dir });
+      const env_with_extra_path = {
+        ...process.env,
+        //TODO: fix path to be dynamic
+        PATH: `${process.env.PATH}:/home/jdavidson/gh/from-nibly/optd-old/tools/src`,
+      };
+      const proc = spawn(`${dir}/script`, {
+        stdio: 'pipe',
+        cwd: dir,
+        env: env_with_extra_path,
+      });
       const stdout: OutputLine[] = [];
       const stderr: OutputLine[] = [];
       let stdoutText = '';
@@ -83,7 +100,8 @@ export class ExecutorService {
 
       proc.on('exit', (code) => {
         try {
-          const resp = { stdout, stderr, code: code! };
+          const resp = { stdout, stderr, code: code ?? 1 };
+          this.logger.debug('execution finished', { resp });
 
           const dbRecord = {
             id: uuid(),

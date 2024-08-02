@@ -13,6 +13,7 @@ import { KindDBRecord } from './kinds.types.record';
 import { HooksService } from 'src/hooks/hooks.service';
 import { MigrationService } from 'src/database/migrations/migrations.service';
 import { v4 as uuid } from 'uuid';
+import { GlobalResource } from 'src/resources/resources.types';
 
 @Injectable()
 export class KindService {
@@ -144,7 +145,29 @@ export class KindService {
       Kind.kind,
       resource,
       permissions,
-      async () => {},
+      async (existing, update) => {
+        const updateRecord = GlobalResource.fromDBRecord(
+          update,
+          Kind.kind,
+          Kind,
+        );
+        const existingRecord = GlobalResource.fromDBRecord(
+          existing,
+          Kind.kind,
+          Kind,
+        );
+        const result = await this.hookService.executeHook(
+          actor,
+          Kind.kind,
+          'preUpdate',
+          { update: updateRecord, existing: existingRecord },
+          updateRecord.metadata.name,
+        );
+        if (result?.code !== 0) {
+          this.logger.debug('hook failed, rolling back update');
+          throw new Error('hook failed');
+        }
+      },
       async () => {},
     );
 

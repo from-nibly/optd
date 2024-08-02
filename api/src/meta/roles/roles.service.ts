@@ -129,7 +129,7 @@ export class RoleService {
           actorContext,
           Role.kind,
           'preCreate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },
@@ -140,7 +140,7 @@ export class RoleService {
           actorContext,
           Role.kind,
           'postCreate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },
@@ -172,7 +172,7 @@ export class RoleService {
           actorContext,
           Role.kind,
           'preUpdate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },
@@ -182,7 +182,7 @@ export class RoleService {
           actorContext,
           Role.kind,
           'postUpdate',
-          newRecord,
+          { payload: newRecord },
           newRecord.metadata.name,
         );
       },

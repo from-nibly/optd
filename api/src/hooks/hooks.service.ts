@@ -29,8 +29,7 @@ export class HooksService {
     actorContext: ActorContext,
     kind: string,
     event: keyof KindHookSpec,
-    //TODO: need to break this method out into multiple methods so types can be exact
-    payload: any,
+    payload: Record<string, unknown>,
     resourceName: string,
     onError?: (err: HookError) => Promise<void>,
   ): Promise<ExecutionResult | undefined> {
