@@ -5,7 +5,6 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { Knex } from 'knex';
 import { DatabaseService } from 'src/database/databases.service';
 import { ActorContext } from 'src/types/types';
 import { CreateKind, Kind, UpdateKind } from './kinds.types';

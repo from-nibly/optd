@@ -1,0 +1,31 @@
+#!/usr/bin/env nu
+
+def main [file: string, key: string, --type: string | null = null, --value: string | null = null] {
+  let key_parts = ($key | split row "." | each { |it| 
+    echo { value: $it, optional: true } 
+  })
+  let key_cell_path = ($key_parts | into cell-path)
+
+  let actual_value = (cat $file | from json | get $key_cell_path)
+
+  if ($actual_value | is-empty) {
+    exit 0
+  }
+  
+  if ($value != null and $actual_value != $value) {
+    print $"Key [($key)] does not have the correct value"
+    print $"Expected value: [($value)]"
+    print $"Actual value: [($actual_value)]"
+    exit 1
+  }
+
+  if ($type != null) {
+    let actual_type = ($actual_value | describe)
+    if ($actual_type != $type) {
+      print $"Key [($key)] is not of type [($type)]"
+      print $"Actual type: [($actual_type)]"
+      print $"Actual value: [($actual_value)]"
+      exit 1
+    }
+  }
+}

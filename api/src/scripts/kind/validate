@@ -1,0 +1,5 @@
+#!/usr/bin/env nu
+
+required ./payload "metadata.name" --type="string"
+required ./payload "metadata.kind" --type="string" --value="Kind"
+optional ./payload "spec.hooks" --type="record<"

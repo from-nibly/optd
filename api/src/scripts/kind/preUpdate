@@ -3,4 +3,4 @@
 print $env.PWD
 print $env.PATH
 
-immutable existing update "spec.is_meta"
+immutable ./existing ./update "spec.is_meta"
